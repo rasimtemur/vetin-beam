@@ -1,0 +1,717 @@
+/* common/common.css */
+
+/* Fluent Design Sistemi Token'ları (Tüm platformlar için ortak) */
+:root {
+    --fluent-accent-fill-rest: #1C3E68;
+    --fluent-accent-fill-hover: #2A528A;
+    --fluent-accent-fill-pressed: #142C4C;
+    --fluent-neutral-fill-rest: #F3F3F3;
+    --fluent-neutral-fill-hover: #EBEBEB;
+    --fluent-neutral-fill-pressed: #E1E1E1;
+    --fluent-neutral-foreground-rest: #201F1E;
+    --fluent-neutral-foreground-hint: #605E5C;
+    --fluent-layer-fill-default: #FFFFFF;
+    --fluent-stroke-color-default: #E1E1E1;
+    --fluent-background-fill-mica: rgba(252, 252, 252, 0.7);
+    --fluent-background-fill-solid: #F3F3F3;
+    --fluent-shadow-depth-4: 0 2px 4px rgba(0,0,0,0.06);
+    --fluent-shadow-depth-8: 0 4px 8px rgba(0,0,0,0.08);
+    --fluent-shadow-depth-16: 0 8px 16px rgba(0,0,0,0.1);
+    --fluent-border-radius: 4px;
+}
+
+body.dark-mode {
+    /* Accent colors - Blue tones */
+    --fluent-accent-fill-rest: #3B82F6;
+    --fluent-accent-fill-hover: #60A5FA;
+    --fluent-accent-fill-pressed: #2563EB;
+    
+    /* Neutral fills - Dark blue-gray tones */
+    --fluent-neutral-fill-rest: #1A1F2E;
+    --fluent-neutral-fill-hover: #252B3D;
+    --fluent-neutral-fill-pressed: #0F1219; /* Derived as darker */
+
+    /* Foreground colors - Light text */
+    --fluent-neutral-foreground-rest: #F0F0F0;
+    --fluent-neutral-foreground-hint: #A0A0A0;
+    
+    /* Layer fills - Dark backgrounds */
+    --fluent-layer-fill-default: #0F1419;
+    --fluent-stroke-color-default: #1E293B;
+    --fluent-background-fill-mica: rgba(15, 20, 25, 0.7); /* Adapted */
+    --fluent-background-fill-solid: #0A0E1A;
+    
+    /* Shadows - Stronger for dark mode */
+    --fluent-shadow-depth-4: 0 2px 4px rgba(0, 0, 0, 0.4);
+    --fluent-shadow-depth-8: 0 4px 8px rgba(0, 0, 0, 0.45);
+    --fluent-shadow-depth-16: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .tool-button {
+    color: var(--fluent-neutral-foreground-hint);
+}
+
+body.dark-mode .tool-button svg {
+    stroke: currentColor;
+}
+
+body.dark-mode #modeling-area-title {
+    background-color: #2D2D2D;
+    color: var(--fluent-neutral-foreground-hint);
+}
+
+body.dark-mode .canvas-overlay-btn {
+    background-color: rgba(45, 45, 45, 0.7);
+    stroke: var(--fluent-neutral-foreground-hint);
+    color: var(--fluent-neutral-foreground-hint);
+}
+
+body.dark-mode .canvas-overlay-btn svg {
+    stroke: var(--fluent-neutral-foreground-hint);
+    fill: var(--fluent-neutral-foreground-hint); /* For filled icons like download */
+}
+
+body.dark-mode .drag-overlay-content {
+    background-color: rgba(32, 32, 32, 0.9);
+}
+
+body.dark-mode .hint-box {
+    background-color: rgba(60, 50, 20, 0.95);
+    border: 1px solid rgba(255, 200, 0, 0.3);
+    color: #FFD700;
+}
+
+body.dark-mode td[contenteditable="true"] {
+    background-color: rgba(56, 159, 182, 0.15);
+    color: var(--fluent-neutral-foreground-rest);
+}
+
+body.dark-mode .diagram-container .toggle-button, 
+body.dark-mode .diagram-container .download-btn, 
+body.dark-mode .data-tables-header .toggle-button, 
+body.dark-mode .data-tables-header .download-btn,
+body.dark-mode .delete-btn {
+    background-color: rgba(60, 60, 60, 0.7);
+    color: var(--fluent-neutral-foreground-hint);
+}
+
+body.dark-mode .toggle-button svg {
+    fill: currentColor;
+}
+
+body.dark-mode .diagram-container h4,
+body.dark-mode .data-tables-header h4,
+body.dark-mode .table-wrapper h3,
+body.dark-mode .table-wrapper th,
+body.dark-mode .table-wrapper td {
+    color: var(--fluent-neutral-foreground-hint);
+}
+
+body.dark-mode .diagram-container .toggle-button:hover, 
+body.dark-mode .diagram-container .download-btn:hover, 
+body.dark-mode .data-tables-header .toggle-button:hover, 
+body.dark-mode .data-tables-header .download-btn:hover {
+    background-color: rgba(80, 80, 80, 0.9);
+}
+
+
+
+
+/* Force logos to white in Dark Mode */
+body.dark-mode .footer-socials img,
+body.dark-mode .page-header2 img,
+body.dark-mode img[src*="IUC.svg"],
+body.dark-mode img[src*="logo.svg"] {
+    /* Color match for #A0A0A0 (--fluent-neutral-foreground-hint) */
+    filter: brightness(0) invert(0.63);
+}
+
+/* Temel Sayfa Yapısı */
+.fluent-theme { 
+    font-family: "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; 
+    background-color: var(--fluent-background-fill-solid); 
+    color: var(--fluent-neutral-foreground-rest); 
+    margin: 0; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
+.fluent-theme .page-header2 {
+    width: 100%;
+    max-width: 1470px;
+    padding: 25px 30px;
+    margin-bottom: 0px;
+    text-align:center;
+}
+.fluent-theme .app-wrapper {
+    width: 100%;
+    max-width: 1470px;
+}
+.fluent-theme .main-content { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px; 
+    width: 100%;
+}
+
+/* Footer Stilleri */
+.fluent-theme .page-footer {
+    width: 100%; max-width: 1470px; padding: 15px 30px; margin-top: 20px;
+    background-color: var(--fluent-layer-fill-default);
+    border: 1px solid var(--fluent-stroke-color-default);
+    border-radius: var(--fluent-border-radius);
+    box-shadow: var(--fluent-shadow-depth-16);
+    box-sizing: border-box;
+}
+.fluent-theme .footer-content {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    gap: 20px; 
+    flex-wrap: wrap;
+}
+.fluent-theme .footer-text { font-size: 14px; color: var(--fluent-neutral-foreground-hint); flex-grow: 1; }
+.fluent-theme .footer-text p { margin: 0 0 5px 0; }
+.fluent-theme .footer-text a { color: var(--fluent-accent-fill-rest); text-decoration: none; font-weight: 600; }
+
+/* Dil Seçici Stilleri */
+.fluent-theme .language-switcher { display: flex; gap: 8px; position: relative; }
+.fluent-theme .language-switcher button {
+    width: 32px; height: 32px; padding: 0; background-color: transparent; border: none;
+    border-radius: var(--fluent-border-radius); cursor: pointer; font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+    font-size: 14px; font-weight: 600; color: var(--fluent-neutral-foreground-hint);
+    transition: background-color 0.15s ease-out, color 0.15s ease-out; opacity: 1;
+    display: flex; align-items: center; justify-content: center;
+}
+.fluent-theme .language-switcher button:hover { opacity: 1; background-color: var(--fluent-neutral-fill-hover); }
+.fluent-theme .language-switcher button.active { background-color: var(--fluent-accent-fill-rest); opacity: 1; color: white; }
+.fluent-theme .language-switcher button.active:hover { background-color: var(--fluent-accent-fill-hover); }
+
+.fluent-theme .language-switcher {
+    position: relative;
+}
+
+/* Dil Seçimi Dropdown */
+.language-dropdown {
+    position: absolute;
+    bottom: 45px; /* Butonların üstünde */
+    left: auto;
+    right: 0; /* Sağa hizalı */
+    background-color: var(--fluent-layer-fill-default);
+    border: 1px solid var(--fluent-stroke-color-default);
+    border-radius: 4px;
+    box-shadow: var(--fluent-shadow-depth-16);
+    padding: 5px;
+    z-index: 3000;
+    max-height: 300px;
+    overflow-y: auto;
+    width: max-content;
+    min-width: 90px;
+    display: none;
+
+    /* Modern Scrollbar */
+    scrollbar-width: auto;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.language-dropdown::-webkit-scrollbar {
+    width: 12px;
+}
+
+.language-dropdown::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.language-dropdown::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.language-dropdown::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.language-dropdown.show {
+    display: block !important;
+}
+
+.language-dropdown button {
+    display: block;
+    width: 100%;
+    text-align: center; /* Center text for better look in compact list */
+    padding: 6px 12px;
+    border: none;
+    background: none; 
+    cursor: pointer;
+    font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+    font-size: 13px;
+    color: var(--fluent-neutral-foreground-rest);
+    border-radius: 2px;
+    white-space: nowrap; /* Prevent line breaks */
+}
+
+.language-dropdown button:hover {
+    background-color: var(--fluent-neutral-fill-hover);
+    color: var(--fluent-accent-fill-rest);
+}
+
+/* + Butonu */
+#btnMoreLanguages {
+    font-size: 18px;
+    font-weight: bold;
+    padding-bottom: 4px; /* Dikey ortalama */
+}
+
+/* Tema Değiştirici Stilleri */
+/* Buton artık dil değiştirici içinde, inline stiller ile yönetiliyor */
+/* .theme-switcher ve alt eleman stilleri kaldırıldı */
+
+body.dark-mode .moon-icon { display: none; }
+body.dark-mode .sun-icon { display: block !important; }
+
+/* Uygulama Menüsü (hamburger) */
+#app-menu-toggle {
+    position: relative;
+}
+.app-menu {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 0;
+    background-color: var(--fluent-layer-fill-default);
+    border: 1px solid var(--fluent-stroke-color-default);
+    border-radius: 8px;
+    box-shadow: var(--fluent-shadow-depth-16);
+    padding: 8px;
+    z-index: 3000;
+    min-width: 220px;
+    display: none;
+    flex-direction: column;
+    animation: appMenuFade 0.2s ease;
+}
+@keyframes appMenuFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.app-menu.show {
+    display: flex !important;
+}
+.fluent-theme .language-switcher .app-menu .app-menu-item,
+.app-menu .app-menu-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 10px 14px !important;
+    border: none !important;
+    background: none !important;
+    cursor: pointer;
+    font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: var(--fluent-neutral-foreground-hint) !important;
+    border-radius: 6px !important;
+    text-align: left !important;
+    white-space: nowrap;
+    box-sizing: border-box;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.fluent-theme .language-switcher .app-menu .app-menu-item:hover,
+.app-menu .app-menu-item:hover {
+    background-color: var(--fluent-neutral-fill-hover) !important;
+    color: var(--fluent-neutral-foreground-rest) !important;
+}
+.app-menu-item svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+.app-menu-item:hover svg { opacity: 1; }
+.app-menu-separator {
+    height: 1px;
+    background-color: var(--fluent-stroke-color-default);
+    margin: 4px 0;
+}
+
+/* Hakkında Modal */
+.about-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000;
+    font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+}
+.about-modal-backdrop.show { display: flex; }
+.about-modal {
+    width: 620px;
+    max-width: calc(100% - 40px);
+    background-color: var(--fluent-layer-fill-default);
+    border-radius: 24px;
+    box-shadow: var(--fluent-shadow-depth-16);
+    overflow: hidden;
+    color: var(--fluent-neutral-foreground-rest);
+}
+.about-modal-grid {
+    display: flex;
+    min-height: 380px;
+}
+.about-modal-left {
+    flex: 1;
+    background: linear-gradient(135deg, var(--fluent-accent-fill-rest), #0F1E33);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    color: #ffffff;
+    text-align: center;
+}
+.about-modal-left-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.about-modal-left img.about-logo {
+    width: 160px;
+    height: auto;
+    filter: brightness(0) invert(1);
+}
+.about-modal-tagline {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    opacity: 0.85;
+    margin-top: 14px;
+    text-transform: uppercase;
+}
+.about-modal-version {
+    margin-top: 20px;
+    font-size: 10px;
+    opacity: 0.5;
+    font-weight: 600;
+}
+.about-modal-left a.about-iuc-link {
+    display: block;
+    transition: opacity 0.2s;
+    cursor: pointer;
+    opacity: 0.9;
+}
+.about-modal-left a.about-iuc-link:hover { opacity: 0.7; }
+.about-modal-left img.about-iuc-logo {
+    width: 110px;
+    height: auto;
+    filter: brightness(0) invert(1);
+}
+.about-modal-right {
+    flex: 1.3;
+    padding: 40px;
+    background: var(--fluent-layer-fill-default);
+    display: flex;
+    flex-direction: column;
+}
+.about-modal-right h2 {
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--fluent-neutral-foreground-rest);
+    margin: 0 0 20px 0;
+    letter-spacing: -0.5px;
+}
+.about-modal-body {
+    font-size: 13.5px;
+    color: var(--fluent-neutral-foreground-hint);
+    line-height: 1.6;
+    flex: 1;
+}
+.about-modal-body p { margin: 0 0 12px 0; }
+.about-modal-body a {
+    color: var(--fluent-accent-fill-rest);
+    text-decoration: none;
+    font-weight: 700;
+}
+.about-modal-body a:hover { text-decoration: underline; }
+.about-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+.about-modal-footer button {
+    padding: 10px 32px;
+    border-radius: 12px;
+    border: none;
+    background-color: var(--fluent-accent-fill-rest);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    font-family: inherit;
+}
+.about-modal-footer button:hover { background-color: var(--fluent-accent-fill-hover); }
+
+/* Onay Modalı */
+.confirm-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000;
+    font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+}
+.confirm-modal-backdrop.show { display: flex; }
+.confirm-modal {
+    background-color: var(--fluent-layer-fill-default);
+    border-radius: 16px;
+    box-shadow: var(--fluent-shadow-depth-16);
+    padding: 28px;
+    max-width: 420px;
+    width: calc(100% - 40px);
+    color: var(--fluent-neutral-foreground-rest);
+}
+.confirm-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+.confirm-modal-header .icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(216, 59, 1, 0.12);
+    color: #D83B01;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.confirm-modal-header .icon svg { width: 22px; height: 22px; }
+.confirm-modal h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+.confirm-modal p {
+    margin: 0 0 24px 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--fluent-neutral-foreground-hint);
+}
+.confirm-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+.confirm-modal-footer button {
+    padding: 9px 22px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.confirm-modal-footer .btn-cancel {
+    background: transparent;
+    color: var(--fluent-neutral-foreground-rest);
+    border-color: var(--fluent-stroke-color-default);
+}
+.confirm-modal-footer .btn-cancel:hover { background-color: var(--fluent-neutral-fill-hover); }
+.confirm-modal-footer .btn-danger {
+    background-color: #D83B01;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(216, 59, 1, 0.25);
+}
+.confirm-modal-footer .btn-danger:hover { background-color: #BF3400; }
+.confirm-modal-footer .btn-warning {
+    background-color: #C19C00;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(193, 156, 0, 0.25);
+}
+.confirm-modal-footer .btn-warning:hover { background-color: #A78600; }
+.confirm-modal-footer .btn-primary {
+    background-color: var(--fluent-accent-fill-rest);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+.confirm-modal-footer .btn-primary:hover { background-color: var(--fluent-accent-fill-hover); }
+
+.confirm-modal.confirm-warning .confirm-modal-header .icon {
+    background: rgba(193, 156, 0, 0.15);
+    color: #C19C00;
+}
+.confirm-modal.confirm-primary .confirm-modal-header .icon {
+    background: rgba(28, 62, 104, 0.12);
+    color: var(--fluent-accent-fill-rest);
+}
+
+@media (max-width: 700px) {
+    .about-modal-grid { flex-direction: column; min-height: 0; }
+    .about-modal-left { padding: 28px; }
+    .about-modal-right { padding: 28px; }
+}
+
+.fluent-theme .footer-socials a { color: var(--fluent-neutral-foreground-hint); }
+.fluent-theme .footer-socials svg { display: block; fill: currentColor; }
+
+
+/* Canvas ve İçerik Alanı Ortak Stilleri */
+.fluent-theme #modeling-area-title {
+    position: absolute; top: 2px; left: 2px; transform: translateX(0);
+    background-color: #FFF; padding: 10px 22px; border-radius: 3px;
+    z-index: 5; pointer-events: none; color: var(--fluent-neutral-foreground-rest);
+    font-weight: 600; font-size: 16px; margin: 0;
+}
+.fluent-theme #canvas-wrapper { position: relative; width: 100%; }
+
+.fluent-theme #drawingCanvas, 
+.fluent-theme #data-tables-container, 
+.fluent-theme .diagram-container { /* DEĞİŞİKLİK: .diagram-container buraya eklendi */
+    background-color: var(--fluent-layer-fill-default); 
+    border: 1px solid var(--fluent-stroke-color-default); 
+    border-radius: 8px; 
+    box-shadow: var(--fluent-shadow-depth-16);
+    box-sizing: border-box;
+}
+
+.fluent-theme #drawingCanvas { width: 100%; height: 400px; cursor: crosshair; display: block; }
+#fullscreen-logo { display: none; }
+.fluent-theme .canvas-overlay-btn {
+    height: 36px; background-color: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);
+    border: 1px solid var(--fluent-stroke-color-default); border-radius: var(--fluent-border-radius);
+    cursor: pointer; z-index: 10; box-shadow: var(--fluent-shadow-depth-4);
+    display: flex; align-items: center; justify-content: center;
+    transition: background-color 0.15s ease-out; color: var(--fluent-neutral-foreground-rest);
+    font-size: 13px; font-weight: 600; padding: 0 12px;
+}
+.fluent-theme .canvas-overlay-btn:hover { background-color: rgba(245, 245, 245, 0.9); }
+.fluent-theme .canvas-overlay-btn svg { width: 24px; height: 24px; stroke: var(--fluent-neutral-foreground-rest); stroke-width: 1.5; fill: none; }
+
+/* Diyagram ve Tablo Ortak Stilleri */
+.fluent-theme #all-diagrams-container { 
+    /* Bu konteyner artık görünmez bir gruplayıcı, kendi stili olmayacak */
+    padding: 0; /* İç boşluğu kaldırıldı */
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+}
+.fluent-theme #data-tables-container { 
+    padding: 20px; 
+}
+.fluent-theme #diagram-grid { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px; /* Kartlar arasına boşluk koyar */
+}
+.fluent-theme .diagram-container {
+    /* Bu sınıf artık her bir diyagram için bağımsız bir karttır */
+    padding: 20px; 
+    position: relative; 
+    text-align: left;
+    /* Diğer stiller (border, shadow vs.) yukarıdaki ortak gruptan geliyor */
+}
+
+.fluent-theme .data-tables-header { position: relative; text-align: left; }
+.fluent-theme .diagram-container h4, .fluent-theme .data-tables-header h4 {
+    margin: 0 0 10px 0; font-weight: 600; font-size: 15px;
+}
+/* Gizli durumdaki panel yüksekliğini azaltma */
+.fluent-theme .diagram-container:has(> .content-wrapper.hidden),
+.fluent-theme #data-tables-container:has(> .table-grid-wrapper.hidden) {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    cursor: pointer;
+}
+.fluent-theme .diagram-container:has(> .content-wrapper.hidden) h4,
+.fluent-theme #data-tables-container:has(> .table-grid-wrapper.hidden) h4 {
+    margin-bottom: 0;
+    line-height: 28px; /* Butonlarla uyumlu yükseklik */
+}
+.fluent-theme .diagram-container:has(> .content-wrapper.hidden) .toggle-button,
+.fluent-theme .diagram-container:has(> .content-wrapper.hidden) .download-btn,
+.fluent-theme #data-tables-container:has(> .table-grid-wrapper.hidden) .toggle-button,
+.fluent-theme #data-tables-container:has(> .table-grid-wrapper.hidden) .download-btn {
+    top: 6px;
+}
+.fluent-theme .diagram-wrapper { width: 100%; position: relative; height: 250px; }
+.fluent-theme #freeBodyDiagramCanvas {
+    width: 100%; height: 350px; background-color: var(--fluent-layer-fill-default);
+    border-bottom: 1px solid var(--fluent-stroke-color-default); margin-bottom: 10px;
+}
+.fluent-theme #reactions-output b { color: #107C10; }
+.fluent-theme .data-tables-header { margin-bottom: 15px; }
+.fluent-theme .table-wrapper { overflow-x: auto; }
+.fluent-theme .table-grid-wrapper { max-height: 600px; overflow-y: auto; padding: 5px 15px 5px 5px; }
+.fluent-theme .table-wrapper h3 { font-size: 16px; font-weight: 600; margin-top: 0; margin-bottom: 10px; }
+.fluent-theme table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.fluent-theme th, .fluent-theme td { border: 1px solid var(--fluent-stroke-color-default); padding: 8px; text-align: left; white-space: nowrap; }
+.fluent-theme th { background-color: var(--fluent-neutral-fill-rest); font-weight: 600; }
+.fluent-theme td[contenteditable="true"] { background-color: #f5faff; }
+.fluent-theme .hidden { display: none; }
+
+/* Butonlar (Toggle, Download vb.) */
+.diagram-container .toggle-button, .diagram-container .download-btn, .data-tables-header .toggle-button, .data-tables-header .download-btn {
+    position: absolute; top: 12px; width: 36px; height: 36px; padding: 6px;
+    background-color: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);
+    border: 1px solid var(--fluent-stroke-color-default); border-radius: var(--fluent-border-radius);
+    cursor: pointer; z-index: 10; box-shadow: var(--fluent-shadow-depth-4);
+    display: flex; align-items: center; justify-content: center;
+    transition: background-color 0.15s ease-out;
+}
+.diagram-container .toggle-button:hover, .diagram-container .download-btn:hover, .data-tables-header .toggle-button:hover, .data-tables-header .download-btn:hover {
+    background-color: rgba(245, 245, 245, 0.9);
+}
+.diagram-container .toggle-button svg, .diagram-container .download-btn svg, .data-tables-header .toggle-button svg, .data-tables-header .download-btn svg {
+    width: 24px; height: 24px;
+}
+.download-btn svg { fill: currentColor; }
+
+/* Sürükle-Bırak Alanı */
+#drag-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(240, 245, 250, 0.85); backdrop-filter: blur(8px);
+    z-index: 9999; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease-in-out;
+}
+#drag-overlay.visible { opacity: 1; }
+.drag-overlay-content {
+    border: 3px dashed var(--fluent-accent-fill-rest); border-radius: 16px;
+    padding: 40px 80px; text-align: center; color: var(--fluent-accent-fill-rest);
+    background-color: rgba(255, 255, 255, 0.7);
+}
+.drag-overlay-content svg { width: 80px; height: 80px; fill: currentColor; }
+.drag-overlay-content p { margin: 10px 0 0 0; font-size: 20px; font-weight: 600; }
+
+/* === İPUCU KUTUSU STİLLERİ === */
+.hint-box {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 249, 228, 0.85); /* Sıcak krem/sarı arka plan */
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(191, 145, 0, 0.25); /* Altın rengi tonunda kenarlık */
+    border-radius: 3px;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6C5800; /* Okunabilirliği yüksek koyu sarı/kahve metin rengi */
+    z-index: 15;
+    pointer-events: none;
+    box-shadow: var(--fluent-shadow-depth-8);
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    opacity: 1;
+    white-space: nowrap;
+}
+
+.hint-box.hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px); /* Gizlenirken yukarı kaybolma efekti */
+}
