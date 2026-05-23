@@ -65,9 +65,9 @@ The following support conditions are available for model definition:
 
 | Symbol | Boundary Condition | Mechanical Behaviour |
 |--------|-------------------|----------------------|
-| △ | **Pinned Support** | Restraints vertical and horizontal translation; permits rotation |
-| ○△ | **Roller Support** | Restraints vertical translation; permits horizontal translation and rotation |
-| ▐ | **Fixed Support (Cantilever)** | Restraints all translational and rotational degrees of freedom |
+| △ | **Pinned Support** | Restrains vertical and horizontal translation; permits rotation |
+| ○△ | **Roller Support** | Restrains vertical translation; permits horizontal translation and rotation |
+| ▐ | **Fixed Support (Cantilever)** | Restrains all translational and rotational degrees of freedom |
 | ◉ | **Internal Hinge** | Introduces a moment release at the specified location |
 
 ### Applied Loading
@@ -104,7 +104,8 @@ The elastic curve computation requires the specification of:
 ### Data Management
 
 - **Save / Open** — The structural model may be exported to and imported from a `.json` file, enabling session continuity
-- **Diagram Export** — Any computed diagram may be downloaded as a PNG image file
+- **Vector Graphics Export** — The structural model and the corresponding free body diagram (FBD) can be exported directly in scalable vector graphics (SVG) format for high-resolution publishing
+- **Diagram Export** — Computed internal force and deformation diagrams may be downloaded as PNG image files
 - **Data Export** — Tabulated numerical output may be downloaded for external reference
 
 ### Interface Options
@@ -222,7 +223,7 @@ On browsers supporting the PWA specification (Chromium-based browsers, Firefox, 
 3. **Apply loading** — Select a load type and interact with the beam to define load position, magnitude, and direction as applicable.
 4. **Examine results** — Internal force diagrams and reaction values are updated instantaneously following each model modification.
 5. **Adjust deformation scale** — The *Displacement Scale* parameter may be increased to amplify the elastic curve for visual clarity.
-6. **Export output** — Diagrams may be saved as PNG images; the full model may be saved as a JSON file for subsequent sessions.
+6. **Export output** — The structural model and free body diagram (FBD) may be exported in vector format (SVG), while calculated diagrams can be saved as PNG images. The complete structural model can also be saved as a JSON file for session persistence.
 
 > **Note:** A contextual hint panel is displayed below the canvas at all times, providing guidance specific to the currently active tool.
 
