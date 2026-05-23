@@ -28,12 +28,10 @@ The application is accessible directly through a web browser without requiring a
   <tr>
     <td align="center"><b>Structural Model &amp; Toolbar</b></td>
     <td align="center"><b>Internal Force Diagrams</b></td>
-    <td align="center"><b>3D Elastic Curve</b></td>
   </tr>
   <tr>
-    <td><img src="screenshots/screenshot-main.png" alt="Main Interface" width="280"/></td>
-    <td><img src="screenshots/screenshot-diagrams.png" alt="Diagrams Panel" width="280"/></td>
-    <td><img src="screenshots/screenshot-3d.png" alt="3D Elastic Curve" width="280"/></td>
+    <td><img src="screenshots/screenshot-main.png" alt="Main Interface" width="680"/></td>
+    <td><img src="screenshots/screenshot-diagrams.png" alt="Diagrams Panel" width="680"/></td>
   </tr>
 </table>
 
