@@ -24,16 +24,17 @@ The application is accessible directly through a web browser without requiring a
 
 ## 📸 Screenshots
 
-<table>
-  <tr>
-    <td align="center"><b>Structural Model &amp; Toolbar</b></td>
-    <td align="center"><b>Internal Force Diagrams</b></td>
-  </tr>
-  <tr>
-    <td><img src="screenshots/screenshot-main.png" alt="Main Interface" width="680"/></td>
-    <td><img src="screenshots/screenshot-diagrams.png" alt="Diagrams Panel" width="680"/></td>
-  </tr>
-</table>
+<p align="center">
+  <b>Structural Model &amp; Toolbar</b><br>
+  <img src="screenshots/screenshot-main.png" alt="Main Interface" width="800"/>
+</p>
+
+<br>
+
+<p align="center">
+  <b>Internal Force Diagrams</b><br>
+  <img src="screenshots/screenshot-diagrams.png" alt="Diagrams Panel" width="800"/>
+</p>
 
 ---
 
