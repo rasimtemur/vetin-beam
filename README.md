@@ -65,9 +65,9 @@ The following support conditions are available for model definition:
 
 | Symbol | Boundary Condition | Mechanical Behaviour |
 |--------|-------------------|----------------------|
-| △ | **Pinned Support** | Restrains vertical and horizontal translation; permits rotation |
-| ○△ | **Roller Support** | Restrains vertical translation; permits horizontal translation and rotation |
-| ▐ | **Fixed Support (Cantilever)** | Restrains all translational and rotational degrees of freedom |
+| △ | **Pinned Support** | Restraints vertical and horizontal translation; permits rotation |
+| ○△ | **Roller Support** | Restraints vertical translation; permits horizontal translation and rotation |
+| ▐ | **Fixed Support (Cantilever)** | Restraints all translational and rotational degrees of freedom |
 | ◉ | **Internal Hinge** | Introduces a moment release at the specified location |
 
 ### Applied Loading
