@@ -506,7 +506,7 @@ body.dark-mode .sun-icon { display: block !important; }
 .confirm-modal-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 19px;
 }
 .confirm-modal-footer button {
     padding: 9px 22px;
@@ -714,4 +714,145 @@ body.dark-mode .sun-icon { display: block !important; }
 .hint-box.hidden {
     opacity: 0;
     transform: translateX(-50%) translateY(-10px); /* Gizlenirken yukarı kaybolma efekti */
+}
+/* === HAZIR MODEL GALERİSİ (AÇILIŞ KATMANI) === */
+#model-gallery-overlay {
+    position: fixed; inset: 0;
+    z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    backdrop-filter: blur(3px);
+    opacity: 1;
+    transition: opacity 0.25s ease-in-out;
+    pointer-events: none;
+}
+#model-gallery-overlay.hidden { opacity: 0; pointer-events: none; }
+
+.model-gallery-panel {
+    width: min(830px, calc(100vw - 48px));
+    max-height: calc(100vh - 48px);
+    display: flex; flex-direction: column;
+    background-color: var(--fluent-layer-fill-default);
+    border: 1px solid var(--fluent-stroke-color-default);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    overflow: hidden;
+    pointer-events: all;
+    transform-origin: center center;
+}
+.model-gallery-header {
+    padding: 22px 30px 8px 30px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.model-gallery-header h2 {
+    margin: 0; font-size: 28px; font-weight: 600;
+    color: var(--fluent-neutral-foreground-rest);
+}
+.model-gallery-header p {
+    margin: 4px 0 0 0; font-size: 20px;
+    color: var(--fluent-neutral-foreground-hint);
+}
+.model-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 19px;
+    padding: 19px 30px 26px 30px;
+    overflow-y: auto;
+    flex: 1;
+}
+.model-card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 5 / 2;
+    display: flex; align-items: center; justify-content: center;
+    padding: 8px;
+    background-color: #ffffff;
+    border: 1px solid var(--fluent-stroke-color-default);
+    border-radius: 6px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+.model-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--fluent-accent-fill-rest);
+    box-shadow: var(--fluent-shadow-depth-8);
+}
+.model-card img {
+    max-width: 100%; max-height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+}
+.model-card--new {
+    flex-direction: column; gap: 11px;
+    background-color: transparent;
+    border-style: dashed;
+    color: var(--fluent-accent-fill-rest);
+    font-size: 22px; font-weight: 600;
+}
+.model-card--new svg { width: 52px; height: 52px; }
+.model-card--new:hover { background-color: rgba(28, 62, 104, 0.06); }
+.model-gallery-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px 16px 24px;
+    border-top: 1px solid var(--fluent-stroke-color-default);
+    gap: 12px;
+}
+/* Dil seçici — galeri sol alt */
+.gallery-lang-switcher {
+    display: flex; align-items: center; gap: 4px;
+    position: relative;
+}
+.gallery-lang-btn {
+    padding: 0; width: 32px; height: 28px;
+    background: transparent;
+    border: none;
+    border-radius: 4px; cursor: pointer;
+    font-size: 11px; font-weight: 600;
+    color: var(--fluent-neutral-foreground-hint);
+    font-family: inherit;
+    transition: background-color 0.12s, color 0.12s;
+}
+.gallery-lang-btn:hover { background-color: var(--fluent-neutral-fill-hover); }
+.gallery-lang-btn.active {
+    background-color: var(--fluent-accent-fill-rest);
+    color: #fff; border-color: var(--fluent-accent-fill-rest);
+}
+.gallery-lang-more { font-size: 14px; }
+.gallery-lang-dropdown {
+    display: none; position: absolute;
+    bottom: calc(100% + 6px); left: 0;
+    background-color: var(--fluent-layer-fill-default);
+    border: 1px solid var(--fluent-stroke-color-default);
+    border-radius: 6px;
+    box-shadow: var(--fluent-shadow-depth-16);
+    padding: 4px;
+    max-height: 220px; overflow-y: auto;
+    z-index: 10001;
+    display: none;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3px; min-width: 140px;
+}
+.gallery-lang-dropdown.show { display: grid; }
+.gallery-lang-dropdown button {
+    padding: 5px 4px; background: transparent;
+    border: none; border-radius: 4px; cursor: pointer;
+    font-size: 11px; font-weight: 600;
+    color: var(--fluent-neutral-foreground-hint);
+    font-family: inherit; text-align: center;
+    transition: background-color 0.12s;
+}
+.gallery-lang-dropdown button:hover { background-color: var(--fluent-neutral-fill-hover); }
+.model-gallery-dontshow {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; cursor: pointer;
+    color: var(--fluent-neutral-foreground-hint);
+    user-select: none;
+}
+.model-gallery-dontshow input[type="checkbox"] {
+    width: 16px; height: 16px; cursor: pointer;
+    accent-color: var(--fluent-accent-fill-rest);
 }

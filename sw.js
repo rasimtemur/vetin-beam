@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vetin-cache-v18';
+const CACHE_NAME = 'vetin-cache-v19';
 const ASSETS = [
   './',
   './index.html',
@@ -20,6 +20,7 @@ const ASSETS = [
   './desktop-events.js',
   './mobile-events.js',
   './elastic-3d.js',
+  './models-gallery.js',
   './logo.svg',
   './icon.svg',
   './IUC.svg',

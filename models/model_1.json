@@ -1,0 +1,34 @@
+{
+  "beam": {
+    "startX": 400,
+    "startY": 190,
+    "endX": 1000,
+    "gridSizeOnCreation": 20,
+    "metersPerGridOnCreation": 0.1,
+    "length": 600
+  },
+  "supports": [
+    {
+      "type": "fixed-support",
+      "x": 400
+    }
+  ],
+  "hinges": [],
+  "concentratedLoads": [
+    {
+      "x": 600,
+      "y": 180,
+      "magnitude": -6,
+      "angle": -1.5707963267948966
+    }
+  ],
+  "distributedLoads": [],
+  "trapezoidalLoads": [],
+  "concentratedMoments": [],
+  "torsionMoments": [],
+  "gridSettings": {
+    "metersPerGrid": "0.1",
+    "kNPerGrid": "1",
+    "gridSize": "20"
+  }
+}

@@ -61,9 +61,9 @@ function drawConcentratedLoad(context, load, isPreview = false) {
 }
 
 function drawDistributedLoad(context, x1, x2, y, mag, isPreview = false) {
-    // GÜNCELLENDİ: y_base (kirişin üst kenarı) dinamik olarak hesaplanıyor.
+    // GÜNCELLENDİ: y_base, yük yönüne göre kirişin üst (aşağı yük) veya alt (yukarı yük) kenarına oturuyor.
     const gridSize = parseInt(gridSizeInput.value);
-    const y_base = y - (gridSize / 2);
+    const y_base = (mag < 0) ? y - (gridSize / 2) : y + (gridSize / 2);
 
     const kNPerGrid = parseFloat(kNPerGridInput.value) || 1;
     const pixelsPerKN = gridSize / kNPerGrid;
@@ -112,9 +112,10 @@ function drawDistributedLoad(context, x1, x2, y, mag, isPreview = false) {
 }
 
 function drawTrapezoidalLoad(context, x1, x2, y, mag1, mag2, isPreview = false) {
-    // GÜNCELLENDİ: y_base (kirişin üst kenarı) dinamik olarak hesaplanıyor.
+    // GÜNCELLENDİ: y_base, yük yönüne göre kirişin üst (aşağı yük) veya alt (yukarı yük) kenarına oturuyor.
     const gridSize = parseInt(gridSizeInput.value);
-    const y_base = y - (gridSize / 2);
+    const isUpward = (mag1 >= 0 && mag2 >= 0);
+    const y_base = isUpward ? y + (gridSize / 2) : y - (gridSize / 2);
     
     const kNPerGrid = parseFloat(kNPerGridInput.value) || 1;
 

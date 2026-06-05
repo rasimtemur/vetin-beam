@@ -6,7 +6,7 @@ let canvas, ctx, gridSizeInput, metersPerGridInput, kNPerGridInput, elasticityIn
 
 // DOM'a bağlı olmayan durum ve sabit değişkenleri burada tanımlanabilir.
 const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-const COLORS = { BEAM_FILL: 'rgba(56, 159, 182, 0.2)', BEAM_STROKE: '#389fb6', SUPPORT: '#4f5659', LOAD: '#d9534f', REACTION: '#5cb85c', PREVIEW: 'rgba(0, 122, 255, 0.5)', DIMENSION: '#555', GRID: '#e9e9ed' };
+const COLORS = { BEAM_FILL: 'rgba(56, 159, 182, 0.2)', BEAM_STROKE: '#389fb6', SUPPORT: '#4f5659', LOAD: '#d9534f', REACTION: '#5cb85c', PREVIEW: 'rgba(0, 122, 255, 0.5)', DIMENSION: '#555', GRID: '#f2f2f5' };
 const EPSILON = 1e-9;
 
 // Application State (Uygulama Durumu)

@@ -4,7 +4,7 @@ function drawGrid(context, width, height) {
     const gridSize = parseInt(gridSizeInput.value);
     context.beginPath();
     context.strokeStyle = COLORS.GRID;
-    context.lineWidth = 1;
+    context.lineWidth = 0.5;
 
     for (let x = 0; x <= width; x += gridSize) {
         context.moveTo(x, 0);

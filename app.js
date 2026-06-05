@@ -98,7 +98,7 @@ function redrawCanvas(options = {}) {
     
     if (beam) {
         const gridSize = parseInt(gridSizeInput.value);
-        const canvasCenterY = canvas.clientHeight / 2;
+        const canvasCenterY = canvas.clientHeight * 0.58;
         const nearestGridY = Math.floor(canvasCenterY / gridSize) * gridSize;
         beam.startY = nearestGridY + gridSize / 2;
         

@@ -131,7 +131,7 @@ const drawConcentratedLoadSVG = (load) => {
     return `<g stroke="${COLORS.LOAD}" fill="none" stroke-width="2">${line}${arrowhead}</g>${text}`;
 };
 const drawDistributedLoadSVG = (load, yPos) => {
-    const y_base = yPos - 10;
+    const y_base = (load.magnitude < 0) ? yPos - 10 : yPos + 10;
     const pixelsPerKN = 10;
     const loadHeight = Math.abs(load.magnitude) * pixelsPerKN;
     const y_top = (load.magnitude < 0) ? y_base - loadHeight : y_base + loadHeight;
@@ -166,7 +166,7 @@ const drawConcentratedMomentSVG = (moment, color = COLORS.LOAD) => {
     return `<g stroke="${color}" fill="none" stroke-width="2">${arc}${arrowhead}</g>${text}${centerDot}`;
 };
 const drawTrapezoidalLoadSVG = (load, yPos) => {
-    const y_base = yPos - 10;
+    const y_base = (load.startMagnitude >= 0 && load.endMagnitude >= 0) ? yPos + 10 : yPos - 10;
     const pixelsPerKN = 10;
     const startX = Math.min(load.startX, load.endX), endX = Math.max(load.startX, load.endX);
     const h1 = Math.abs(load.startMagnitude) * pixelsPerKN, h2 = Math.abs(load.endMagnitude) * pixelsPerKN;
