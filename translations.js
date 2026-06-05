@@ -1,4 +1,4 @@
-// common/translations.js
+﻿// common/translations.js
 
 const translations = {
   en: {
@@ -1053,7 +1053,7 @@ translations.ru = createTranslation({
     magnitudeKNM2: "Величина (кНм)",
     torsionMomentsTable: "Крутильные моменты",
     diagramAxes: { length: "Длина", axialForce: "Продольная сила", shearForce: "Поперечная сила", bendingMoment: "Изгибающий момент", torsionalMoment: "Крутящий момент", unitM: "м", unitKN: "кН", unitKNM: "кНм" ,"displacement":"Отклонение",},
-    galleryTitle: "Vybor modeli", gallerySubtitle: "Nachnte s primera, otkroyte fajl ili sozdayte novuyu model", galleryNewModel: "Novaya model", galleryDontShow: "Bolshe ne pokazyvat",
+    galleryTitle: "Выбор модели", gallerySubtitle: "Начните с примера, откройте файл или создайте новую модель", galleryNewModel: "Новая модель", galleryDontShow: "Больше не показывать",
 });
 
 // Japanese (日本語)
@@ -1134,7 +1134,7 @@ translations.ja = createTranslation({
     magnitudeKNM2: "大きさ (kNm)",
     torsionMomentsTable: "ねじりモーメント",
     diagramAxes: { length: "長さ", axialForce: "軸力", shearForce: "せん断力", bendingMoment: "曲げモーメント", torsionalMoment: "ねじりモーメント", unitM: "m", unitKN: "kN", unitKNM: "kNm" ,"displacement":"偏向",},
-    galleryTitle: "Moderu wo sentaku", gallerySubtitle: "Rei kara hajimeru, fairu wo hiraku, mata wa atarashii moderu wo sakusei", galleryNewModel: "Atarashii Moderu", galleryDontShow: "Tsugi kara hyoji shinai",
+    galleryTitle: "モデルを選択", gallerySubtitle: "例から始める、ファイルを開く、または新しいモデルを作成", galleryNewModel: "新しいモデル", galleryDontShow: "次回から表示しない",
 });
 
 // Arabic (العربية)
@@ -1215,7 +1215,7 @@ translations.ar = createTranslation({
     magnitudeKNM2: "الحجم (كيلو نيوتن متر)",
     torsionMomentsTable: "لحظات الالتواء",
     diagramAxes: { length: "طول", axialForce: "قوة محورية", shearForce: "قوة القص", bendingMoment: "عزم الانحناء", torsionalMoment: "عزم الالتواء", unitM: "م", unitKN: "كيلونيوتن", unitKNM: "كيلونيوتن.متر" ,"displacement":"انحراف",},
-    galleryTitle: "Ikhtaar namudhajan", gallerySubtitle: "Ibda bimithaal, iftah malf aw anshi namudhajan jadidan", galleryNewModel: "Namudhaj Jadid", galleryDontShow: "La tuzhir mujaddadan",
+    galleryTitle: "اختر نموذجاً", gallerySubtitle: "ابدأ بمثال أو افتح ملفاً أو أنشئ نموذجاً جديداً", galleryNewModel: "نموذج جديد", galleryDontShow: "لا تُظهر مجدداً",
 });
 
 // Persian (فارسی)
@@ -1298,7 +1298,7 @@ translations.fa = createTranslation({
     torsionMomentsTable: "لحظات پیچشی",
     diagramAxes: { length: "طول", axialForce: "نیروی محوری", shearForce: "نیروی برشی", bendingMoment: "لنگر خمشی", torsionalMoment: "لنگر پیچشی", unitM: "m", unitKN: "kN", unitKNM: "kNm" ,"displacement":"انحراف",},
     tableColDelete: "حذف کنید",
-    galleryTitle: "Entekhaab model", gallerySubtitle: "Ba yek mithal shuru konid, file baz konid ya model jadid besazid", galleryNewModel: "Model Jadid", galleryDontShow: "Digar neshan nade",
+    galleryTitle: "انتخاب مدل", gallerySubtitle: "با یک مثال شروع کنید، فایل باز کنید یا مدل جدید بسازید", galleryNewModel: "مدل جدید", galleryDontShow: "دیگر نشان نده",
 });
 
 // Hindi (हिन्दी)
@@ -1380,7 +1380,7 @@ translations.hi = createTranslation({
     torsionMomentsTable: "मरोड़ के क्षण",
     diagramAxes: { length: "लंबाई", axialForce: "अक्षीय बल", shearForce: "अपरूपण बल", bendingMoment: "बंकन आघूर्ण", torsionalMoment: "मरोड़ आघूर्ण", unitM: "m", unitKN: "kN", unitKNM: "kNm" ,"displacement":"नीचे को झुकाव",},
     tableColDelete: "मिटाना",
-    galleryTitle: "Model chunen", gallerySubtitle: "Udaaharan se shuru karen, file kholen ya naya model banaen", galleryNewModel: "Naya Model", galleryDontShow: "Dobara na dikhaen",
+    galleryTitle: "मॉडल चुनें", gallerySubtitle: "उदाहरण से शुरू करें, फ़ाइल खोलें या नया मॉडल बनाएं", galleryNewModel: "नया मॉडल", galleryDontShow: "दोबारा न दिखाएं",
 });
 
 // Nepali (नेपाली)
@@ -1465,7 +1465,7 @@ translations.ne = createTranslation({
     torsionMomentsTable: "टोर्सन पलहरू",
     tableContent: {"supportPin":"पिन गरिएको","supportRoller":"रोलर","supportFixed":"फिक्स","supportHinge":"काज"},
     diagramAxes: { length: "लम्बाइ", axialForce: "अक्षीय बल", shearForce: "कतरनी बल", bendingMoment: "मोडिने क्षण", torsionalMoment: "घुमाउरो क्षण", unitM: "मी", unitKN: "कि.न्यू.", unitKNM: "कि.न्यू.मी." ,"displacement":"विचलन",},
-    galleryTitle: "Model chhannus", gallerySubtitle: "Udaaharanabata suru garnus, file kholnus wa naya model banaaunus", galleryNewModel: "Naya Model", galleryDontShow: "Pheri nadekhaaunus",
+    galleryTitle: "मोडेल छान्नुहोस्", gallerySubtitle: "उदाहरणबाट सुरु गर्नुस्, फाइल खोल्नुस् वा नयाँ मोडेल बनाउनुस्", galleryNewModel: "नयाँ मोडेल", galleryDontShow: "फेरि नदेखाउनुस्",
 });
 
 // Armenian (Հայերեն)
@@ -1546,7 +1546,7 @@ translations.hy = createTranslation({
     torsionMomentsTable: "Տորսիոն պահեր",
     tableContent: {"supportPin":"Ամրացված","supportRoller":"Roller","supportFixed":"Ամրագրված","supportHinge":"Կրունկ"},
     diagramAxes: { length: "Երկարություն", axialForce: "Առանցքային ուժ", shearForce: "Կտրող ուժ", bendingMoment: "Ճկման մոմենտ", torsionalMoment: "Ոլորման մոմենտ", unitM: "մ", unitKN: "կՆ", unitKNM: "կՆմ" ,"displacement":"Շեղում",},
-    galleryTitle: "Yntrel model", gallerySubtitle: "Sksel orinakov, bac fail kam stegel nor model", galleryNewModel: "Nor model", galleryDontShow: "Aylevs chtsutsadrel",
+    galleryTitle: "Ընտրեք մոդելը", gallerySubtitle: "Սկսեք օրինակով, բացեք ֆայլ կամ ստեղծեք նոր մոդել", galleryNewModel: "Նոր մոդել", galleryDontShow: "Այլևս չցուցադրել",
 });
 
 // Greek (Ελληνικά)
@@ -1628,7 +1628,7 @@ translations.el = createTranslation({
     torsionMomentsTable: "Στιγμές στρέψης",
     diagramAxes: { length: "Μήκος", axialForce: "Αξονική Δύναμη", shearForce: "Τέμνουσα Δύναμη", bendingMoment: "Ροπή Κάμψης", torsionalMoment: "Ροπή Στρέψης", unitM: "m", unitKN: "kN", unitKNM: "kNm" ,"displacement":"Εκτροπή",},
     tableColDelete: "Διαγράφω",
-    galleryTitle: "Epilogi Montelou", gallerySubtitle: "Xekiniste me paradeigma, anoixte arxeio i dimiourgiste neo montelo", galleryNewModel: "Neo Montelo", galleryDontShow: "Na min emfanizetai xana",
+    galleryTitle: "Επιλογή Μοντέλου", gallerySubtitle: "Ξεκινήστε με παράδειγμα, ανοίξτε αρχείο ή δημιουργήστε νέο μοντέλο", galleryNewModel: "Νέο Μοντέλο", galleryDontShow: "Να μην εμφανίζεται ξανά",
 });
 
 // Romanian (Română)
@@ -1961,7 +1961,7 @@ translations.ko = createTranslation({
     torsionMomentsTable: "비틀림 모멘트",
     diagramAxes: { length: "길이", axialForce: "축력", shearForce: "전단력", bendingMoment: "휨모멘트", torsionalMoment: "비틀림 모멘트", unitM: "m", unitKN: "kN", unitKNM: "kNm" ,"displacement":"처짐",},
     tableColDelete: "삭제",
-    galleryTitle: "Model seontaek", gallerySubtitle: "Yesi ro sijak hageona, file eul yeolgeona, sae model eul mandeuseyo", galleryNewModel: "Sae Model", galleryDontShow: "Dasi pyosi haji ankgi",
+    galleryTitle: "모델 선택", gallerySubtitle: "예시로 시작하거나, 파일을 열거나, 새 모델을 만드세요", galleryNewModel: "새 모델", galleryDontShow: "다시 표시하지 않기",
 });
 
 // Bengali (বাংলা)
@@ -2046,7 +2046,7 @@ translations.bn = createTranslation({
     torsionMomentsTable: "টর্শন মোমেন্টস",
     diagramAxes: { length: "দৈর্ঘ্য", axialForce: "অক্ষীয় বল", shearForce: "শিয়ার ফোর্স", bendingMoment: "বেন্ডিং মোমেন্ট", torsionalMoment: "টর্শনাল মোমেন্ট", unitM: "m", unitKN: "kN", unitKNM: "kNm" ,"displacement":"বিচ্যুতি",},
     tableColDelete: "মুছুন",
-    galleryTitle: "Model nirbaacan korun", gallerySubtitle: "Ekti udaahoron diye shuru korun, file khulun ba notun model toiri korun", galleryNewModel: "Notun Model", galleryDontShow: "Aar dekhaben na",
+    galleryTitle: "মডেল নির্বাচন করুন", gallerySubtitle: "একটি উদাহরণ দিয়ে শুরু করুন, ফাইল খুলুন বা নতুন মডেল তৈরি করুন", galleryNewModel: "নতুন মডেল", galleryDontShow: "আর দেখাবেন না",
 });
 
 // Burmese (မြန်မာ)
@@ -2128,7 +2128,7 @@ translations.my = createTranslation({
     torsionMomentsTable: "Torsion Moments",
     diagramAxes: { length: "အလျား", axialForce: "ဝင်ရိုးအား", shearForce: "ဖြတ်အား", bendingMoment: "ကွေ့အား", torsionalMoment: "လိမ်အား", unitM: "m", unitKN: "kN", unitKNM: "kNm" ,"displacement":"ကူးပြောင်းခြင်း။",},
     tableColDelete: "ဖျက်ပါ။",
-    galleryTitle: "Model rwekyayar par", gallerySubtitle: "Yupama zin se tin par, file zit par, thwa model asit fon ti par", galleryNewModel: "Model Asit", galleryDontShow: "Nauk ta phon ma pyanyin",
+    galleryTitle: "မော်ဒယ်ရွေးချယ်ပါ", gallerySubtitle: "ဥပမာဖြင့်စတင်ပါ၊ ဖိုင်ဖွင့်ပါ သို့မဟုတ် မော်ဒယ်အသစ်ဖန်တီးပါ", galleryNewModel: "မော်ဒယ်အသစ်", galleryDontShow: "နောက်တဖန်မပြနှင့်",
 });
 
 // Thai (ไทย)
@@ -2210,7 +2210,7 @@ translations.th = createTranslation({
     torsionMomentsTable: "ช่วงเวลาแรงบิด",
     diagramAxes: { length: "ความยาว", axialForce: "แรงตามแนวแกน", shearForce: "แรงเฉือน", bendingMoment: "โมเมนต์ดัด", torsionalMoment: "โมเมนต์บิด", unitM: "m", unitKN: "kN", unitKNM: "kNm" ,"displacement":"การโก่งตัว",},
     tableColDelete: "ลบ",
-    galleryTitle: "Lueak model", gallerySubtitle: "Roem ton duay tuayang, puet fai, rue sang model mai", galleryNewModel: "Model Mai", galleryDontShow: "Ya sadaeng ik",
+    galleryTitle: "เลือกโมเดล", gallerySubtitle: "เริ่มต้นด้วยตัวอย่าง เปิดไฟล์ หรือสร้างโมเดลใหม่", galleryNewModel: "โมเดลใหม่", galleryDontShow: "อย่าแสดงอีก",
 });
 
 // Uzbek (O'zbek)
@@ -2384,7 +2384,7 @@ translations.dz = createTranslation({
     copyright: "པར་དབང་།",
     diagramAxes: { length: "རིང་ཚད", axialForce: "Axial Force", shearForce: "Shear Force", bendingMoment: "སྐོར་བ", torsionalMoment: "གཅུས་སྒྲིམ", unitM: "m", unitKN: "kN", unitKNM: "kNm" ,"axialForce":"ཚངས་ཐིག་ཤུགས་ཚད།","shearForce":"Shear Force","displacement":"Deflection",},
     tableColDelete: "བཏོན༌གཏང༌བ",
-    galleryTitle: "Model gdam kha", gallerySubtitle: "Dper mtshon las ago btsug, file phye, model gsar ma bzo", galleryNewModel: "Model Gsar Ma", galleryDontShow: "Da las phar mi ston",
+    galleryTitle: "དཔེ་ཚད་གདམ་ཁ་རྐྱབ།", gallerySubtitle: "དཔེར་མཚོན་གཅིག་ལས་འགོ་བཙུགས་ཏེ་ཡང་ན་ཡིག་སྣོད་ཕྱེ་ཡང་ན་དཔེ་ཚད་གསར་མ་ཞིག་བཟོ།", galleryNewModel: "དཔེ་ཚད་གསར་མ།", galleryDontShow: "ད་ལས་ཕར་མི་སྟོན།",
 });
 
 // Tajik (Тоҷикӣ)
@@ -2469,7 +2469,7 @@ translations.tg = createTranslation({
     torsionMomentsTable: "Лаҳзаҳои гардиш",
     diagramAxes: { length: "Дарозӣ", axialForce: "Қувваи меҳварӣ", shearForce: "Қувваи буриш", bendingMoment: "Моменти хамшавӣ", torsionalMoment: "Моменти печиш", unitM: "м", unitKN: "кН", unitKNM: "кНм" ,"displacement":"Кафолат",},
     tableColDelete: "Нобуд кунед",
-    galleryTitle: "Modelro intikhob kuned", gallerySubtitle: "Az namuna oghoz kuned, faylro kushoed yo modeli nav sozed", galleryNewModel: "Modeli nav", galleryDontShow: "Digar nishan nadih",
+    galleryTitle: "Моделро интихоб кунед", gallerySubtitle: "Аз намуна оғоз кунед, файлро кушоед ё модели нав созед", galleryNewModel: "Модели нав", galleryDontShow: "Дигар нишон надиҳ",
 });
 
 // Kyrgyz (Кыргызча)
@@ -2554,7 +2554,7 @@ translations.ky = createTranslation({
     torsionMomentsTable: "Torsion Moments",
     diagramAxes: { length: "Узундугу", axialForce: "Октук күч", shearForce: "Кесүүчү күч", bendingMoment: "Ийүүчү момент", torsionalMoment: "Толгоочу момент", unitM: "м", unitKN: "кН", unitKNM: "кНм" ,"displacement":"Делекция",},
     tableColDelete: "Жок кылуу",
-    galleryTitle: "Model tandoo", gallerySubtitle: "Misaldan bashtanyz, fayldy achynyz je zhangy model tuzyunuz", galleryNewModel: "Zhangy model", galleryDontShow: "Dagy korsoetpo",
+    galleryTitle: "Модель тандоо", gallerySubtitle: "Мисалдан баштаңыз, файл ачыңыз же жаңы модель түзүңүз", galleryNewModel: "Жаңы модель", galleryDontShow: "Дагы көрсөтпө",
 });
 
 // Bulgarian (Български)
@@ -2636,7 +2636,7 @@ translations.bg = createTranslation({
     torsionMomentsTable: "Торсионни моменти",
     diagramAxes: { length: "Дължина", axialForce: "Осова сила", shearForce: "Срязваща сила", bendingMoment: "Огъващ момент", torsionalMoment: "Усукващ момент", unitM: "m", unitKN: "kN", unitKNM: "kNm" ,"displacement":"Отклонение",},
     tableColDelete: "Изтриване",
-    galleryTitle: "Izberete model", gallerySubtitle: "Zapochnete s primer, otvorete fail ili sazdayte nov model", galleryNewModel: "Nov model", galleryDontShow: "Ne pokazvay poveche",
+    galleryTitle: "Изберете модел", gallerySubtitle: "Започнете с пример, отворете файл или създайте нов модел", galleryNewModel: "Нов модел", galleryDontShow: "Не показвай повече",
 });
 
 // Hebrew (עברית)
@@ -2718,7 +2718,7 @@ translations.he = createTranslation({
     torsionMomentsTable: "Torsion Moments",
     diagramAxes: { length: "אורך", axialForce: "כוח צירי", shearForce: "כוח גזירה", bendingMoment: "מומנט כפיפה", torsionalMoment: "מומנט פיתול", unitM: "m", unitKN: "kN", unitKNM: "kNm" ,"displacement":"הֲטָיָה",},
     tableColDelete: "לִמְחוֹק",
-    galleryTitle: "Bchar model", gallerySubtitle: "Hathel im dugma, ptach kove o tsur model hadash", galleryNewModel: "Model Hadash", galleryDontShow: "Al tatzig shuv",
+    galleryTitle: "בחר מודל", gallerySubtitle: "התחל עם דוגמה, פתח קובץ או צור מודל חדש", galleryNewModel: "מודל חדש", galleryDontShow: "אל תציג שוב",
 });
 
 // Slovenian (Slovenščina)
@@ -2972,7 +2972,7 @@ translations.ka = createTranslation({
     torsionMomentsTable: "ბრუნვის მომენტები",
     diagramAxes: { length: "სიგრძე", axialForce: "ღერძული ძალა", shearForce: "მკვეთი ძალა", bendingMoment: "ღუნვის მომენტი", torsionalMoment: "გრეხვის მომენტი", unitM: "მ", unitKN: "კნ", unitKNM: "კნმ" ,"displacement":"გადახრა",},
     tableColDelete: "წაშლა",
-    galleryTitle: "Modelis archeva", gallerySubtitle: "Daitsyet magalitit, gaakhvet faili an sheqmenit akali modeli", galleryNewModel: "Akali Modeli", galleryDontShow: "Ar achveno meti",
+    galleryTitle: "მოდელის არჩევა", gallerySubtitle: "დაიწყეთ მაგალითით, გახსენით ფაილი ან შექმენით ახალი მოდელი", galleryNewModel: "ახალი მოდელი", galleryDontShow: "არ აჩვენო მეტი",
 });
 
 // Urdu (اردو)
@@ -3054,7 +3054,7 @@ translations.ur = createTranslation({
     torsionMomentsTable: "ٹارشن لمحات",
     diagramAxes: { length: "لمبائی", axialForce: "محوری قوت", shearForce: "قینچی قوت", bendingMoment: "موڑنے والا لمحہ", torsionalMoment: "مروڑ والا لمحہ", unitM: "m", unitKN: "kN", unitKNM: "kNm" ,"displacement":"انحراف",},
     tableColDelete: "حذف کریں۔",
-    galleryTitle: "Model muntakhab karen", gallerySubtitle: "Ek misaal se shuru karen, file kholein ya naya model banaen", galleryNewModel: "Naya Model", galleryDontShow: "Dobara nah dikhaen",
+    galleryTitle: "ماڈل منتخب کریں", gallerySubtitle: "مثال سے شروع کریں، فائل کھولیں یا نیا ماڈل بنائیں", galleryNewModel: "نیا ماڈل", galleryDontShow: "دوبارہ نہ دکھائیں",
 });
 
 // --- DiL SEÇİMİ VE DİNAMİK BUTON MANTIĞI ---

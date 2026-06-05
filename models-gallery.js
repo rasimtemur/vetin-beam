@@ -70,6 +70,18 @@
         }, { once: true });
     }
 
+    function makeExtraLangBtn(lang) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'gallery-lang-btn gallery-lang-extra';
+        btn.dataset.lang = lang;
+        const label = typeof getLanguageLabel === 'function' ? getLanguageLabel(lang) : lang.toUpperCase();
+        btn.textContent = label;
+        btn.title = typeof getLanguageNativeName === 'function' ? getLanguageNativeName(lang) : lang;
+        btn.addEventListener('click', () => onLangClick(lang));
+        return btn;
+    }
+
     // Galeri metinlerini mevcut dile göre güncelle
     function updateGalleryTexts() {
         const titleEl    = document.querySelector('.model-gallery-panel .gallery-title');
@@ -84,11 +96,31 @@
         if (openLabelEl) openLabelEl.textContent = tr('open',            'Dosya Aç');
         if (dontShowEl)  dontShowEl.textContent  = tr('galleryDontShow', 'Bir daha gösterme');
 
-        // Aktif dil butonunu güncelle
         const lang = resolveLang();
+
+        // Aktif dil butonunu güncelle
         document.querySelectorAll('.gallery-lang-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === lang);
         });
+
+        // Sabit diller dışında bir dil seçiliyse ekstra butonu göster/güncelle
+        const switcher = document.querySelector('.gallery-lang-switcher');
+        if (switcher) {
+            const existing = switcher.querySelector('.gallery-lang-extra');
+            if (!FIXED_LANGS.includes(lang)) {
+                if (existing && existing.dataset.lang === lang) {
+                    existing.classList.add('active');
+                } else {
+                    if (existing) existing.remove();
+                    const extraBtn = makeExtraLangBtn(lang);
+                    extraBtn.classList.add('active');
+                    const moreBtn = switcher.querySelector('.gallery-lang-more');
+                    switcher.insertBefore(extraBtn, moreBtn);
+                }
+            } else {
+                if (existing) existing.remove();
+            }
+        }
     }
 
     function loadModel(name) {
@@ -137,6 +169,13 @@
             btn.addEventListener('click', () => onLangClick(lang));
             switcher.appendChild(btn);
         });
+
+        // Sabit diller dışında bir dil seçiliyse ekstra buton ekle
+        if (!FIXED_LANGS.includes(currentLang)) {
+            const extraBtn = makeExtraLangBtn(currentLang);
+            extraBtn.classList.add('active');
+            switcher.appendChild(extraBtn);
+        }
 
         // "+" düğmesi + dropdown
         const btnMore = document.createElement('button');
