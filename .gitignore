@@ -1,0 +1,9 @@
+# Bu depoya ait olmayan ayrı proje klasörü
+Evre/
+
+# Yerel araç ayarları
+.claude/settings.local.json
+
+# İşletim sistemi artıkları
+Thumbs.db
+.DS_Store

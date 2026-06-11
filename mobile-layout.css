@@ -1,0 +1,231 @@
+/* mobile/mobile-layout.css */
+/* Bu dosyadaki TÜM stiller sadece @media koşulu sağlanıyorsa uygulanır. */
+@media (max-width: 800px) {
+    /* --- DEĞİŞİKLİK BURADA --- */
+    /* Bu sınıf, en agresif şekilde kaydırmayı engellemek için güncellendi */
+    html.no-scroll,
+    body.no-scroll {
+        overflow: hidden;
+        touch-action: none; /* Tarayıcının varsayılan dokunma eylemlerini (kaydırma, yakınlaştırma) tamamen devre dışı bırakır */
+    }
+    /* -------------------------- */
+
+.fluent-theme { padding: 10px 0; }
+.fluent-theme .page-header2 img { width: 150px; height: auto; }
+.fluent-theme .app-wrapper { padding: 0; }
+.fluent-theme .main-content { gap: 10px; }
+
+.fluent-theme .page-footer {
+    margin-top: 10px; max-width: none; border-radius: 0;
+    border-left: none; border-right: none;
+}
+.fluent-theme .footer-content {
+    flex-direction: column; align-items: center; text-align: center;
+    padding: 0 15px;
+}
+.fluent-theme .language-switcher { margin-top: 10px; }
+
+.fluent-theme .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 15px; 
+    margin-bottom: 10px;
+}
+
+.fluent-theme .toolbar-scroll-wrapper {
+    flex-wrap: wrap;
+    width: 100%;
+    position: static;
+}
+
+.fluent-theme .toolbar-scroll-btn { display: none !important; }
+
+.fluent-theme .toolbar-left {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow-x: visible;
+    overflow-y: visible;
+    scroll-behavior: auto;
+}
+
+.fluent-theme .toolbar-right { 
+    display: none; /* Boş olduğu için tamamen gizleyebiliriz */
+}
+
+.fluent-theme .tool-group {
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding: 0;
+    width: auto;
+    /*min-width: 90px;*/
+}
+.fluent-theme .tool-group + .tool-group::before, 
+.fluent-theme .toolbar-right > .tool-group:first-child::before, 
+.fluent-theme .toolbar-left > .tool-group:last-child::after { display: none; }
+
+.fluent-theme .tool-button { width: 44px; height: 44px; padding: 8px; }
+.fluent-theme .tool-button span { display: none !important; }
+.fluent-theme .tool-button svg { width: 20px; height: 20px; }
+
+.fluent-theme .tool-group-buttons { display: grid !important; grid-template-columns: 1fr 1fr !important; grid-template-rows: auto !important; gap: 4px !important; height: auto !important; width: auto !important; flex-flow: none !important; }
+
+.fluent-theme .tool-group:first-child .tool-group-buttons {
+    grid-template-columns: 1fr !important;
+}
+.fluent-theme .tool-group:first-child .tool-button:only-child {
+    height: calc(44px * 2 + 4px) !important;
+    width: 100% !important;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.fluent-theme .toolbar-left .tool-group:nth-child(2) .tool-group-buttons {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto !important;
+    width: auto !important;
+    height: auto !important;
+    flex-flow: none !important;
+}
+.fluent-theme .toolbar-left .tool-group:nth-child(2) .tool-button {
+    width: 44px !important;
+    height: 44px !important;
+    max-width: 44px !important;
+}
+
+.fluent-theme .tool-group-buttons--loads {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 92px !important;
+    height: auto !important;
+    gap: 4px !important;
+}
+
+.fluent-theme .loads-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto !important;
+    width: 92px !important;
+    height: auto !important;
+    gap: 4px !important;
+}
+.fluent-theme .loads-grid .tool-button {
+    width: 44px !important;
+    height: 44px !important;
+    max-width: 44px !important;
+}
+
+#tool-concentrated-load {
+    width: 92px !important;
+    height: 44px !important;
+    flex-direction: row !important;
+    flex-shrink: 0 !important;
+    max-width: 92px !important;
+}
+
+.fluent-theme .tool-group-actions { 
+    display: flex; 
+    flex-direction: column;
+    height: auto; 
+    gap: 4px;
+    width: 44px;
+}
+.fluent-theme .tool-group-actions .tool-button {
+    width: 100%;
+	height: 44px;
+}
+
+#tool-edit, #reset-btn {
+    width: 100%;
+}
+
+.actions-stack { display: none; }
+
+.fluent-theme .tool-group-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    cursor: pointer;
+	width: 100%;
+	background-color: var(--fluent-neutral-fill-rest);
+    padding: 16px 4px;
+	border-radius: var(--fluent-border-radius);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fluent-neutral-foreground-hint);
+    margin: 0 0 5px 0;
+    text-align: center;
+}
+
+.fluent-theme .tool-group:first-child,
+.fluent-theme .tool-group:nth-child(4) {
+    min-width: 60px;
+}
+
+.fluent-theme .tool-group:nth-child(5) {
+    min-width: 75px;
+}
+
+.fluent-theme .toolbar-left .tool-group:not(.is-open) > .tool-group-buttons,
+.fluent-theme .toolbar-left .tool-group:not(.is-open) > .tool-group-actions,
+.fluent-theme .toolbar-left .tool-group:not(.is-open) > .grid-settings,
+.fluent-theme .toolbar-right .tool-group:not(.is-open) > .tool-group-buttons,
+.fluent-theme .toolbar-right .tool-group:not(.is-open) > .tool-group-actions,
+.fluent-theme .toolbar-right .tool-group:not(.is-open) > .grid-settings {
+    display: none !important;
+}
+
+.fluent-theme .grid-settings {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto; 
+    gap: 6px;
+    padding-top: 8px;
+}
+
+.fluent-theme .grid-settings input {
+    width: 30px;
+}
+#gridSize {
+    width: 24px;
+}
+
+.fluent-theme #modeling-area-title { font-size: 14px; padding: 8px 15px; }
+.fluent-theme .canvas-overlay-btn { width: 40px; height: 40px; }
+.fluent-theme #fullscreen-btn { right: 5px; top: 5px; }
+.fluent-theme #center-btn { right: 50px; top: 5px; }
+
+
+.fluent-theme .download-btn {
+    display: none;
+}
+
+.fluent-theme #center-btn { 
+    right: 50px; 
+    top: 5px; 
+}
+
+.fluent-theme #drawingCanvas {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    touch-action: none;
+}
+.fluent-theme #all-diagrams-container {
+    border-radius: 0; box-shadow: none; border-left: none; border-right: none;
+    padding-left: 0; padding-right: 0;
+}
+.fluent-theme #diagram-grid { gap: 0; }
+.fluent-theme .diagram-container { padding: 20px 15px; border: none; border-radius: 0; box-shadow: none; }
+.fluent-theme .diagram-container + .diagram-container { border-top: 1px solid var(--fluent-stroke-color-default); }
+.fluent-theme .diagram-container h4 { padding: 0; }
+.fluent-theme .diagram-container .toggle-button { top: 20px; }
+.fluent-theme .diagram-container .toggle-button { right: 15px; }
+.fluent-theme .table-grid { grid-template-columns: 1fr; }
+}

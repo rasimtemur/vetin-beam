@@ -1,0 +1,102 @@
+
+/* --- 3D CONTROLS (From momentofinertia) --- */
+.controls-3d {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    z-index: 10;
+}
+
+/* View Presets */
+.view-presets {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    background: var(--fluent-layer-fill-default);
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid var(--fluent-stroke-color-default);
+    box-shadow: var(--fluent-shadow-depth-4);
+}
+
+.preset-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: var(--fluent-neutral-fill-rest);
+    border: 1px solid var(--fluent-stroke-color-default);
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--fluent-neutral-foreground-hint);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preset-btn:hover {
+    background: var(--fluent-neutral-fill-hover);
+    color: var(--fluent-neutral-foreground-rest);
+}
+
+.preset-btn.active {
+    background: var(--fluent-accent-fill-rest);
+    border-color: var(--fluent-accent-fill-rest);
+    color: white;
+}
+
+/* Zoom Controls */
+.zoom-controls-3d {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--fluent-layer-fill-default);
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid var(--fluent-stroke-color-default);
+    box-shadow: var(--fluent-shadow-depth-4);
+}
+
+.zoom-row {
+    display: flex;
+    gap: 4px;
+}
+
+.zoom-btn-3d {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: var(--fluent-neutral-fill-rest);
+    border: 1px solid var(--fluent-stroke-color-default);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--fluent-neutral-foreground-rest);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.zoom-btn-3d:hover {
+    background: var(--fluent-neutral-fill-hover);
+    color: var(--fluent-accent-fill-rest);
+}
+
+/* Scale Control */
+.scale-control-3d {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background: var(--fluent-layer-fill-default);
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid var(--fluent-stroke-color-default);
+    box-shadow: var(--fluent-shadow-depth-4);
+    height: fit-content; /* Ensure it fits height */
+}
