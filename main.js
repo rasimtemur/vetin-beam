@@ -1,9 +1,10 @@
 // main.js - Hibrit Model için Uygulama Başlatıcı
 
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     // 1. Platformu belirle ve body'e sınıf olarak ekle
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    // (isTouchDevice setup.js'te tanımlanır; dokunmatik ekranlı dizüstüler
+    //  hassas işaretçileri olduğu için masaüstü olarak sınıflandırılır)
     const platform = isTouchDevice ? 'mobile' : 'desktop';
     document.body.classList.add(platform);
 
@@ -20,9 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3.1 Temayı Başlat
     initializeTheme(); 
 
-    // 3.2 3B Elastik Eğri Başlat
+    // 3.2 3B Elastik Eğri Başlat — Three.js yüklenemezse (ör. vendor/ eksik) yalnızca
+    // 3B görünüm devre dışı kalır; olay dinleyicileri ve diğer kurulumlar yine yapılır.
     if (typeof initElasticCurve3D === 'function') {
-        initElasticCurve3D();
+        try {
+            initElasticCurve3D();
+        } catch (err) {
+            console.error('3B elastik eğri başlatılamadı (Three.js yüklü mü?):', err);
+        }
     }
 
     // 4. Sadece mevcut platforma ait olay dinleyicilerini kur
@@ -30,6 +36,16 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeDesktopEventListeners(); // desktop-events.js'deki fonksiyon
     } else {
         initializeMobileEventListeners(); // mobile-events.js'deki fonksiyon
+    }
+
+    // 4.1 Kesim Yöntemi (cut-method.js) — platform dinleyicilerinden sonra kurulur
+    if (typeof initializeCutMethod === 'function') {
+        initializeCutMethod();
+    }
+
+    // 4.2 Tam ekranda modelin altındaki çizimlerin seçimi (fullscreen-panels.js)
+    if (typeof initializeFullscreenPanels === 'function') {
+        initializeFullscreenPanels();
     }
 
     // 5. Dili ayarla
@@ -41,17 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeLanguageButtons();
     }
 
-    // Kaydedilmiş dil yoksa geolocation ile otomatik dil tespiti yap
-    if (!savedLang && typeof detectLanguageByLocation === 'function') {
-        detectLanguageByLocation().then(lang => {
-            if (lang) {
-                setLanguage(lang);
-                if (typeof ensureLanguageButtonExists === 'function') {
-                    ensureLanguageButtonExists(lang);
-                }
-            }
-        });
-    }
+    // Not: Önceki sürümdeki IP tabanlı dil tespiti (üçüncü taraf geolocation
+    // servisi) gizlilik nedeniyle kaldırıldı; tarayıcı dili yeterlidir.
 
     scaleCanvasForHiDPI(canvas, ctx);
     redrawCanvas();

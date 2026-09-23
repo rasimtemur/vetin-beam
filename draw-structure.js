@@ -2,7 +2,7 @@
 
 function drawBeam(context, x1, y1, x2, y2) {
     // Kirişin yüksekliğini (h) doğrudan ızgara boyutu input'undan al.
-    const h = parseInt(gridSizeInput.value) || 20;
+    const h = getGridSize();
     
     context.save();
     context.fillStyle = COLORS.BEAM_FILL;

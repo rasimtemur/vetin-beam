@@ -7,7 +7,21 @@ function isSystemStable() {
     const rollerCount = supports.filter(s => s.type === 'roller-support').length;
     const unknownCount = fixedCount * 3 + pinCount * 2 + rollerCount * 1;
     const equationCount = 3 + (hinges ? hinges.length : 0);
+
+    // Yatay yük varsa eksenel denge için tam olarak bir adet yatay tutucu
+    // mesnet (sabit veya ankastre) gerekir; aksi halde sistem yatayda ya
+    // mekanizmadır (0 tutucu) ya da hiperstatiktir (2+ tutucu).
+    const hasAxialLoads = concentratedLoads.some(l => Math.abs(l.magnitude * Math.cos(l.angle)) > EPSILON);
+    if (hasAxialLoads && (pinCount + fixedCount) !== 1) return false;
+
     if (hinges && hinges.length > 0) {
+        // Çözücü şimdilik tek ara mafsal destekliyor.
+        if (hinges.length !== 1) return false;
+        // Geometrik stabilite: mafsalın her iki tarafında da mesnet bulunmalı.
+        const hx = hinges[0].x;
+        const leftSupports = supports.filter(s => s.x < hx).length;
+        const rightSupports = supports.filter(s => s.x > hx).length;
+        if (leftSupports === 0 || rightSupports === 0) return false;
         return unknownCount === equationCount;
     }
     const simpleCount = pinCount + rollerCount;
@@ -38,7 +52,7 @@ function solveStandardSystem(isLiveUpdate = false) {
 
 function solveGerberSystem(isLiveUpdate = false) {
     if (hinges.length !== 1) {
-        alert("Bu çözüm şimdilik yalnızca bir adet ara mafsal içeren sistemleri desteklemektedir.");
+        if (typeof showCalcWarning === 'function') showCalcWarning('warnMultiHinge');
         return;
     }
     let computationalDistLoads = [...distributedLoads];
@@ -95,27 +109,33 @@ function solveGerberSystem(isLiveUpdate = false) {
     }
     const tempHingeSupport = { type: 'pin-support', x: hinge_x };
     const secondarySupportsWithHinge = [...secondarySupports, tempHingeSupport];
+    // Piksel koordinatlarında güvenli karşılaştırma toleransı
+    const POS_TOL = 0.5;
+    const atHinge = (x) => Math.abs(x - hinge_x) < POS_TOL;
+    const inSegment = (x, seg) => x >= seg.startX - POS_TOL && x <= seg.endX + POS_TOL;
+    // Tam mafsal üzerindeki tekil yük/moment yalnızca ikincil (asılı) kirişe
+    // atanır; aksi halde iki parçaya birden sayılır ya da hiç sayılmazdı.
     const secondaryLoads = {
-        concentrated: concentratedLoads.filter(l => l.x >= secondaryBeam.startX && l.x <= secondaryBeam.endX),
-        distributed: computationalDistLoads.filter(l => Math.max(l.startX, l.endX) <= secondaryBeam.endX && Math.min(l.startX, l.endX) >= secondaryBeam.startX),
-        trapezoidal: computationalTrapLoads.filter(l => Math.max(l.startX, l.endX) <= secondaryBeam.endX && Math.min(l.startX, l.endX) >= secondaryBeam.startX),
-        moments: concentratedMoments.filter(m => m.x >= secondaryBeam.startX && m.x <= secondaryBeam.endX)
+        concentrated: concentratedLoads.filter(l => atHinge(l.x) || (inSegment(l.x, secondaryBeam) && !atHinge(l.x) && !inSegment(l.x, primaryBeam))),
+        distributed: computationalDistLoads.filter(l => Math.max(l.startX, l.endX) <= secondaryBeam.endX + POS_TOL && Math.min(l.startX, l.endX) >= secondaryBeam.startX - POS_TOL),
+        trapezoidal: computationalTrapLoads.filter(l => Math.max(l.startX, l.endX) <= secondaryBeam.endX + POS_TOL && Math.min(l.startX, l.endX) >= secondaryBeam.startX - POS_TOL),
+        moments: concentratedMoments.filter(m => atHinge(m.x) || (inSegment(m.x, secondaryBeam) && !atHinge(m.x) && !inSegment(m.x, primaryBeam)))
     };
     const secondaryResult = solveIsostaticPart(secondaryBeam, secondarySupportsWithHinge, secondaryLoads);
     if (!secondaryResult) return;
-    const hingeReaction = secondaryResult.allReactions.find(r => r.x === hinge_x);
+    const hingeReaction = secondaryResult.allReactions.find(r => atHinge(r.x));
     if (!hingeReaction) return;
     const reactionAsLoad = { x: hinge_x, y: beam.startY - 10, magnitude: hingeReaction.magnitude, angle: Math.PI / 2 };
     const primaryLoads = {
-        concentrated: concentratedLoads.filter(l => l.x >= primaryBeam.startX && l.x < primaryBeam.endX),
-        distributed: computationalDistLoads.filter(l => Math.max(l.startX, l.endX) <= primaryBeam.endX && Math.min(l.startX, l.endX) >= primaryBeam.startX),
-        trapezoidal: computationalTrapLoads.filter(l => Math.max(l.startX, l.endX) <= primaryBeam.endX && Math.min(l.startX, l.endX) >= primaryBeam.startX),
-        moments: concentratedMoments.filter(m => m.x >= primaryBeam.startX && m.x < primaryBeam.endX)
+        concentrated: concentratedLoads.filter(l => !atHinge(l.x) && inSegment(l.x, primaryBeam)),
+        distributed: computationalDistLoads.filter(l => Math.max(l.startX, l.endX) <= primaryBeam.endX + POS_TOL && Math.min(l.startX, l.endX) >= primaryBeam.startX - POS_TOL),
+        trapezoidal: computationalTrapLoads.filter(l => Math.max(l.startX, l.endX) <= primaryBeam.endX + POS_TOL && Math.min(l.startX, l.endX) >= primaryBeam.startX - POS_TOL),
+        moments: concentratedMoments.filter(m => !atHinge(m.x) && inSegment(m.x, primaryBeam))
     };
     primaryLoads.concentrated.push(reactionAsLoad);
     const primaryResult = solveIsostaticPart(primaryBeam, primarySupports, primaryLoads);
     if (!primaryResult) return;
-    const finalReactions = [ ...primaryResult.allReactions, ...secondaryResult.allReactions.filter(r => r.x !== hinge_x) ];
+    const finalReactions = [ ...primaryResult.allReactions, ...secondaryResult.allReactions.filter(r => !atHinge(r.x)) ];
     const hingeData = { x: hinge.x, magnitude: hingeReaction.magnitude };
     generateAndDrawDiagrams(finalReactions, primaryResult.M_fixed, null, isLiveUpdate, computationalDistLoads, computationalTrapLoads, hingeData);
 }
@@ -131,8 +151,9 @@ function solveIsostaticPart(partBeam, partSupports, partLoads) {
         const fixed_pos_m = toMeters(fixedSupport.x);
         let totalMomentAboutFixed = 0, totalForce = 0;
         partLoads.concentrated.forEach(l => { const f = -l.magnitude * Math.sin(l.angle); totalMomentAboutFixed += f * (toMeters(l.x) - fixed_pos_m); totalForce += f; });
-        partLoads.distributed.forEach(l => { const s = toMeters(Math.min(l.startX, l.endX)), e = toMeters(Math.max(l.startX, l.endX)), len = e - s, w = Math.abs(l.magnitude), f = -w * len, c = s + len / 2; totalMomentAboutFixed += f * (c - fixed_pos_m); totalForce += f; });
-        partLoads.trapezoidal.forEach(l => { const s = toMeters(Math.min(l.startX, l.endX)), e = toMeters(Math.max(l.startX, l.endX)), len = e - s; if (len < EPSILON) return; const w1 = Math.abs((l.startX < l.endX) ? l.startMagnitude : l.endMagnitude), w2 = Math.abs((l.startX < l.endX) ? l.endMagnitude : l.startMagnitude), f = -len * (w1 + w2) / 2; let c = s + len / 2; if (Math.abs(w1 + w2) > EPSILON) { c = s + (len / 3) * (w1 + 2 * w2) / (w1 + w2); } totalMomentAboutFixed += f * (c - fixed_pos_m); totalForce += f; });
+        // İşaretli büyüklük (çizim/veri kuralı, tuvalde y aşağı): negatif = aşağı, pozitif = yukarı yönlü yük
+        partLoads.distributed.forEach(l => { const s = toMeters(Math.min(l.startX, l.endX)), e = toMeters(Math.max(l.startX, l.endX)), len = e - s, w = l.magnitude, f = w * len, c = s + len / 2; totalMomentAboutFixed += f * (c - fixed_pos_m); totalForce += f; });
+        partLoads.trapezoidal.forEach(l => { const s = toMeters(Math.min(l.startX, l.endX)), e = toMeters(Math.max(l.startX, l.endX)), len = e - s; if (len < EPSILON) return; const w1 = (l.startX < l.endX) ? l.startMagnitude : l.endMagnitude, w2 = (l.startX < l.endX) ? l.endMagnitude : l.startMagnitude, f = len * (w1 + w2) / 2; const firstMoment = len * (w1 * (2 * s + e) + w2 * (s + 2 * e)) / 6; totalMomentAboutFixed += firstMoment - f * fixed_pos_m; totalForce += f; });
         partLoads.moments.forEach(m => { totalMomentAboutFixed -= m.magnitude; });
         const R_vertical = -totalForce;
         M_fixed = -totalMomentAboutFixed;
@@ -143,8 +164,9 @@ function solveIsostaticPart(partBeam, partSupports, partLoads) {
         const left_pos_m = toMeters(supportLeft.x), right_pos_m = toMeters(supportRight.x);
         let totalMomentAboutLeft = 0, totalForce = 0;
         partLoads.concentrated.forEach(l => { const f = -l.magnitude * Math.sin(l.angle); totalMomentAboutLeft += f * (toMeters(l.x) - left_pos_m); totalForce += f; });
-        partLoads.distributed.forEach(l => { const s = toMeters(Math.min(l.startX, l.endX)), e = toMeters(Math.max(l.startX, l.endX)), len = e - s, w = Math.abs(l.magnitude), f = -w * len, c = s + len / 2; totalMomentAboutLeft += f * (c - left_pos_m); totalForce += f; });
-        partLoads.trapezoidal.forEach(l => { const s = toMeters(Math.min(l.startX, l.endX)), e = toMeters(Math.max(l.startX, l.endX)), len = e - s; if (len < EPSILON) return; const w1 = Math.abs((l.startX < l.endX) ? l.startMagnitude : l.endMagnitude), w2 = Math.abs((l.startX < l.endX) ? l.endMagnitude : l.startMagnitude), f = -len * (w1 + w2) / 2; let c = s + len / 2; if (Math.abs(w1 + w2) > EPSILON) { c = s + (len / 3) * (w1 + 2 * w2) / (w1 + w2); } totalMomentAboutLeft += f * (c - left_pos_m); totalForce += f; });
+        // İşaretli büyüklük (çizim/veri kuralı, tuvalde y aşağı): negatif = aşağı, pozitif = yukarı yönlü yük
+        partLoads.distributed.forEach(l => { const s = toMeters(Math.min(l.startX, l.endX)), e = toMeters(Math.max(l.startX, l.endX)), len = e - s, w = l.magnitude, f = w * len, c = s + len / 2; totalMomentAboutLeft += f * (c - left_pos_m); totalForce += f; });
+        partLoads.trapezoidal.forEach(l => { const s = toMeters(Math.min(l.startX, l.endX)), e = toMeters(Math.max(l.startX, l.endX)), len = e - s; if (len < EPSILON) return; const w1 = (l.startX < l.endX) ? l.startMagnitude : l.endMagnitude, w2 = (l.startX < l.endX) ? l.endMagnitude : l.startMagnitude, f = len * (w1 + w2) / 2; const firstMoment = len * (w1 * (2 * s + e) + w2 * (s + 2 * e)) / 6; totalMomentAboutLeft += firstMoment - f * left_pos_m; totalForce += f; });
         partLoads.moments.forEach(m => { totalMomentAboutLeft -= m.magnitude; });
         const R_right = -totalMomentAboutLeft / (right_pos_m - left_pos_m);
         const R_left = -totalForce - R_right;
@@ -155,10 +177,12 @@ function solveIsostaticPart(partBeam, partSupports, partLoads) {
 }
 
 function calculateAxialReaction() {
-    const pinOrFixedSupport = supports.find(s => s.type === 'pin-support' || s.type === 'fixed-support');
-    if (!pinOrFixedSupport) { return null; }
+    // Eksenel reaksiyon yalnızca tek bir yatay tutucu mesnet varsa
+    // statikçe belirlidir; birden fazla varsa sistem yatayda hiperstatiktir.
+    const axialSupports = supports.filter(s => s.type === 'pin-support' || s.type === 'fixed-support');
+    if (axialSupports.length !== 1) { return null; }
     const totalAxialLoad = concentratedLoads.reduce((sum, load) => sum + (load.magnitude * Math.cos(load.angle)), 0);
-    return { x: pinOrFixedSupport.x, magnitude: -totalAxialLoad };
+    return { x: axialSupports[0].x, magnitude: -totalAxialLoad };
 }
 
 function generateAndDrawDiagrams(allReactions, M_fixed, T_reaction, isLiveUpdate, compDistLoads = distributedLoads, compTrapLoads = trapezoidalLoads, hingeData = null, interpolationPoints = 50) {
@@ -203,8 +227,9 @@ function generateAndDrawDiagrams(allReactions, M_fixed, T_reaction, isLiveUpdate
     diagramData.moment = { labels: momentPoints.map(p => p.x), datasets: [{ data: momentPoints.map(p => p.y), borderColor: COLORS.BEAM_STROKE }] };
     
     // Elastic Curve Calculation
-    const E = (elasticityInput && elasticityInput.value) ? parseFloat(elasticityInput.value) : 200;
-    const I = (momentOfInertiaInput && momentOfInertiaInput.value) ? parseFloat(momentOfInertiaInput.value) : 1000;
+    // Varsayılanlar arayüzdeki başlangıç değerleriyle aynı tutulmalı (E=200 GPa, I=100000 cm⁴)
+    const E = (elasticityInput && parseFloat(elasticityInput.value) > 0) ? parseFloat(elasticityInput.value) : 200;
+    const I = (momentOfInertiaInput && parseFloat(momentOfInertiaInput.value) > 0) ? parseFloat(momentOfInertiaInput.value) : 100000;
     const elasticCurvePoints = getElasticCurvePoints(uniqueSortedPoints, allReactions, M_fixed, toMeters, E, I);
     diagramData.elasticCurve = { labels: elasticCurvePoints.map(p => p.x), datasets: [{ data: elasticCurvePoints.map(p => p.y), borderColor: COLORS.BEAM_STROKE }] };
 
@@ -224,9 +249,9 @@ const getShearAt = (x_m, allReactions, toMetersFunc) => {
     [...distributedLoads, ...trapezoidalLoads].forEach(l => {
         const s = toMetersFunc(Math.min(l.startX, l.endX)), e = toMetersFunc(Math.max(l.startX, l.endX));
         if (x_m > s) {
-            const xe = Math.min(x_m, e), w_s = Math.abs(getDistributedLoadAt(s, toMetersFunc, l)), w_e = Math.abs(getDistributedLoadAt(xe, toMetersFunc, l));
-            // Internal shear decreases with downward load
-            shear -= (w_s + w_e) / 2 * (xe - s);
+            // İşaretli büyüklük: negatif = aşağı yönlü yük (kesmeyi azaltır)
+            const xe = Math.min(x_m, e), w_s = getDistributedLoadAt(s, toMetersFunc, l), w_e = getDistributedLoadAt(xe, toMetersFunc, l);
+            shear += (w_s + w_e) / 2 * (xe - s);
         }
     });
     return shear;
@@ -245,11 +270,12 @@ const getMomentAt = (x_m, allReactions, M_f, toMetersFunc) => {
         const s = toMetersFunc(Math.min(l.startX, l.endX)), e = toMetersFunc(Math.max(l.startX, l.endX));
         if (x_m > s) {
             const xe = Math.min(x_m, e), len = xe - s; if (len < EPSILON) return;
-            const w_s = Math.abs(getDistributedLoadAt(s, toMetersFunc, l)), w_e = Math.abs(getDistributedLoadAt(xe, toMetersFunc, l)), force = (w_s + w_e) / 2 * len;
-            let centroid = s + len / 2;
-            if (Math.abs(w_s + w_e) > EPSILON) { centroid = s + (len / 3) * (w_s + 2 * w_e) / (w_s + w_e); }
-            // Moment decreases (becomes more negative/tension at top) with downward load
-            moment -= force * (x_m - centroid);
+            // İşaretli büyüklük: negatif = aşağı yönlü yük (sehim momentini azaltır).
+            // Ağırlık merkezi yerine kesin birinci moment integrali kullanılır;
+            // işaret değiştiren (w_s + w_e = 0) trapez yüklerde de geçerlidir.
+            const w_s = getDistributedLoadAt(s, toMetersFunc, l), w_e = getDistributedLoadAt(xe, toMetersFunc, l), force = (w_s + w_e) / 2 * len;
+            const firstMoment = len * (w_s * (2 * s + xe) + w_e * (s + 2 * xe)) / 6;
+            moment += force * x_m - firstMoment;
         }
     });
     concentratedMoments.forEach(m => { 
@@ -273,6 +299,34 @@ const getDistributedLoadAt = (x_m, toMetersFunc, load) => {
     return w1 + (w2 - w1) * ratio;
 };
 
+/**
+ * Tekil etkilerden (eksenel kuvvet, burulma momenti) basamaklı diyagram
+ * noktaları üretir. Aynı konumdaki etkiler önce toplanır; net etkisi sıfır
+ * olan konumda sıçrama çizilmez (ör. aynı noktada eşit ve zıt iki kuvvet).
+ * @param {{x:number, magnitude:number}[]} forces - x piksel cinsinden
+ * @returns {{x:number, y:number}[]} x metre cinsinden (kiriş başından)
+ */
+function buildStepDiagramPoints(forces, L, toMetersFunc) {
+    const groups = [];
+    [...forces].sort((a, b) => a.x - b.x).forEach(f => {
+        const x_m = toMetersFunc(f.x);
+        const last = groups[groups.length - 1];
+        if (last && Math.abs(x_m - last.x) <= EPSILON) last.sum += f.magnitude;
+        else groups.push({ x: x_m, sum: f.magnitude });
+    });
+
+    const points = [{ x: 0, y: 0 }];
+    let current = 0;
+    groups.forEach(g => {
+        if (Math.abs(g.sum) <= EPSILON) return;
+        points.push({ x: g.x, y: current });
+        current += g.sum;
+        points.push({ x: g.x, y: current });
+    });
+    if (points[points.length - 1].x < L) points.push({ x: L, y: current });
+    return points;
+}
+
 function calculateAndDrawAxialDiagram(isLiveUpdate = false) {
     const hasAxialForces = concentratedLoads.some(l => Math.abs(l.magnitude * Math.cos(l.angle)) > EPSILON);
     if (!beam || !isSystemStable() || !hasAxialForces) { if (normalForceChart) { normalForceChart.destroy(); normalForceChart = null; } return; }
@@ -282,19 +336,11 @@ function calculateAndDrawAxialDiagram(isLiveUpdate = false) {
     const L = toMeters(beam.endX) - toMeters(beam.startX);
     const horizontalComponents = concentratedLoads.map(l => ({ x: l.x, magnitude: l.magnitude * Math.cos(l.angle) }));
     const allHorizontalForces = [...horizontalComponents, axialReaction].sort((a, b) => a.x - b.x);
-    let normalForcePoints = [], currentNormalForce = 0;
-    normalForcePoints.push({ x: 0, y: currentNormalForce });
-    allHorizontalForces.forEach((force) => {
-        const x_m = toMeters(force.x) - toMeters(beam.startX);
-        if (x_m > 0 && (normalForcePoints.length === 0 || Math.abs(x_m - normalForcePoints[normalForcePoints.length - 1].x) > EPSILON)) { normalForcePoints.push({ x: x_m, y: currentNormalForce }); }
-        currentNormalForce += force.magnitude;
-        normalForcePoints.push({ x: x_m, y: currentNormalForce });
-    });
-    if (normalForcePoints.length === 0 || normalForcePoints[normalForcePoints.length - 1].x < L) { normalForcePoints.push({ x: L, y: currentNormalForce }); }
+    const normalForcePoints = buildStepDiagramPoints(allHorizontalForces, L, toMeters);
     
     diagramData.normal = { labels: normalForcePoints.map(p => p.x), datasets: [{ data: normalForcePoints.map(p => p.y), borderColor: COLORS.REACTION }] };
     
-    const metersPerGrid = parseFloat(metersPerGridInput.value) || 1;
+    const metersPerGrid = getMetersPerGrid();
     const currentLang = document.documentElement.lang || 'tr';
     const axisTitles = translations[currentLang].diagramAxes;
     
@@ -324,13 +370,9 @@ function calculateAndDrawAxialDiagram(isLiveUpdate = false) {
         hover: { mode: 'index', intersect: false, animation: { duration: 0 } }
     };
     if (isLiveUpdate) chartOptions.animation = { duration: 0 };
-    if (normalForceChart) normalForceChart.destroy();
-    normalForceChart = new Chart(document.getElementById('normalForceDiagram').getContext('2d'), { 
-        type: 'line', 
-        data: { datasets: [{ data: normalForcePoints, borderColor: COLORS.REACTION, backgroundColor: COLORS.REACTION + '33', borderWidth: 2, fill: 'origin', stepped: true }] }, 
-        plugins: [chartAlignmentPlugin],
-        options: chartOptions 
-    });
+    normalForceChart = upsertLineChart(normalForceChart, 'normalForceDiagram',
+        { data: normalForcePoints, borderColor: COLORS.REACTION, backgroundColor: COLORS.REACTION + '33', borderWidth: 2, fill: 'origin', stepped: true },
+        chartOptions, isLiveUpdate);
 }
 
 function calculateAndDrawTorsionDiagram() {
@@ -338,25 +380,17 @@ function calculateAndDrawTorsionDiagram() {
     const hasTorsion = torsionMoments.length > 0;
     if (!beam || !hasTorsion) { if (torsionChart) { torsionChart.destroy(); torsionChart = null; } return; }
     const fixedSupport = supports.find(s => s.type === 'fixed-support');
-    if (!fixedSupport) { alert("Burulma momenti diyagramı çizebilmek için sisteme bir Ankastre Mesnet eklemelisiniz."); if (torsionChart) { torsionChart.destroy(); torsionChart = null; } return; }
+    if (!fixedSupport) { if (typeof showCalcWarning === 'function') showCalcWarning('warnTorsionNeedsFixed'); if (torsionChart) { torsionChart.destroy(); torsionChart = null; } return; }
     const { toMeters } = getConversionFunctions();
     const L = toMeters(beam.endX) - toMeters(beam.startX);
     const totalTorsion = torsionMoments.reduce((sum, t) => sum + t.magnitude, 0);
     const torsionReaction = { x: fixedSupport.x, magnitude: -totalTorsion };
     const allTorsionForces = [...torsionMoments, torsionReaction].sort((a, b) => a.x - b.x);
-    let torsionPoints = [], currentTorsion = 0;
-    torsionPoints.push({ x: 0, y: currentTorsion });
-    allTorsionForces.forEach((force) => {
-        const x_m = toMeters(force.x) - toMeters(beam.startX);
-        if (x_m > 0 && (torsionPoints.length === 0 || Math.abs(x_m - torsionPoints[torsionPoints.length - 1].x) > EPSILON)) { torsionPoints.push({ x: x_m, y: currentTorsion }); }
-        currentTorsion += force.magnitude;
-        torsionPoints.push({ x: x_m, y: currentTorsion });
-    });
-    if (torsionPoints.length === 0 || torsionPoints[torsionPoints.length - 1].x < L) { torsionPoints.push({ x: L, y: currentTorsion }); }
+    const torsionPoints = buildStepDiagramPoints(allTorsionForces, L, toMeters);
     
     diagramData.torsion = { labels: torsionPoints.map(p => p.x), datasets: [{ data: torsionPoints.map(p => p.y), borderColor: COLORS.LOAD }] };
     
-    const metersPerGrid = parseFloat(metersPerGridInput.value) || 1;
+    const metersPerGrid = getMetersPerGrid();
     const currentLang = document.documentElement.lang || 'tr';
     const axisTitles = translations[currentLang].diagramAxes;
     
@@ -385,13 +419,9 @@ function calculateAndDrawTorsionDiagram() {
         maintainAspectRatio: false, 
         hover: { mode: 'index', intersect: false, animation: { duration: 0 } }
     };
-    if (torsionChart) torsionChart.destroy();
-    torsionChart = new Chart(document.getElementById('torsionMomentDiagram').getContext('2d'), { 
-        type: 'line', 
-        data: { datasets: [{ data: torsionPoints, borderColor: COLORS.LOAD, backgroundColor: COLORS.LOAD + '33', borderWidth: 2, fill: 'origin', stepped: true }] }, 
-        plugins: [chartAlignmentPlugin],
-        options: chartOptions 
-    });
+    torsionChart = upsertLineChart(torsionChart, 'torsionMomentDiagram',
+        { data: torsionPoints, borderColor: COLORS.LOAD, backgroundColor: COLORS.LOAD + '33', borderWidth: 2, fill: 'origin', stepped: true },
+        chartOptions);
 }
 
 function getElasticCurvePoints(points, allReactions, M_fixed, toMetersFunc, E_gpa, I_cm4) {

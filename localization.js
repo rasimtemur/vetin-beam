@@ -5,7 +5,14 @@
  * @param {string} lang - Başlangıçta kullanılacak dil kodu ('tr', 'en' vb.).
  */
 function buildInitialHTML(lang) {
-    const t = translations[lang];
+    // Çeviri değerleri HTML şablonlarına gömüldüğü için erişim anında
+    // escape edilir; ileride dış kaynaklı çeviri eklenirse XSS kapısı kalmaz.
+    const escapeHtml = (value) => String(value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const t = new Proxy(translations[lang], {
+        get: (obj, key) => (typeof obj[key] === 'string' ? escapeHtml(obj[key]) : obj[key])
+    });
 
     // Toolbar HTML'ini oluştur
     const toolbarHTML = `
@@ -102,9 +109,20 @@ function buildInitialHTML(lang) {
     document.getElementById('fullscreen-btn').innerHTML = `<svg class="icon-expand" viewBox="0 0 24 24"><path d="M15 3h6v6l-2-2-4 4-2-2 4-4-2-2zM9 21H3v-6l2 2 4-4 2 2-4 4 2 2z"></path></svg><svg class="icon-shrink" viewBox="0 0 24 24" style="display: none;"><path d="m 20 2 M 10 14 L 4 14 L 6 16 L 2 20 L 4 22 L 8 18 L 10 20 L 10 14 M 14 10 L 20 10 L 18 8 L 22 4 L 20 2 L 16 6 L 14 4 L 14 10"></path></svg>`;
     document.getElementById('fullscreen-btn').setAttribute('title', t.fullscreenTitle);
 
+    document.getElementById('cut-btn').setAttribute('title', t.cutMethodTitle);
+
+    // SCD çizim seçenekleri: sağ üst köşede aç/kapa butonları
+    const fbdLabel = (key) => t[key] || escapeHtml(translations.en[key]);
+    const fbdOptionBtn = (option, key, icon) =>
+        `<button type="button" class="canvas-overlay-btn fbd-option-btn" data-fbd-option="${option}" aria-pressed="${fbdDisplayOptions[option]}">${icon}<span data-i18n="${key}">${fbdLabel(key)}</span></button>`;
+    const fbdOptionsHTML = `<div class="fbd-options" role="group" data-i18n-title="fbdOptionsTitle" title="${fbdLabel('fbdOptionsTitle')}">` +
+        fbdOptionBtn('loads', 'fbdShowLoads', '<svg viewBox="0 0 24 24"><path d="M12 3v14M6.5 12 12 17.5 17.5 12"/><path d="M4 21h16"/></svg>') +
+        fbdOptionBtn('reactions', 'fbdShowReactions', '<svg viewBox="0 0 24 24"><path d="M12 21V9M6.5 14 12 8.5 17.5 14"/><path d="M8 3h8"/></svg>') +
+        `</div>`;
+
     const diagramsHTML = `
         <div id="diagram-grid">
-            <div id="free-body-diagram-wrapper" class="diagram-container"><h4 data-i18n="freeBodyDiagram">${t.freeBodyDiagram}</h4><button id="download-fbd-btn" class="download-btn" data-i18n-title="downloadDiagram"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></button><button class="toggle-button" data-i18n-title="show"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 13c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"></path></svg></button><div class="content-wrapper hidden"><canvas id="freeBodyDiagramCanvas"></canvas><p id="reactions-output"></p></div></div>
+            <div id="free-body-diagram-wrapper" class="diagram-container"><h4 data-i18n="freeBodyDiagram">${t.freeBodyDiagram}</h4><button id="download-fbd-btn" class="download-btn" data-i18n-title="downloadDiagram"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></button><button class="toggle-button" data-i18n-title="show"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 13c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"></path></svg></button><div class="content-wrapper hidden">${fbdOptionsHTML}<canvas id="freeBodyDiagramCanvas"></canvas><p id="reactions-output"></p></div></div>
             <div id="normal-force-diagram-wrapper" class="diagram-container"><h4 data-i18n="normalForceDiagram">${t.normalForceDiagram}</h4><button id="download-nfd-btn" class="download-btn" data-i18n-title="downloadDiagram"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></button><button class="toggle-button" data-i18n-title="show"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 13c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"></path></svg></button><div class="content-wrapper hidden"><div class="diagram-wrapper"><canvas id="normalForceDiagram"></canvas></div></div></div>
             <div id="shear-force-diagram-wrapper" class="diagram-container"><h4 data-i18n="shearForceDiagram">${t.shearForceDiagram}</h4><button id="download-sfd-btn" class="download-btn" data-i18n-title="downloadDiagram"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></button><button class="toggle-button" data-i18n-title="show"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 13c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"></path></svg></button><div class="content-wrapper hidden"><div class="diagram-wrapper"><canvas id="shearForceDiagram"></canvas></div></div></div>
             <div id="bending-moment-diagram-wrapper" class="diagram-container"><h4 data-i18n="bendingMomentDiagram">${t.bendingMomentDiagram}</h4><button id="download-bmd-btn" class="download-btn" data-i18n-title="downloadDiagram"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></button><button class="toggle-button" data-i18n-title="show"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 13c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"></path></svg></button><div class="content-wrapper hidden"><div class="diagram-wrapper"><canvas id="bendingMomentDiagram"></canvas></div></div></div>
@@ -114,7 +132,7 @@ function buildInitialHTML(lang) {
     document.getElementById('all-diagrams-container').innerHTML = diagramsHTML;
     
     const dataTablesHTML = `
-        <div class="data-tables-header"><h4 data-i18n="dataTables">${t.dataTables}</h4><button id="download-tables-btn" class="download-btn" data-i18n-title="downloadData"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></button><button class="toggle-button" data-i18n-title="hide"><svg viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l3.28 3.28.02.06C3.93 8.5 2.73 10.11 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l3.15 3.15L21 21.18 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02.05c0-1.66-1.34-3-3-3l-.05-.02-3.15-3.15-.05-.02c0-1.66 1.34-3-3z"></path></svg></button></div>
+        <div class="data-tables-header"><h4 data-i18n="dataTables">${t.dataTables}</h4><button id="download-tables-btn" class="download-btn" data-i18n-title="downloadData"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></button><button class="toggle-button" data-i18n-title="hide">${ICON_EYE_HIDE}</button></div>
         <div class="table-grid-wrapper">
             <div class="table-grid">
                 <div class="table-wrapper"><h3 data-i18n="beamTable">${t.beamTable}</h3><table id="beam-table"><thead><tr><th data-i18n="property">${t.property}</th><th data-i18n="valueM">${t.valueM}</th></tr></thead><tbody></tbody></table></div>

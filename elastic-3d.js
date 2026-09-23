@@ -172,13 +172,20 @@ function drawElasticCurve3D() {
     // --- 2. Draw Supports ---
     const { toMeters } = getConversionFunctions();
     const beamStartM = toMeters(beam.startX);
-    
-    supports.forEach(s => {
+    currentBeamLength = toMeters(beam.endX) - beamStartM;
+
+    // Tüm mesnetler tek bir zemine oturur: zemin, en alçaktaki mesnet
+    // noktasının SUPPORT_HEIGHT_3D kadar altındadır; her mesnet bu seviyeye uzatılır.
+    const supportPoints = supports.map(s => {
         const x_m = toMeters(s.x) - beamStartM;
         // Deplasman metre cinsinden, ölçek * 0.001 ile çarp
-        const y_val = getDeflectionAtX(x_m) * scaleY * 0.001;
-        drawSupport3D(s.type, new THREE.Vector3(x_m, y_val, 0));
+        return { type: s.type, pos: new THREE.Vector3(x_m, getDeflectionAtX(x_m) * scaleY * 0.001, 0) };
     });
+    if (supportPoints.length > 0) {
+        const groundY = Math.min(...supportPoints.map(p => p.pos.y)) - SUPPORT_HEIGHT_3D;
+        supportPoints.forEach(p => drawSupport3D(p.type, p.pos, groundY));
+        drawGround3D(groundY, supportPoints.map(p => p.pos.x), currentBeamLength);
+    }
 
     // --- 3. Draw Hinges ---
     hinges.forEach(h => {
@@ -218,28 +225,162 @@ function getDeflectionAtX(x) {
     return 0;
 }
 
-function drawSupport3D(type, pos) {
+// Mesnetin kiriş altından zemine kadar olan yüksekliği (pin mesnet prizması 0.25 + yarım kesit)
+const SUPPORT_HEIGHT_3D = 0.325;
+
+// Mesnet gövdesi: 2B üçgen sembolün z yönünde kalınlık verilmiş hali (üçgen prizma).
+// Tepe kirişin altına, taban bottomY seviyesine gelir; z ekseninde ortalanır.
+function createTriangularPrism3D(x, bottomY, height, material, baseWidth = 0.24, depth = 0.2) {
+    const shape = new THREE.Shape();
+    shape.moveTo(-baseWidth / 2, 0);
+    shape.lineTo(baseWidth / 2, 0);
+    shape.lineTo(0, height);
+    shape.lineTo(-baseWidth / 2, 0);
+    const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false });
+    geo.translate(0, 0, -depth / 2);
+    const mesh = new THREE.Mesh(geo, material);
+    mesh.position.set(x, bottomY, 0);
+    return mesh;
+}
+
+// Mesnet parçasını sahneye kenarlarıyla birlikte ekler (kenar rengi drawSupport3D'de ayarlanır). WebGL çizgileri her zaman
+// 1 px çizildiği için kalın kenarlık, kenarlar boyunca ince silindirlerle; köşeler
+// de küçük kürelerle kapatılarak çizilir. Eğrisel yüzeylerde (makaralar) yalnızca
+// belirgin kenarlar (EDGE_ANGLE üzeri) alınır.
+const SUPPORT_EDGE_RADIUS_3D = 0.0025;
+const SUPPORT_EDGE_ANGLE_3D = 30;
+let supportEdgeMaterial3D = null;
+// Ortak geometriler ilk kullanımda oluşturulur: dosya yüklenirken THREE'ye
+// dokunulmaz, böylece Three.js yüklenemese de sayfanın geri kalanı çalışır.
+let supportEdgeCylinder3D = null, supportEdgeJoint3D = null;
+
+function addSupportPart3D(mesh) {
+    beamGroup3d.add(mesh);
+
+    if (!supportEdgeCylinder3D) {
+        supportEdgeCylinder3D = new THREE.CylinderGeometry(1, 1, 1, 6);
+        supportEdgeJoint3D = new THREE.SphereGeometry(1, 8, 6);
+    }
+
+    mesh.updateMatrix();
+    const edges = new THREE.EdgesGeometry(mesh.geometry, SUPPORT_EDGE_ANGLE_3D);
+    const p = edges.attributes.position;
+    const up = new THREE.Vector3(0, 1, 0);
+    const joints = new Map();
+    const R = SUPPORT_EDGE_RADIUS_3D;
+
+    for (let i = 0; i < p.count; i += 2) {
+        const a = new THREE.Vector3().fromBufferAttribute(p, i).applyMatrix4(mesh.matrix);
+        const b = new THREE.Vector3().fromBufferAttribute(p, i + 1).applyMatrix4(mesh.matrix);
+        const dir = new THREE.Vector3().subVectors(b, a);
+        const len = dir.length();
+        if (len < 1e-6) continue;
+
+        const edge = new THREE.Mesh(supportEdgeCylinder3D, supportEdgeMaterial3D);
+        edge.scale.set(R, len, R);
+        edge.quaternion.setFromUnitVectors(up, dir.normalize());
+        edge.position.addVectors(a, b).multiplyScalar(0.5);
+        beamGroup3d.add(edge);
+
+        [a, b].forEach(v => joints.set(`${v.x.toFixed(4)},${v.y.toFixed(4)},${v.z.toFixed(4)}`, v));
+    }
+    joints.forEach(v => {
+        const joint = new THREE.Mesh(supportEdgeJoint3D, supportEdgeMaterial3D);
+        joint.scale.setScalar(R);
+        joint.position.copy(v);
+        beamGroup3d.add(joint);
+    });
+    edges.dispose();
+}
+
+function drawSupport3D(type, pos, groundY) {
     const isDarkMode = document.body.classList.contains('dark-mode');
-    const color = isDarkMode ? 0xd0d0d0 : 0x4f5659;
-    const mat = new THREE.MeshPhongMaterial({ color: color });
+    // Açık renk dolgu + dolgunun birkaç ton koyusu kalın kenarlık: koyu tek renk gövde
+    // zeminde ve kirişin yanında seçilmiyordu. polygonOffset, kenarlar dolguya gömülmesin diye.
+    const fillColor = new THREE.Color(isDarkMode ? 0xb8c2cc : 0xe3e8ee);
+    const mat = new THREE.MeshPhongMaterial({
+        color: fillColor, shininess: 10,
+        polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1
+    });
+    // Kenar rengi dolgudan türetilir (aynı ton, %32 daha koyu); tema değişince de güncellenir
+    if (!supportEdgeMaterial3D) supportEdgeMaterial3D = new THREE.MeshBasicMaterial();
+    supportEdgeMaterial3D.color.copy(fillColor).offsetHSL(0, 0, -0.32);
     const sectionOffset = 0.075; // Half of section size
+    const beamBottom = pos.y - sectionOffset;
 
     if (type === 'pin-support') {
-        const geo = new THREE.ConeGeometry(0.12, 0.25, 4);
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(pos.x, pos.y - 0.125 - sectionOffset, 0);
-        beamGroup3d.add(mesh);
+        // Kiriş altından zemine kadar üçgen prizma
+        addSupportPart3D(createTriangularPrism3D(pos.x, groundY, beamBottom - groundY, mat));
     } else if (type === 'roller-support') {
-        const geo = new THREE.SphereGeometry(0.08, 16, 16);
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(pos.x, pos.y - 0.08 - sectionOffset, 0);
-        beamGroup3d.add(mesh);
+        // 2B sembolün 3B hali: üçgen prizma → taban plakası → zemine değen yan yana makaralar.
+        // Makaralar z ekseni boyunca uzanan silindirlerdir (kiriş yönünde yuvarlanır).
+        const r = 0.025, rollerCount = 5, plateT = 0.02, plateD = 0.24;
+        // Plaka, makaraların yan yana değdiği genişliğin (0.27) %10 fazlası
+        const plateW = (2 * r * rollerCount + 0.02) * 1.1;
+        // Makaralar plaka boyunca eşit aralıkla dağıtılır; uçtakiler plaka kenarından
+        // 0.01 içeride kalır (eski yerleşimdeki kenar payı)
+        const edgeMargin = 0.01;
+        const firstX = -plateW / 2 + edgeMargin + r;
+        const spacing = (plateW - 2 * (edgeMargin + r)) / (rollerCount - 1);
+
+        for (let i = 0; i < rollerCount; i++) {
+            const roller = new THREE.Mesh(new THREE.CylinderGeometry(r, r, plateD, 16), mat);
+            roller.rotation.x = Math.PI / 2;
+            roller.position.set(pos.x + firstX + i * spacing, groundY + r, 0);
+            addSupportPart3D(roller);
+        }
+
+        const plateBottom = groundY + 2 * r;
+        const plate = new THREE.Mesh(new THREE.BoxGeometry(plateW, plateT, plateD), mat);
+        plate.position.set(pos.x, plateBottom + plateT / 2, 0);
+        addSupportPart3D(plate);
+
+        const prismBottom = plateBottom + plateT;
+        addSupportPart3D(createTriangularPrism3D(pos.x, prismBottom, Math.max(beamBottom - prismBottom, 0.01), mat));
     } else if (type === 'fixed-support') {
-        const geo = new THREE.BoxGeometry(0.06, 0.4, 0.4);
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(pos.x, pos.y, 0);
-        beamGroup3d.add(mesh);
+        // Plaka kirişin üstünden zemine kadar uzanır
+        const top = pos.y + 0.2;
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.06, top - groundY, 0.4), mat);
+        mesh.position.set(pos.x, (top + groundY) / 2, 0);
+        addSupportPart3D(mesh);
     }
+}
+
+// Bütün mesnetlerin oturduğu tek zemin: yarı saydam dolgu üzerinde ızgara.
+// X yönünde kirişi ve tüm mesnetleri kapsar, Z yönünde kiriş ekseninde ortalanır.
+function drawGround3D(groundY, supportXs, beamLength) {
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    const lineColor = isDarkMode ? 0x5b6b80 : 0x8a939c;
+    const fillColor = isDarkMode ? 0x1e293b : 0xcfd6dd;
+    const cell = 0.2, margin = 0.4, halfDepth = 0.6;
+
+    // Izgara çizgileri hücre katlarına denk gelsin diye sınırlar yuvarlanır
+    const x0 = Math.floor((Math.min(0, ...supportXs) - margin) / cell) * cell;
+    const x1 = Math.ceil((Math.max(beamLength, ...supportXs) + margin) / cell) * cell;
+
+    const fill = new THREE.Mesh(
+        new THREE.PlaneGeometry(x1 - x0, 2 * halfDepth),
+        new THREE.MeshBasicMaterial({ color: fillColor, transparent: true, opacity: 0.45, side: THREE.DoubleSide, depthWrite: false })
+    );
+    fill.rotation.x = -Math.PI / 2; // PlaneGeometry XY → XZ
+    fill.position.set((x0 + x1) / 2, groundY, 0);
+    beamGroup3d.add(fill);
+
+    const vertices = [];
+    const nx = Math.round((x1 - x0) / cell), nz = Math.round(2 * halfDepth / cell);
+    for (let i = 0; i <= nx; i++) {
+        const x = x0 + i * cell;
+        vertices.push(x, 0, -halfDepth, x, 0, halfDepth);
+    }
+    for (let j = 0; j <= nz; j++) {
+        const z = -halfDepth + j * cell;
+        vertices.push(x0, 0, z, x1, 0, z);
+    }
+    const gridGeo = new THREE.BufferGeometry();
+    gridGeo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    const grid = new THREE.LineSegments(gridGeo, new THREE.LineBasicMaterial({ color: lineColor, transparent: true, opacity: 0.9 }));
+    grid.position.y = groundY - 0.001; // Dolguyla çakışıp titremesin
+    beamGroup3d.add(grid);
 }
 
 function drawHinge3D(pos) {

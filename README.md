@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![PWA Ready](https://img.shields.io/badge/PWA-Ready-brightgreen.svg)](https://web.dev/progressive-web-apps/)
-[![Languages](https://img.shields.io/badge/Languages-10+-orange.svg)](#-multilingual-support)
+[![Languages](https://img.shields.io/badge/Languages-30+-orange.svg)](#-multilingual-support)
 [![Live Demo](https://img.shields.io/badge/🌐%20Live%20Demo-www.rasimtemur.com-389fb6.svg)](https://www.rasimtemur.com/vetin/beam/)
 
 > Developed by **Assoc. Prof. Rasim Temür** · Istanbul University-Cerrahpaşa, Department of Civil Engineering  
@@ -47,8 +47,9 @@ The software is intended to support both undergraduate instruction and self-dire
 **Key properties of the application:**
 
 - Operates entirely within the client browser; no server-side computation is required
-- Functions offline as a **Progressive Web App (PWA)**, compatible with major desktop and mobile platforms
-- User interface is localised in **more than 10 languages**
+- Functions fully offline as a **Progressive Web App (PWA)** — all assets, including third-party libraries, are bundled and cached locally
+- User interface is localised in **more than 30 languages**
+- No third-party geolocation calls; language selection relies solely on the browser locale and saved preference
 - Source code is freely distributed under the **MIT License**
 
 ---
@@ -119,7 +120,7 @@ The elastic curve computation requires the specification of:
 
 ## 🌐 Multilingual Support
 
-The user interface is fully localised in more than 10 languages. The active language is selectable at runtime and persisted across sessions via `localStorage`:
+The user interface is fully localised in **more than 30 languages**. The active language is selectable at runtime and persisted across sessions via `localStorage`. Primary languages include:
 
 | Code | Language | Code | Language |
 |------|----------|------|----------|
@@ -130,6 +131,8 @@ The user interface is fully localised in more than 10 languages. The active lang
 | `ar` | 🇸🇦 Arabic | `ja` | 🇯🇵 Japanese |
 | `ko` | 🇰🇷 Korean | `ru` | 🇷🇺 Russian |
 
+Additional languages: Greek, Hebrew, Hindi, Bengali, Persian, Urdu, Thai, Indonesian, Tagalog, Nepali, Armenian, Romanian, Burmese, Uzbek, Dzongkha, Tajik, Kyrgyz, Bulgarian, Slovenian, Albanian, Georgian, and more.
+
 ---
 
 ## 🛠️ Technical Implementation
@@ -139,11 +142,13 @@ The application is implemented using standard web technologies without dependenc
 | Technology | Role |
 |-----------|------|
 | **HTML5 / CSS3 / JavaScript (ES6+)** | Core application architecture |
-| **[Chart.js](https://www.chartjs.org/)** | Rendering of 2D internal force diagrams |
-| **[D3.js](https://d3js.org/)** | SVG-based structural diagram drawing |
-| **[Three.js](https://threejs.org/)** | WebGL-based 3D elastic curve visualisation |
+| **[Chart.js](https://www.chartjs.org/) 4.4.9** | Rendering of 2D internal force diagrams |
+| **[D3.js](https://d3js.org/) 7.9.0** | SVG-based structural diagram drawing |
+| **[Three.js](https://threejs.org/) 0.145.0** | WebGL-based 3D elastic curve visualisation |
 | **Service Worker API** | Offline caching and PWA functionality |
 | **Web App Manifest** | Home screen installation support |
+
+All third-party libraries are version-pinned and served locally from the `vendor/` directory — no CDN dependency, enabling full offline operation.
 
 ---
 
@@ -172,11 +177,23 @@ beam/
 │
 ├── translations.js         # Localisation string repository
 ├── localization.js         # Language switching and i18n engine
+├── models-gallery.js       # Ready-made example model gallery
 │
 ├── common.css              # Base styles and design tokens
 ├── desktop-layout.css      # Desktop viewport layout
 ├── mobile-layout.css       # Mobile viewport layout
 ├── controls-3d.css         # 3D viewer control panel styling
+│
+├── vendor/                 # Locally bundled third-party libraries
+│   ├── chart.umd.min.js    #   Chart.js 4.4.9
+│   ├── d3.v7.min.js        #   D3.js 7.9.0
+│   ├── three.min.js        #   Three.js 0.145.0
+│   └── OrbitControls.js    #   Three.js orbit camera controls
+│
+├── tests/
+│   └── run-tests.js        # Unit tests for the statics solver (Node.js)
+│
+├── models/                 # Example model files (.json)
 │
 ├── logo.svg                # Application logotype
 ├── icon-192.png            # PWA icon (192 × 192 px)
@@ -235,6 +252,19 @@ On browsers supporting the PWA specification (Chromium-based browsers, Firefox, 
 - **Internal force distributions** (axial force *N*, shear force *V*, bending moment *M*, torsional moment *T*) are obtained through numerical integration of the applied loading along the beam axis.
 - **Elastic deformation** is computed by double integration of the bending moment diagram in accordance with the Euler–Bernoulli beam theory, utilising the specified values of *E* (modulus of elasticity) and *I* (second moment of area).
 - The **three-dimensional elastic curve** provides a simultaneous representation of flexural (vertical) and torsional (lateral) deformations.
+- **Sign convention:** positive distributed-load magnitudes act downward; negative magnitudes represent upward (uplift) loading and are fully accounted for in reactions, shear, moment, and deflection computations.
+
+---
+
+## 🧪 Testing
+
+The statics solver (support reactions, shear/moment functions, elastic curve, stability checks) is covered by unit tests that run in Node.js without a browser:
+
+```bash
+node tests/run-tests.js
+```
+
+The suite validates classical closed-form solutions (e.g. *R = P/2*, *M = wL²/2*, *δ = 5wL⁴/384EI*) including upward-load sign handling and Gerber (hinged) system stability rules.
 
 ---
 

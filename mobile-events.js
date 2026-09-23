@@ -111,9 +111,8 @@ document.body.addEventListener('click', (event) => {
     if (button.id === 'center-btn' && beam) {
         centerDrawing();
         redrawCanvas();
-        if (calculatedReactions || calculatedMomentReaction || calculatedAxialReaction) {
-             drawFreeBodyDiagram(calculatedReactions, calculatedMomentReaction, null, calculatedAxialReaction);
-        }
+        // SCD ve diyagramlar da kirişin yeni konumuna hizalanır
+        realignDiagramsToModel();
         return;
     }
     
@@ -160,8 +159,8 @@ document.body.addEventListener('click', (event) => {
         let contentWrapper = parentContainer.querySelector('.content-wrapper, .table-grid-wrapper');
         if (!contentWrapper) return;
         const currentLang = document.documentElement.lang || 'tr';
-        const showIcon = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 13c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/></svg>`;
-        const hideIcon = `<svg viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l3.28 3.28.02.06C3.93 8.5 2.73 10.11 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l3.15 3.15L21 21.18 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02.05c0-1.66-1.34-3-3-3l-.05-.02-3.15-3.15-.05-.02c0-1.66 1.34-3-3z"/></svg>`;
+        const showIcon = ICON_EYE_SHOW;
+        const hideIcon = ICON_EYE_HIDE;
         contentWrapper.classList.toggle('hidden');
         const isHidden = contentWrapper.classList.contains('hidden');
         
@@ -172,6 +171,7 @@ document.body.addEventListener('click', (event) => {
         if (isHidden) { button.innerHTML = showIcon; button.setAttribute('title', translations[currentLang]['show']); button.dataset.i18nTitle = 'show'; } 
         else { 
             button.innerHTML = hideIcon; button.setAttribute('title', translations[currentLang]['hide']); button.dataset.i18nTitle = 'hide'; 
+            redrawFbdIfShown(parentContainer); // gizliyken değişen SCD'yi yeniden çiz
             if (parentContainer.id === 'elastic-curve-3d-wrapper' && typeof onWindowResize3d === 'function') {
                 setTimeout(() => {
                     onWindowResize3d();
@@ -198,7 +198,7 @@ document.body.addEventListener('click', (event) => {
 });
 
 gridSizeInput.addEventListener('change', redrawCanvas);
-metersPerGridInput.addEventListener('change', () => { if (beam) { beam.metersPerGridOnCreation = parseFloat(metersPerGridInput.value); } redrawCanvas(); updateAll(); });
+metersPerGridInput.addEventListener('change', () => { if (beam) { beam.metersPerGridOnCreation = getMetersPerGrid(); } redrawCanvas(); updateAll(); });
 kNPerGridInput.addEventListener('change', redrawCanvas);
 elasticityInput.addEventListener('change', updateAll);
 momentOfInertiaInput.addEventListener('change', updateAll);
@@ -249,7 +249,7 @@ function handleTouchStart(e) {
         if (currentTool === 'concentrated-load') {
             isDrawingConcentratedLoad = true;
             drawingStage = 1;
-            concentratedLoadStartPoint = { x: snappedPos.x, y: beam.startY - (parseInt(gridSizeInput.value) / 2) };
+            concentratedLoadStartPoint = { x: snappedPos.x, y: beam.startY - (getGridSize() / 2) };
         } else if (currentTool === 'concentrated-moment' || currentTool === 'torsion-moment') {
             isDrawingConcentratedMoment = (currentTool === 'concentrated-moment');
             isDrawingTorsionMoment = (currentTool === 'torsion-moment');
@@ -267,7 +267,7 @@ function handleTouchStart(e) {
     } else if (draggableTools.includes(currentTool)) {
         if (!beam && currentTool !== 'beam') return;
         isDrawing = true;
-        const gridSize = parseInt(gridSizeInput.value);
+        const gridSize = getGridSize();
         const canvasCenterY = canvas.clientHeight / 2;
         const nearestGridY = Math.floor(canvasCenterY / gridSize) * gridSize;
         startPoint = { x: snappedPos.x, y: nearestGridY + gridSize / 2 };
@@ -343,7 +343,7 @@ function handleTouchEnd(e) {
         if (Math.abs(dx) > EPSILON || Math.abs(dy) > EPSILON) {
             const finalAngleRad = Math.atan2(dy, dx);
             const length = Math.sqrt(dx * dx + dy * dy);
-            const gridSize = parseInt(gridSizeInput.value), kNPerGrid = parseFloat(kNPerGridInput.value) || 1;
+            const gridSize = getGridSize(), kNPerGrid = getKNPerGrid();
             const magnitude = (length / gridSize) * kNPerGrid;
             concentratedLoads.push({ x: startPos.x, y: startPos.y, magnitude: magnitude, angle: finalAngleRad });
         }
@@ -351,7 +351,8 @@ function handleTouchEnd(e) {
         const startPos = momentStartPoint;
         const endPos = rawPos;
         const dy = endPos.y - startPos.y;
-        const magnitude = -(dy / 5);
+        // Izgara ayarlarıyla tutarlı ölçek: 1 ızgara = kNPerGrid kNm
+        const magnitude = -(dy / (getGridSize() / getKNPerGrid()));
         if (Math.abs(magnitude) > EPSILON) {
             const finalX = pos.x; 
 
@@ -359,14 +360,14 @@ function handleTouchEnd(e) {
             else { torsionMoments.push({ x: finalX, y: beam.startY, magnitude: magnitude }); }
         }
     } else if (isDrawing && currentTool === 'distributed-load') {
-        const gridSize = parseInt(gridSizeInput.value), kNPerGrid = parseFloat(kNPerGridInput.value) || 1;
+        const gridSize = getGridSize(), kNPerGrid = getKNPerGrid();
         const beamTopY = beam.startY - (gridSize / 2);
         const endVerticalDistance = rawPos.y - beamTopY;
         const endMag = (endVerticalDistance / gridSize) * kNPerGrid;
         distributedLoads.push({ startX: loadStartPoint.x, endX: pos.x, magnitude: endMag });
     } else if (isDrawing && currentTool === 'triangular-load') {
          if (drawingStage === 2) {
-            const gridSize = parseInt(gridSizeInput.value), kNPerGrid = parseFloat(kNPerGridInput.value) || 1;
+            const gridSize = getGridSize(), kNPerGrid = getKNPerGrid();
             const beamTopY = beam.startY - (gridSize / 2);
             const startMag = confirmedMagnitude1;
             const endMag = ((rawPos.y - beamTopY) / gridSize) * kNPerGrid;
@@ -374,7 +375,7 @@ function handleTouchEnd(e) {
         }
     } else if (isDrawing && currentTool === 'beam') {
         if (Math.abs(startPoint.x - pos.x) > 0) { 
-            beam = { startX: Math.min(startPoint.x, pos.x), startY: startPoint.y, endX: Math.max(startPoint.x, pos.x), gridSizeOnCreation: parseInt(gridSizeInput.value), metersPerGridOnCreation: parseFloat(metersPerGridInput.value) }; 
+            beam = { startX: Math.min(startPoint.x, pos.x), startY: startPoint.y, endX: Math.max(startPoint.x, pos.x), gridSizeOnCreation: getGridSize(), metersPerGridOnCreation: getMetersPerGrid() }; 
             beam.length = beam.endX - beam.startX; 
         }
     } else if (isDrawing && ['pin-support', 'roller-support', 'fixed-support'].includes(currentTool)) {
@@ -404,7 +405,7 @@ function handleTouchMove(e) {
     currentRawMousePos = rawPos; 
     
     let needsLiveUpdate = false;
-    if (isResizing) { hasDragged = true; const gridSize = parseInt(gridSizeInput.value); if (activeHandle === 'start') { beam.startX = Math.min(snappedPos.x, beam.endX - gridSize); } else { beam.endX = Math.max(snappedPos.x, beam.startX + gridSize); } beam.length = beam.endX - beam.startX; needsLiveUpdate = true; } 
+    if (isResizing) { hasDragged = true; const gridSize = getGridSize(); if (activeHandle === 'start') { beam.startX = Math.min(snappedPos.x, beam.endX - gridSize); } else { beam.endX = Math.max(snappedPos.x, beam.startX + gridSize); } beam.length = beam.endX - beam.startX; needsLiveUpdate = true; } 
     else if (isResizingDistLoad) { hasDragged = true; const load = distributedLoads[resizedDistLoadIndex]; if (activeDistLoadHandle === 'start') { load.startX = snappedPos.x; } else { load.endX = snappedPos.x; } needsLiveUpdate = true; } 
     else if (isResizingTrapLoad) { hasDragged = true; const load = trapezoidalLoads[resizedTrapLoadIndex]; if (activeDistLoadHandle === 'start') { load.startX = snappedPos.x; } else { load.endX = snappedPos.x; } needsLiveUpdate = true; } 
     else if (isDraggingSupport) { hasDragged = true; supports[draggedSupportIndex].x = snappedPos.x; needsLiveUpdate = true; } 
@@ -420,11 +421,11 @@ function handleTouchMove(e) {
     }
     
     if (isDrawing && currentTool === 'triangular-load') {
-        const gridSize = parseInt(gridSizeInput.value);
+        const gridSize = getGridSize();
         if (drawingStage === 1) {
             if (Math.abs(snappedPos.x - loadStartPoint.x) >= gridSize) {
                 const beamTopY = beam.startY - (gridSize / 2);
-                const kNPerGrid = parseFloat(kNPerGridInput.value) || 1;
+                const kNPerGrid = getKNPerGrid();
                 const startMag = ((rawPos.y - beamTopY) / gridSize) * kNPerGrid;
                 confirmedMagnitude1 = startMag;
                 drawingStage = 2;
@@ -437,7 +438,7 @@ function handleTouchMove(e) {
 
     if (isDrawing && currentTool === 'beam') {
         drawDragPreview();
-        const gridSize = parseInt(gridSizeInput.value);
+        const gridSize = getGridSize();
         const beamBottomLineY = Math.round((startPoint.y + gridSize / 2) / gridSize) * gridSize;
         const dimensionY = beamBottomLineY + (3 * gridSize);
         drawPreviewDimension(ctx, snappedPos.x, [startPoint.x], dimensionY);
@@ -445,7 +446,7 @@ function handleTouchMove(e) {
         if (currentTool === 'hinge') { drawHinge(ctx, snappedPos.x, beam.startY, true); } 
         else { drawSupport(ctx, currentTool, snappedPos.x, beam.startY, true); }
         let allPoints = [beam.startX, beam.endX, ...supports.map(s => s.x), ...hinges.map(h => h.x)];
-        const gridSize = parseInt(gridSizeInput.value);
+        const gridSize = getGridSize();
         const beamBottomLineY = Math.round((beam.startY + gridSize / 2) / gridSize) * gridSize;
         const dimensionY = beamBottomLineY + (3 * gridSize);
         drawPreviewDimension(ctx, snappedPos.x, allPoints, dimensionY);

@@ -124,6 +124,17 @@
     }
 
     function loadModel(name) {
+        // Önce gömülü veri (models/models-data.js): sayfa file:// ile açıldığında
+        // tarayıcı JSON dosyalarının okunmasını engellediği için asıl yol budur.
+        // Kopya alınır; model düzenlenince gömülü veri bozulmasın.
+        const embedded = window.VETIN_MODELS && window.VETIN_MODELS[name];
+        if (embedded) {
+            applyModelData(JSON.parse(JSON.stringify(embedded)));
+            hideGallery();
+            return;
+        }
+
+        // Yedek: gömülü veri yoksa JSON dosyası ağdan okunur
         const xhr = new XMLHttpRequest();
         xhr.open('GET', MODELS_PATH + name + '.json', true);
         xhr.responseType = 'json';

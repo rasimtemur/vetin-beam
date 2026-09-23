@@ -19,6 +19,7 @@ const translations = {
     openTitle: "Open Model",
     downloadModelTitle: "Download Model",
     centerViewTitle: "Center View",
+    cutMethodTitle: "Cut Method: drag the dashed line to see internal forces",
     fullscreenTitle: "Fullscreen",
     galleryTitle: "Choose a Model",
     gallerySubtitle: "Start with an example, open a file, or create a new model",
@@ -78,6 +79,7 @@ const translations = {
     structuralModel: "Structural Model",
     diagrams: "Diagrams",
     freeBodyDiagram: "Free Body Diagram (FBD)",
+    fbdShowLoads: "External Forces", fbdShowReactions: "Support Reactions", fbdOptionsTitle: "Show or hide on the free body diagram", fullscreenPanelsTitle: "Drawings shown below", hideToolbar: "Hide top menu", showToolbar: "Show top menu",
     normalForceDiagram: "Axial Force Diagram (AFD)",
     shearForceDiagram: "Shear Force Diagram (SFD)",
     bendingMomentDiagram: "Bending Moment Diagram (BMD)",
@@ -146,6 +148,10 @@ const translations = {
     aboutContent2: "You can access other academic solutions in the Vetin ecosystem at",
     aboutClose: "OK",
 
+    // Hesaplama uyarıları (diğer dillerde yoksa İngilizce kullanılır)
+    warnMultiHinge: "The solver currently supports systems with only one internal hinge.",
+    warnTorsionNeedsFixed: "Add a fixed support to the system to draw the torsional moment diagram.",
+
     // YENİ EKLENDİ
     toolHints: {
       beam: "Click and drag on the grid to draw the beam.",
@@ -179,6 +185,7 @@ const translations = {
     openTitle: "Modell öffnen",
     downloadModelTitle: "Modell herunterladen",
     centerViewTitle: "Ansicht zentrieren",
+    cutMethodTitle: "Schnittmethode: gestrichelte Linie ziehen, um Schnittgrößen zu sehen",
     fullscreenTitle: "Vollbild",
     galleryTitle: "Modell auswählen",
     gallerySubtitle: "Mit einem Beispiel beginnen, Datei oeffnen oder neues Modell erstellen",
@@ -236,6 +243,7 @@ const translations = {
     structuralModel: "Strukturmodell",
     diagrams: "Diagramme",
     freeBodyDiagram: "Freikörperbild (FKB)",
+    fbdShowLoads: "Äußere Kräfte", fbdShowReactions: "Auflagerreaktionen", fbdOptionsTitle: "Im Freikörperbild ein- oder ausblenden", fullscreenPanelsTitle: "Darunter angezeigte Zeichnungen", hideToolbar: "Obere Menüleiste ausblenden", showToolbar: "Obere Menüleiste einblenden",
     normalForceDiagram: "Axialkraftdiagramm (AKD)",
     shearForceDiagram: "Querkraftdiagramm (QKD)",
     bendingMomentDiagram: "Biegemomentdiagramm (BMD)",
@@ -335,6 +343,7 @@ const translations = {
     openTitle: "打开模型",
     downloadModelTitle: "下载模型",
     centerViewTitle: "中心视图",
+    cutMethodTitle: "截面法：拖动虚线查看内力",
     fullscreenTitle: "全屏",
     galleryTitle: "选择模型",
     gallerySubtitle: "从示例开始、打开文件或创建新模型",
@@ -392,6 +401,7 @@ const translations = {
     structuralModel: "结构模型",
     diagrams: "图表",
     freeBodyDiagram: "受力分析图 (FBD)",
+    fbdShowLoads: "外力", fbdShowReactions: "支座反力", fbdOptionsTitle: "在受力分析图中显示或隐藏", fullscreenPanelsTitle: "下方显示的图", hideToolbar: "隐藏顶部菜单", showToolbar: "显示顶部菜单",
     normalForceDiagram: "轴力图 (AFD)",
     shearForceDiagram: "剪力图 (SFD)",
     bendingMomentDiagram: "弯矩图 (BMD)",
@@ -491,6 +501,7 @@ const translations = {
     openTitle: "Model Aç",
     downloadModelTitle: "Modeli İndir",
     centerViewTitle: "Görünümü Ortala",
+    cutMethodTitle: "Kesim Yöntemi: iç kuvvetleri görmek için kesikli çizgiyi sürükleyin",
     fullscreenTitle: "Tam Ekran",
     galleryTitle: "Bir Model Seçin",
     gallerySubtitle: "Hazır bir örnekle başlayın, dosya açın veya yeni model oluşturun",
@@ -550,6 +561,7 @@ const translations = {
     structuralModel: "Yapısal Model",
     diagrams: "Diyagramlar",
     freeBodyDiagram: "Serbest Cisim Diyagramı (SCD)",
+    fbdShowLoads: "Dış Kuvvetler", fbdShowReactions: "Mesnet Tepkileri", fbdOptionsTitle: "Serbest cisim diyagramında göster/gizle", fullscreenPanelsTitle: "Altta gösterilecek çizimler", hideToolbar: "Üst menüyü gizle", showToolbar: "Üst menüyü göster",
     normalForceDiagram: "Eksenel Kuvvet Diyagramı (EKD)",
     shearForceDiagram: "Kesme Kuvveti Diyagramı (KKD)",
     bendingMomentDiagram: "Eğilme Momenti Diyagramı (EMD)",
@@ -618,6 +630,10 @@ const translations = {
     aboutContent2: "Vetin ekosistemindeki diğer akademik çözümlere şu adresten ulaşabilirsiniz:",
     aboutClose: "Tamam",
 
+    // Hesaplama uyarıları
+    warnMultiHinge: "Bu çözüm şimdilik yalnızca bir adet ara mafsal içeren sistemleri desteklemektedir.",
+    warnTorsionNeedsFixed: "Burulma momenti diyagramı çizebilmek için sisteme bir ankastre mesnet eklemelisiniz.",
+
     // YENİ EKLENDİ
     toolHints: {
       beam: "Kirişi çizmek için ızgara üzerinde tıklayıp sürükleyin.",
@@ -655,6 +671,7 @@ const createTranslation = (overrides) => {
 
 // Spanish (Español)
 translations.es = createTranslation({
+    fbdShowLoads: "Fuerzas Externas", fbdShowReactions: "Reacciones en los Apoyos", fbdOptionsTitle: "Mostrar u ocultar en el diagrama de cuerpo libre", fullscreenPanelsTitle: "Dibujos mostrados debajo", hideToolbar: "Ocultar menú superior", showToolbar: "Mostrar menú superior",
     beamTitle: "Dibujar Viga", pinSupportTitle: "Soporte Fijo", rollerSupportTitle: "Soporte de Rodillo", fixedSupportTitle: "Soporte Empotrado", hingeTitle: "Articulación",
     pointLoadTitle: "Carga Puntual", momentTitle: "Momento Flector", torsionTitle: "Momento Torsor", distLoadTitle: "Carga Distribuida", trapLoadTitle: "Carga Trapezoidal",
     editMoveTitle: "Editar/Mover", resetTitle: "Reiniciar", saveTitle: "Guardar Modelo", openTitle: "Abrir Modelo",
@@ -732,6 +749,7 @@ translations.es = createTranslation({
 
 // French (Français)
 translations.fr = createTranslation({
+    fbdShowLoads: "Forces Extérieures", fbdShowReactions: "Réactions d'Appui", fbdOptionsTitle: "Afficher ou masquer sur le diagramme du corps libre", fullscreenPanelsTitle: "Dessins affichés en dessous", hideToolbar: "Masquer le menu supérieur", showToolbar: "Afficher le menu supérieur",
     beamTitle: "Dessiner Poutre", pinSupportTitle: "Appui Simple", rollerSupportTitle: "Appui Rouleau", fixedSupportTitle: "Encastrement", hingeTitle: "Rotule",
     pointLoadTitle: "Charge Ponctuelle", momentTitle: "Moment Fléchissant", torsionTitle: "Moment de Torsion", distLoadTitle: "Charge Répartie", trapLoadTitle: "Charge Trapézoïdale",
     editMoveTitle: "Éditer/Déplacer", resetTitle: "Réinitialiser", saveTitle: "Enregistrer", openTitle: "Ouvrir",
@@ -811,6 +829,7 @@ translations.fr = createTranslation({
 
 // Italian (Italiano)
 translations.it = createTranslation({
+    fbdShowLoads: "Forze Esterne", fbdShowReactions: "Reazioni Vincolari", fbdOptionsTitle: "Mostra o nascondi nel diagramma di corpo libero", fullscreenPanelsTitle: "Disegni mostrati sotto", hideToolbar: "Nascondi menu superiore", showToolbar: "Mostra menu superiore",
     beamTitle: "Disegna Trave", pinSupportTitle: "Cerniera", rollerSupportTitle: "Carrello", fixedSupportTitle: "Incastro", hingeTitle: "Cerniera Interna",
     pointLoadTitle: "Carico Concentrato", momentTitle: "Momento Flettente", torsionTitle: "Momento Torcente", distLoadTitle: "Carico Distribuito",
     editMoveTitle: "Modifica/Sposta", resetTitle: "Reimposta", saveTitle: "Salva", openTitle: "Apri",
@@ -895,6 +914,7 @@ translations.it = createTranslation({
 
 // Portuguese (Português)
 translations.pt = createTranslation({
+    fbdShowLoads: "Forças Externas", fbdShowReactions: "Reações de Apoio", fbdOptionsTitle: "Mostrar ou ocultar no diagrama de corpo livre", fullscreenPanelsTitle: "Desenhos exibidos abaixo", hideToolbar: "Ocultar menu superior", showToolbar: "Mostrar menu superior",
     beamTitle: "Desenhar Viga", pinSupportTitle: "Apoio Fixo", rollerSupportTitle: "Apoio Móvel", fixedSupportTitle: "Engaste", hingeTitle: "Rótula",
     pointLoadTitle: "Carga Pontual", momentTitle: "Momento Fletor", torsionTitle: "Momento Torsor", distLoadTitle: "Carga Distribuída",
     editMoveTitle: "Editar/Mover", resetTitle: "Redefinir", saveTitle: "Salvar", openTitle: "Abrir",
@@ -977,6 +997,7 @@ translations.pt = createTranslation({
 
 // Russian (Русский)
 translations.ru = createTranslation({
+    fbdShowLoads: "Внешние силы", fbdShowReactions: "Опорные реакции", fbdOptionsTitle: "Показать или скрыть на схеме свободного тела", fullscreenPanelsTitle: "Чертежи, показываемые ниже", hideToolbar: "Скрыть верхнее меню", showToolbar: "Показать верхнее меню",
     beamTitle: "Нарисовать балку", pinSupportTitle: "Шарнирно-неподвижная", rollerSupportTitle: "Шарнирно-подвижная", fixedSupportTitle: "Заделка", hingeTitle: "Шарнир",
     pointLoadTitle: "Сосредоточенная сила", momentTitle: "Изгибающий момент", torsionTitle: "Крутящий момент", distLoadTitle: "Распред. нагрузка",
     editMoveTitle: "Ред./Переместить", resetTitle: "Сброс", saveTitle: "Сохр. модель", openTitle: "Откр. модель",
@@ -1058,6 +1079,7 @@ translations.ru = createTranslation({
 
 // Japanese (日本語)
 translations.ja = createTranslation({
+    fbdShowLoads: "外力", fbdShowReactions: "支点反力", fbdOptionsTitle: "自由体図に表示／非表示", fullscreenPanelsTitle: "下に表示する図", hideToolbar: "上部メニューを隠す", showToolbar: "上部メニューを表示",
     beamTitle: "梁を描く", pinSupportTitle: "回転端", rollerSupportTitle: "移動端", fixedSupportTitle: "固定端", hingeTitle: "ヒンジ",
     pointLoadTitle: "集中荷重", momentTitle: "曲げモーメント", torsionTitle: "ねじりモーメント", distLoadTitle: "等分布荷重",
     editMoveTitle: "編集/移動", resetTitle: "リセット", saveTitle: "保存", openTitle: "開く",
@@ -1139,6 +1161,7 @@ translations.ja = createTranslation({
 
 // Arabic (العربية)
 translations.ar = createTranslation({
+    fbdShowLoads: "القوى الخارجية", fbdShowReactions: "ردود أفعال الركائز", fbdOptionsTitle: "إظهار أو إخفاء في مخطط الجسم الحر", fullscreenPanelsTitle: "الرسومات المعروضة في الأسفل", hideToolbar: "إخفاء القائمة العلوية", showToolbar: "إظهار القائمة العلوية",
     beamTitle: "رسم العارضة", pinSupportTitle: "دعامة مفصلية", rollerSupportTitle: "دعامة منزلقة", fixedSupportTitle: "دعامة ثابتة", hingeTitle: "مفصل",
     pointLoadTitle: "حمل مركز", momentTitle: "عزم الانحناء", torsionTitle: "عزم الالتواء", distLoadTitle: "حمل موزع",
     editMoveTitle: "تعديل/نقل", resetTitle: "إعادة تعيين", saveTitle: "حفظ النموذج", openTitle: "فتح نموذج",
@@ -1220,6 +1243,7 @@ translations.ar = createTranslation({
 
 // Persian (فارسی)
 translations.fa = createTranslation({
+    fbdShowLoads: "نیروهای خارجی", fbdShowReactions: "واکنش‌های تکیه‌گاهی", fbdOptionsTitle: "نمایش یا پنهان کردن در نمودار جسم آزاد", fullscreenPanelsTitle: "نمودارهای نمایش داده‌شده در پایین", hideToolbar: "پنهان کردن منوی بالا", showToolbar: "نمایش منوی بالا",
     beamTitle: "رسم تیر", beam: "تیر", supports: "تکیه‌گاه‌ها", loads: "بارها",
     pinSupportTitle: "تکیه‌گاه مفصلی", rollerSupportTitle: "تکیه‌گاه غلتکی", fixedSupportTitle: "تکیه‌گاه گیردار", hingeTitle: "لولا",
     pinSupport: "مفصلی", rollerSupport: "غلتکی", fixedSupport: "گیردار", hinge: "لولا",
@@ -1303,6 +1327,7 @@ translations.fa = createTranslation({
 
 // Hindi (हिन्दी)
 translations.hi = createTranslation({
+    fbdShowLoads: "बाह्य बल", fbdShowReactions: "आधार प्रतिक्रियाएँ", fbdOptionsTitle: "मुक्त पिंड आरेख में दिखाएँ या छिपाएँ", fullscreenPanelsTitle: "नीचे दिखाए जाने वाले आरेख", hideToolbar: "ऊपरी मेनू छिपाएँ", showToolbar: "ऊपरी मेनू दिखाएँ",
     beamTitle: "धरन बनाएं", beam: "धरन", supports: "आधार", loads: "भार",
     pinSupportTitle: "कीलक आधार", rollerSupportTitle: "घूर्णिक आधार", fixedSupportTitle: "स्थिर आधार", hingeTitle: "कब्जा",
     pinSupport: "कीलक", rollerSupport: "घूर्णिक", fixedSupport: "स्थिर", hinge: "कब्जा",
@@ -1385,6 +1410,7 @@ translations.hi = createTranslation({
 
 // Nepali (नेपाली)
 translations.ne = createTranslation({
+    fbdShowLoads: "बाह्य बलहरू", fbdShowReactions: "आधार प्रतिक्रियाहरू", fbdOptionsTitle: "मुक्त पिण्ड रेखाचित्रमा देखाउनुहोस् वा लुकाउनुहोस्", fullscreenPanelsTitle: "तल देखाइने रेखाचित्रहरू", hideToolbar: "माथिल्लो मेनु लुकाउनुहोस्", showToolbar: "माथिल्लो मेनु देखाउनुहोस्",
     beamTitle: "धरन कोर्नुहोस्", beam: "धरन", supports: "आधार", loads: "भार",
     pinSupportTitle: "कीलक आधार", rollerSupportTitle: "घुम्ने आधार", fixedSupportTitle: "स्थिर आधार", hingeTitle: "कब्जा",
     pinSupport: "कीलक", rollerSupport: "घुम्ने", fixedSupport: "स्थिर", hinge: "कब्जा",
@@ -1470,6 +1496,7 @@ translations.ne = createTranslation({
 
 // Armenian (Հայերեն)
 translations.hy = createTranslation({
+    fbdShowLoads: "Արտաքին ուժեր", fbdShowReactions: "Հենարանային ռեակցիաներ", fbdOptionsTitle: "Ցույց տալ կամ թաքցնել ազատ մարմնի դիագրամում", fullscreenPanelsTitle: "Ներքևում ցուցադրվող գծագրեր", hideToolbar: "Թաքցնել վերին ընտրացանկը", showToolbar: "Ցույց տալ վերին ընտրացանկը",
     beamTitle: "Գծել հենակ", pinSupportTitle: "Կընիքային հենարան", rollerSupportTitle: "Գլանան հենարան", fixedSupportTitle: "Ամրացման", hingeTitle: "Կընիք",
     pointLoadTitle: "Կենտրոնացված բեռ", momentTitle: "Ճկման մոմենտ", torsionTitle: "Ոլորման մոմենտ", distLoadTitle: "Բաշխված բեռ",
     editMoveTitle: "Խմբագրել/Տեղափոխել", resetTitle: "Վերակայել", saveTitle: "Պահել մոդելը", openTitle: "Բացել մոդելը",
@@ -1551,6 +1578,7 @@ translations.hy = createTranslation({
 
 // Greek (Ελληνικά)
 translations.el = createTranslation({
+    fbdShowLoads: "Εξωτερικές δυνάμεις", fbdShowReactions: "Αντιδράσεις στήριξης", fbdOptionsTitle: "Εμφάνιση ή απόκρυψη στο διάγραμμα ελεύθερου σώματος", fullscreenPanelsTitle: "Σχέδια που εμφανίζονται από κάτω", hideToolbar: "Απόκρυψη επάνω μενού", showToolbar: "Εμφάνιση επάνω μενού",
     beamTitle: "Σχεδίαση δοκού", beam: "Δοκός", supports: "Στηρίξεις", loads: "Φορτία",
     pinSupportTitle: "Άρθρωση", rollerSupportTitle: "Κύλιση", fixedSupportTitle: "Πάκτωση", hingeTitle: "Άρθρωση",
     pinSupport: "Άρθρωση", rollerSupport: "Κύλιση", fixedSupport: "Πάκτωση", hinge: "Άρθρωση",
@@ -1633,6 +1661,7 @@ translations.el = createTranslation({
 
 // Romanian (Română)
 translations.ro = createTranslation({
+    fbdShowLoads: "Forțe Exterioare", fbdShowReactions: "Reacțiuni în Reazeme", fbdOptionsTitle: "Afișează sau ascunde în diagrama corpului liber", fullscreenPanelsTitle: "Desene afișate dedesubt", hideToolbar: "Ascunde meniul de sus", showToolbar: "Afișează meniul de sus",
     beamTitle: "Desenează grindă", beam: "Grindă", supports: "Reazeme", loads: "Încărcări",
     pinSupportTitle: "Reazem articulat", rollerSupportTitle: "Reazem mobil", fixedSupportTitle: "Încastrare", hingeTitle: "Articulație",
     pinSupport: "Articulat", rollerSupport: "Mobil", fixedSupport: "Încastrat", hinge: "Balama",
@@ -1717,6 +1746,7 @@ translations.ro = createTranslation({
 
 // Indonesian (Bahasa Indonesia)
 translations.id = createTranslation({
+    fbdShowLoads: "Gaya Luar", fbdShowReactions: "Reaksi Tumpuan", fbdOptionsTitle: "Tampilkan atau sembunyikan pada diagram benda bebas", fullscreenPanelsTitle: "Gambar yang ditampilkan di bawah", hideToolbar: "Sembunyikan menu atas", showToolbar: "Tampilkan menu atas",
     beamTitle: "Gambar Balok", beam: "Balok", supports: "Tumpuan", loads: "Beban",
     pinSupportTitle: "Tumpuan Sendi", rollerSupportTitle: "Tumpuan Rol", fixedSupportTitle: "Tumpuan Jepit", hingeTitle: "Engsel",
     pinSupport: "Sendi", rollerSupport: "Rol", fixedSupport: "Jepit", hinge: "Engsel",
@@ -1801,6 +1831,7 @@ translations.id = createTranslation({
 
 // Tagalog (Filipino)
 translations.tl = createTranslation({
+    fbdShowLoads: "Panlabas na Puwersa", fbdShowReactions: "Reaksyon ng Suporta", fbdOptionsTitle: "Ipakita o itago sa diagram ng malayang katawan", fullscreenPanelsTitle: "Mga guhit na ipinapakita sa ibaba", hideToolbar: "Itago ang itaas na menu", showToolbar: "Ipakita ang itaas na menu",
     beamTitle: "Gumuhit ng Biga", beam: "Biga", supports: "Tungkod", loads: "Karga",
     pinSupportTitle: "Tungkod na Nakabaon", rollerSupportTitle: "Tungkod na Gumugulong", fixedSupportTitle: "Tungkod na Nakakabit", hingeTitle: "Bisagra",
     pinSupport: "Nakabaon", rollerSupport: "Gumugulong", fixedSupport: "Nakakabit", hinge: "Bisagra",
@@ -1884,6 +1915,7 @@ translations.tl = createTranslation({
 
 // Korean (한국어)
 translations.ko = createTranslation({
+    fbdShowLoads: "외력", fbdShowReactions: "지점 반력", fbdOptionsTitle: "자유물체도에 표시/숨기기", fullscreenPanelsTitle: "아래에 표시할 도면", hideToolbar: "상단 메뉴 숨기기", showToolbar: "상단 메뉴 표시",
     beamTitle: "보 그리기", beam: "보", supports: "지점", loads: "하중",
     pinSupportTitle: "힌지 지점", rollerSupportTitle: "롤러 지점", fixedSupportTitle: "고정 지점", hingeTitle: "힌지",
     pinSupport: "힌지", rollerSupport: "롤러", fixedSupport: "고정", hinge: "힌지",
@@ -1966,6 +1998,7 @@ translations.ko = createTranslation({
 
 // Bengali (বাংলা)
 translations.bn = createTranslation({
+    fbdShowLoads: "বাহ্যিক বল", fbdShowReactions: "সাপোর্ট প্রতিক্রিয়া", fbdOptionsTitle: "ফ্রি বডি ডায়াগ্রামে দেখান বা লুকান", fullscreenPanelsTitle: "নিচে দেখানো অঙ্কনসমূহ", hideToolbar: "উপরের মেনু লুকান", showToolbar: "উপরের মেনু দেখান",
     beamTitle: "বীম আঁকুন", beam: "বীম", supports: "সমর্থন", loads: "লোড",
     pinSupportTitle: "কব্জা সমর্থন", rollerSupportTitle: "ঘূর্ণায়মান সমর্থন", fixedSupportTitle: "স্থির সমর্থন", hingeTitle: "কব্জা",
     pinSupport: "কব্জা", rollerSupport: "ঘূর্ণায়মান", fixedSupport: "স্থির", hinge: "কব্জা",
@@ -2051,6 +2084,7 @@ translations.bn = createTranslation({
 
 // Burmese (မြန်မာ)
 translations.my = createTranslation({
+    fbdShowLoads: "ပြင်ပအား", fbdShowReactions: "ထောက်ကန့်တုံ့ပြန်အား", fbdOptionsTitle: "လွတ်လပ်ကိုယ်ထည်ပုံတွင် ပြရန် သို့မဟုတ် ဖျောက်ရန်", fullscreenPanelsTitle: "အောက်တွင် ပြသမည့် ပုံများ", hideToolbar: "အပေါ်မီနူးကို ဖျောက်ရန်", showToolbar: "အပေါ်မီနူးကို ပြရန်",
     beamTitle: "ခံးနပ်ဆွဲရန်", beam: "ခံးနပ်", supports: "ထောက်ပံ့မှု", loads: "ဝန်",
     pinSupportTitle: "အကျစ်ံထောက်", rollerSupportTitle: "ဆပ်ထောက်", fixedSupportTitle: "ပိတေထောက်", hingeTitle: "ဘိလပ်",
     pinSupport: "အကျစ်ံ", rollerSupport: "ဆပ်", fixedSupport: "ပိတေ", hinge: "ဘိလပ်",
@@ -2133,6 +2167,7 @@ translations.my = createTranslation({
 
 // Thai (ไทย)
 translations.th = createTranslation({
+    fbdShowLoads: "แรงภายนอก", fbdShowReactions: "แรงปฏิกิริยาที่จุดรองรับ", fbdOptionsTitle: "แสดงหรือซ่อนในแผนภาพวัตถุอิสระ", fullscreenPanelsTitle: "ภาพวาดที่แสดงด้านล่าง", hideToolbar: "ซ่อนเมนูด้านบน", showToolbar: "แสดงเมนูด้านบน",
     beamTitle: "วาดคาน", beam: "คาน", supports: "ฐานรองรับ", loads: "น้ำหนัก",
     pinSupportTitle: "จุดหมุน", rollerSupportTitle: "ลูกกลิ้ง", fixedSupportTitle: "ยึดแน่น", hingeTitle: "บานพับ",
     pinSupport: "หมุน", rollerSupport: "ลูกกลิ้ง", fixedSupport: "ยึดแน่น", hinge: "บานพับ",
@@ -2215,6 +2250,7 @@ translations.th = createTranslation({
 
 // Uzbek (O'zbek)
 translations.uz = createTranslation({
+    fbdShowLoads: "Tashqi kuchlar", fbdShowReactions: "Tayanch reaksiyalari", fbdOptionsTitle: "Erkin tana diagrammasida ko'rsatish yoki yashirish", fullscreenPanelsTitle: "Pastda ko'rsatiladigan chizmalar", hideToolbar: "Yuqori menyuni yashirish", showToolbar: "Yuqori menyuni ko'rsatish",
     beamTitle: "To'sin chizish", beam: "To'sin", supports: "Tayanch", loads: "Yuklar",
     pinSupportTitle: "Buriluvchi tayanch", rollerSupportTitle: "Rolikli tayanch", fixedSupportTitle: "Qattiq tayanch", hingeTitle: "Ilgak",
     pinSupport: "Buriluvchi", rollerSupport: "Rolik", fixedSupport: "Qattiq", hinge: "Ilgak",
@@ -2301,6 +2337,7 @@ translations.uz = createTranslation({
 
 // Dzongkha (རྫོང་ཁ)
 translations.dz = createTranslation({
+    fbdShowLoads: "ཕྱི་ཕྱོགས་ཀྱི་ཤུགས།", fbdShowReactions: "རྟེན་གཞིའི་ལན་ཤུགས།", fbdOptionsTitle: "རང་དབང་གཟུགས་ཀྱི་རི་མོ་ནང་སྟོན་ནི་ཡང་ན་སྦ་ནི།", fullscreenPanelsTitle: "འོག་ལུ་སྟོན་མི་རི་མོ་ཚུ།", hideToolbar: "ཡར་གྱི་ཐོ་ཡིག་སྦ་ནི།", showToolbar: "ཡར་གྱི་ཐོ་ཡིག་སྟོན་ནི།",
     beamTitle: "ཆཱ་གཅིག་འདྲི་བསྐྲུན།", beam: "ཆཱ་གཅིག", supports: "རྟེན་འདེགས", loads: "ཁུར་བ།",
     pinSupportTitle: "འཁོར་རྟེན", rollerSupportTitle: "འགྲིམས་རྟེན", fixedSupportTitle: "བརྟན་རྟེན", hingeTitle: "སྒོ་འཁྲུལ",
     pinSupport: "འཁོར་རྟེན", rollerSupport: "འགྲིམས་རྟེན", fixedSupport: "བརྟན་རྟེན", hinge: "སྒོ་འཁྲུལ",
@@ -2389,6 +2426,7 @@ translations.dz = createTranslation({
 
 // Tajik (Тоҷикӣ)
 translations.tg = createTranslation({
+    fbdShowLoads: "Қувваҳои берунӣ", fbdShowReactions: "Реаксияҳои такягоҳ", fbdOptionsTitle: "Дар диаграммаи бадани озод нишон додан ё пинҳон кардан", fullscreenPanelsTitle: "Нақшаҳое, ки дар поён нишон дода мешаванд", hideToolbar: "Пинҳон кардани менюи боло", showToolbar: "Нишон додани менюи боло",
     beamTitle: "Тир кашидан", beam: "Тир", supports: "Такягоҳ", loads: "Бор",
     pinSupportTitle: "Вилоӣ такягоҳ", rollerSupportTitle: "Ғалтакӣ такягоҳ", fixedSupportTitle: "Собит такягоҳ", hingeTitle: "Лавлак",
     pinSupport: "Вилоӣ", rollerSupport: "Ғалтакӣ", fixedSupport: "Собит", hinge: "Лавлак",
@@ -2474,6 +2512,7 @@ translations.tg = createTranslation({
 
 // Kyrgyz (Кыргызча)
 translations.ky = createTranslation({
+    fbdShowLoads: "Тышкы күчтөр", fbdShowReactions: "Таяныч реакциялары", fbdOptionsTitle: "Эркин дене диаграммасында көрсөтүү же жашыруу", fullscreenPanelsTitle: "Төмөндө көрсөтүлүүчү чиймелер", hideToolbar: "Жогорку менюну жашыруу", showToolbar: "Жогорку менюну көрсөтүү",
     beamTitle: "Балка тартуу", beam: "Балка", supports: "Таяныч", loads: "Жүк",
     pinSupportTitle: "Шарнирдүү таяныч", rollerSupportTitle: "Роликтүү таяныч", fixedSupportTitle: "Катуу таяныч", hingeTitle: "Илмек",
     pinSupport: "Шарнирдүү", rollerSupport: "Роликтүү", fixedSupport: "Катуу", hinge: "Илмек",
@@ -2559,6 +2598,7 @@ translations.ky = createTranslation({
 
 // Bulgarian (Български)
 translations.bg = createTranslation({
+    fbdShowLoads: "Външни сили", fbdShowReactions: "Опорни реакции", fbdOptionsTitle: "Показване или скриване в диаграмата на свободното тяло", fullscreenPanelsTitle: "Чертежи, показвани отдолу", hideToolbar: "Скриване на горното меню", showToolbar: "Показване на горното меню",
     beamTitle: "Начертай греда", beam: "Греда", supports: "Опори", loads: "Товари",
     pinSupportTitle: "Шарнирна опора", rollerSupportTitle: "Подвижна опора", fixedSupportTitle: "Запъване", hingeTitle: "Шарнир",
     pinSupport: "Шарнирна", rollerSupport: "Подвижна", fixedSupport: "Запъване", hinge: "Шарнир",
@@ -2641,6 +2681,7 @@ translations.bg = createTranslation({
 
 // Hebrew (עברית)
 translations.he = createTranslation({
+    fbdShowLoads: "כוחות חיצוניים", fbdShowReactions: "תגובות סמוכים", fbdOptionsTitle: "הצג או הסתר בדיאגרמת הגוף החופשי", fullscreenPanelsTitle: "שרטוטים המוצגים למטה", hideToolbar: "הסתר את התפריט העליון", showToolbar: "הצג את התפריט העליון",
     beamTitle: "צייר קורה", beam: "קורה", supports: "תמיכות", loads: "עומסים",
     pinSupportTitle: "תמיכת ציר", rollerSupportTitle: "תמיכת גלגל", fixedSupportTitle: "ריתום", hingeTitle: "ציר",
     pinSupport: "ציר", rollerSupport: "גלגל", fixedSupport: "ריתום", hinge: "ציר",
@@ -2723,6 +2764,7 @@ translations.he = createTranslation({
 
 // Slovenian (Slovenščina)
 translations.sl = createTranslation({
+    fbdShowLoads: "Zunanje sile", fbdShowReactions: "Reakcije podpor", fbdOptionsTitle: "Prikaži ali skrij na diagramu prostega telesa", fullscreenPanelsTitle: "Risbe, prikazane spodaj", hideToolbar: "Skrij zgornji meni", showToolbar: "Prikaži zgornji meni",
     beamTitle: "Nariši nosilec", beam: "Nosilec", supports: "Podpore", loads: "Obtežbe",
     pinSupportTitle: "Členkasta podpora", rollerSupportTitle: "Premična podpora", fixedSupportTitle: "Vpetje", hingeTitle: "Členek",
     pinSupport: "Členkasta", rollerSupport: "Premična", fixedSupport: "Vpetje", hinge: "Členek",
@@ -2808,6 +2850,7 @@ translations.sl = createTranslation({
 
 // Albanian (Shqip)
 translations.sq = createTranslation({
+    fbdShowLoads: "Forcat e Jashtme", fbdShowReactions: "Reaksionet e Mbështetjeve", fbdOptionsTitle: "Shfaq ose fshih në diagramin e trupit të lirë", fullscreenPanelsTitle: "Vizatimet e shfaqura poshtë", hideToolbar: "Fshih menunë e sipërme", showToolbar: "Shfaq menunë e sipërme",
     beamTitle: "Vizato tra", beam: "Tra", supports: "Mbështetje", loads: "Ngarkesa",
     pinSupportTitle: "Mbështetje me kunj", rollerSupportTitle: "Mbështetje me rula", fixedSupportTitle: "Mbështetje e fiksuar", hingeTitle: "Menteshë",
     pinSupport: "Kunj", rollerSupport: "Rulo", fixedSupport: "Fiksuar", hinge: "Menteshë",
@@ -2893,6 +2936,7 @@ translations.sq = createTranslation({
 
 // Georgian (ქართული)
 translations.ka = createTranslation({
+    fbdShowLoads: "გარე ძალები", fbdShowReactions: "საყრდენის რეაქციები", fbdOptionsTitle: "თავისუფალი სხეულის დიაგრამაზე ჩვენება ან დამალვა", fullscreenPanelsTitle: "ქვემოთ ნაჩვენები ნახაზები", hideToolbar: "ზედა მენიუს დამალვა", showToolbar: "ზედა მენიუს ჩვენება",
     beamTitle: "კოჭის დახატვა", beam: "კოჭი", supports: "საყრდენები", loads: "დატვირთვები",
     pinSupportTitle: "სახსრული საყრდენი", rollerSupportTitle: "მოძრავი საყრდენი", fixedSupportTitle: "ჩამაგრება", hingeTitle: "სახსარი",
     pinSupport: "სახსარი", rollerSupport: "მოძრავი", fixedSupport: "ჩამაგრება", hinge: "სახსარი",
@@ -2977,6 +3021,7 @@ translations.ka = createTranslation({
 
 // Urdu (اردو)
 translations.ur = createTranslation({
+    fbdShowLoads: "بیرونی قوتیں", fbdShowReactions: "سہارے کے ردعمل", fbdOptionsTitle: "آزاد جسم خاکے میں دکھائیں یا چھپائیں", fullscreenPanelsTitle: "نیچے دکھائی جانے والی ڈرائنگز", hideToolbar: "اوپری مینو چھپائیں", showToolbar: "اوپری مینو دکھائیں",
     beamTitle: "شہتیر بنائیں", beam: "شہتیر", supports: "سہارے", loads: "بوجھ",
     pinSupportTitle: "محوری سہارا", rollerSupportTitle: "گردشی سہارا", fixedSupportTitle: "مقید سہارا", hingeTitle: "قلابہ",
     pinSupport: "محوری", rollerSupport: "گردشی", fixedSupport: "مقید", hinge: "قلابہ",
@@ -3106,29 +3151,8 @@ function getLanguageByCountry(countryCode) {
     return countryToLanguage[countryCode] || null;
 }
 
-// IP geolocation ile ülkeyi tespit et ve dili otomatik seç
-let detectedLanguageByLocation = null;
-async function detectLanguageByLocation() {
-    try {
-        const response = await fetch('https://get.geojs.io/v1/ip/country.json', {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' }
-        });
-        if (!response.ok) throw new Error('Geolocation API failed');
-        const data = await response.json();
-        const countryCode = data.country;
-        if (countryCode) {
-            const detectedLang = getLanguageByCountry(countryCode);
-            if (detectedLang && translations[detectedLang]) {
-                detectedLanguageByLocation = detectedLang;
-                return detectedLang; 
-            }
-        }
-    } catch (error) {
-        console.log('Geolocation detection failed:', error);
-    }
-    return null;
-}
+// Not: IP tabanlı dil tespiti (get.geojs.io) gizlilik nedeniyle kaldırıldı.
+// Dil seçimi: localStorage'daki kayıtlı tercih > tarayıcı dili > 'tr'.
 
 // Dil koduna göre buton etiketi döndür
 function getLanguageLabel(langCode) {

@@ -14,8 +14,8 @@ function scaleCanvasForHiDPI(canvas, context) {
 }
 
 const getConversionFunctions = () => {
-    const gridSize = parseInt(gridSizeInput.value);
-    const metersPerGrid = parseFloat(metersPerGridInput.value);
+    const gridSize = getGridSize();
+    const metersPerGrid = getMetersPerGrid();
 
     // Metrik hesaplamaları için, varsa kirişin oluşturulduğu andaki ayarları kullan.
     // Bu, görsel ızgara boyutu değişikliklerinden etkilenmemeyi garantiler.
@@ -47,7 +47,7 @@ function getEventPosition(evt) {
 function getSnappedMousePos(evt) {
     const rect = canvas.getBoundingClientRect();
     const pos = getEventPosition(evt); // Güncellenmiş yardımcı fonksiyonu kullan
-    const gridSize = parseInt(gridSizeInput.value);
+    const gridSize = getGridSize();
     const x = pos.clientX - rect.left;
     const y = pos.clientY - rect.top;
     const snappedX = Math.round(x / gridSize) * gridSize;
@@ -77,6 +77,11 @@ function redrawCanvas(options = {}) {
     const defaultOptions = { drawGrid: true };
     const finalOptions = { ...defaultOptions, ...options };
 
+    // Kaydırma çubuğu belirip kaybolduğunda (resize olayı olmadan) tuval CSS
+    // genişliği değişebilir; bit eşlem boyutu güncel tutulmazsa çizim esner ve
+    // SCD/diyagramlarla hizası bozulur.
+    scaleCanvasForHiDPI(canvas, ctx);
+
     const devicePixelRatio = window.devicePixelRatio || 1;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -97,7 +102,7 @@ function redrawCanvas(options = {}) {
     ctx.scale(devicePixelRatio, devicePixelRatio);
     
     if (beam) {
-        const gridSize = parseInt(gridSizeInput.value);
+        const gridSize = getGridSize();
         const canvasCenterY = canvas.clientHeight * 0.58;
         const nearestGridY = Math.floor(canvasCenterY / gridSize) * gridSize;
         beam.startY = nearestGridY + gridSize / 2;
@@ -127,7 +132,7 @@ function redrawCanvas(options = {}) {
     distributedLoads.forEach(l => drawDistributedLoad(ctx, l.startX, l.endX, beam.startY, l.magnitude));
     trapezoidalLoads.forEach(l => drawTrapezoidalLoad(ctx, l.startX, l.endX, beam.startY, l.startMagnitude, l.endMagnitude));
     if (beam) {
-        const gridSize = parseInt(gridSizeInput.value);
+        const gridSize = getGridSize();
         const beamBottomLineY = Math.round((beam.startY + gridSize / 2) / gridSize) * gridSize;
         const dimensionLineY = beamBottomLineY + (3 * gridSize);
         drawDimensions(ctx, dimensionLineY);
@@ -153,6 +158,9 @@ function redrawCanvas(options = {}) {
     if (isDrawingConcentratedMoment || isDrawingTorsionMoment) {
         drawMomentPreview();
     }
+
+    // Kesim Yöntemi: çizgi ve sağ tarafın grileştirilmesi (en üst katman)
+    if (typeof drawCutOverlayOnModel === 'function') drawCutOverlayOnModel(ctx);
 }
 
 function drawPreview() {
@@ -180,7 +188,7 @@ function drawPreview() {
         if (currentTool === 'concentrated-moment' || currentTool === 'torsion-moment') {
             yPos = beam.startY;
         } else {
-            const gridSize = parseInt(gridSizeInput.value);
+            const gridSize = getGridSize();
             yPos = beam.startY - (gridSize / 2);
         }
         ctx.arc(pos.x, yPos, 5, 0, 2 * Math.PI);
@@ -191,7 +199,7 @@ function drawPreview() {
 
     if (showDimensionPreview) {
         let allPoints = [beam.startX, beam.endX, ...supports.map(s => s.x), ...hinges.map(h => h.x), ...concentratedLoads.map(l => l.x), ...distributedLoads.flatMap(l => [l.startX, l.endX]), ...trapezoidalLoads.flatMap(l => [l.startX, l.endX]), ...concentratedMoments.map(m => m.x), ...torsionMoments.map(t => t.x)];
-        const gridSize = parseInt(gridSizeInput.value);
+        const gridSize = getGridSize();
         const beamBottomLineY = Math.round((beam.startY + gridSize / 2) / gridSize) * gridSize;
         const dimensionLineY = beamBottomLineY + (3 * gridSize);
         drawPreviewDimension(ctx, pos.x, allPoints, dimensionLineY);
@@ -211,8 +219,8 @@ function drawConcentratedLoadPreview() {
     const length = Math.sqrt(dx * dx + dy * dy);
     const snappedEndX = startPos.x + length * Math.cos(snappedAngleRad);
     const snappedEndY = startPos.y + length * Math.sin(snappedAngleRad);
-    const gridSize = parseInt(gridSizeInput.value);
-    const kNPerGrid = parseFloat(kNPerGridInput.value) || 1;
+    const gridSize = getGridSize();
+    const kNPerGrid = getKNPerGrid();
     const magnitude = (length / gridSize) * kNPerGrid;
     ctx.save();
     ctx.beginPath();
@@ -238,7 +246,8 @@ function drawMomentPreview() {
     const startPos = momentStartPoint;
     const endPos = currentRawMousePos;
     const dy = endPos.y - startPos.y;
-    const magnitude = -(dy / 5);
+    // Izgara ayarlarıyla tutarlı ölçek (olay yöneticilerindeki hesapla aynı)
+    const magnitude = -(dy / (getGridSize() / getKNPerGrid()));
     const currentX = currentMousePos.x;
 
     if (isDrawingConcentratedMoment) {
@@ -250,7 +259,7 @@ function drawMomentPreview() {
 
 function drawDragPreview() {
     if (currentTool === 'beam' && isDrawing) {
-        const gridSize = parseInt(gridSizeInput.value);
+        const gridSize = getGridSize();
         const height = gridSize;
         const y = startPoint.y;
         ctx.save();
@@ -263,9 +272,9 @@ function drawDragPreview() {
         ctx.restore();
     } 
     else if (['distributed-load', 'triangular-load'].includes(currentTool) && beam && drawingStage > 0) {
-        const gridSize = parseInt(gridSizeInput.value);
+        const gridSize = getGridSize();
         const beamTopY = beam.startY - (gridSize / 2);
-        const kNPerGrid = parseFloat(kNPerGridInput.value) || 1;
+        const kNPerGrid = getKNPerGrid();
 
         if (isTouchDevice) {
             if (currentTool === 'triangular-load') {
@@ -319,9 +328,9 @@ function drawDragPreview() {
 function getHingeAtPos(pos) { if (!beam) return null; for (let i = hinges.length - 1; i >= 0; i--) { const hinge = hinges[i]; const hitboxSize = 20; const isInsideX = pos.x >= hinge.x - hitboxSize / 2 && pos.x <= hinge.x + hitboxSize / 2; const isInsideY = pos.y >= beam.startY - hitboxSize / 2 && pos.y <= beam.startY + hitboxSize / 2; if (isInsideX && isInsideY) { return i; } } return null; }
 function getHandleAtPos(pos) { if (!beam) return null; const handleSize = isTouchDevice ? 24 : 10; if (pos.x >= beam.startX - handleSize / 2 && pos.x <= beam.startX + handleSize / 2 && pos.y >= beam.startY - handleSize / 2 && pos.y <= beam.startY + handleSize / 2) { return 'start'; } if (pos.x >= beam.endX - handleSize / 2 && pos.x <= beam.endX + handleSize / 2 && pos.y >= beam.startY - handleSize / 2 && pos.y <= beam.startY + handleSize / 2) { return 'end'; } return null; }
 function getSupportAtPos(pos) { if (!beam) return null; for (let i = supports.length - 1; i >= 0; i--) { const support = supports[i]; const bboxWidth = 30, bboxHeight = 40, startY = beam.startY; if (pos.x >= support.x - bboxWidth/2 && pos.x <= support.x + bboxWidth/2 && pos.y >= startY && pos.y <= startY + bboxHeight) { return i; } } return null; }
-function getDistLoadHandleAtPos(pos) { if (!beam) return null; const handleSize = isTouchDevice ? 24 : 10; const gridSize = parseInt(gridSizeInput.value); const kNPerGrid = parseFloat(kNPerGridInput.value) || 1; const pixelsPerKN = gridSize / kNPerGrid; for (let i = distributedLoads.length - 1; i >= 0; i--) { const load = distributedLoads[i]; const loadHeight = Math.abs(load.magnitude) * pixelsPerKN; const y_pos = (load.magnitude < 0) ? (beam.startY - 10) - loadHeight : (beam.startY - 10) + loadHeight; if (pos.x >= load.startX - handleSize / 2 && pos.x <= load.startX + handleSize / 2 && pos.y >= y_pos - handleSize / 2 && pos.y <= y_pos + handleSize / 2) { return { index: i, handle: 'start' }; } if (pos.x >= load.endX - handleSize / 2 && pos.x <= load.endX + handleSize / 2 && pos.y >= y_pos - handleSize / 2 && pos.y <= y_pos + handleSize / 2) { return { index: i, handle: 'end' }; } } return null; }
-function getDistLoadAtPos(pos) { if (!beam) return null; for (let i = distributedLoads.length - 1; i >= 0; i--) { const load = distributedLoads[i]; const gridSize = parseInt(gridSizeInput.value); const kNPerGrid = parseFloat(kNPerGridInput.value) || 1; const pixelsPerKN = gridSize / kNPerGrid; const loadHeight = Math.abs(load.magnitude) * pixelsPerKN; const startX = Math.min(load.startX, load.endX); const endX = Math.max(load.startX, load.endX); const y_top = (beam.startY - 10) - loadHeight; const y_bottom = beam.startY - 10; if (pos.x >= startX && pos.x <= endX && pos.y >= y_top && pos.y <= y_bottom) { return i; } } return null; }
-function getTrapLoadHandleAtPos(pos) { if (!beam) return null; const handleSize = isTouchDevice ? 24 : 10; const gridSize = parseInt(gridSizeInput.value); const kNPerGrid = parseFloat(kNPerGridInput.value) || 1; const pixelsPerKN = gridSize / kNPerGrid; for (let i = trapezoidalLoads.length - 1; i >= 0; i--) { const load = trapezoidalLoads[i]; const h1 = Math.abs(load.startMagnitude) * pixelsPerKN; const h2 = Math.abs(load.endMagnitude) * pixelsPerKN; const y1_pos = (load.startMagnitude < 0) ? (beam.startY - 10) - h1 : (beam.startY - 10) + h1; const y2_pos = (load.endMagnitude < 0) ? (beam.startY - 10) - h2 : (beam.startY - 10) + h2; if (pos.x >= load.startX - handleSize / 2 && pos.x <= load.startX + handleSize / 2 && pos.y >= y1_pos - handleSize/2 && pos.y <= y1_pos + handleSize/2) { return { index: i, handle: 'start' }; } if (pos.x >= load.endX - handleSize / 2 && pos.x <= load.endX + handleSize / 2 && pos.y >= y2_pos - handleSize/2 && pos.y <= y2_pos + handleSize/2) { return { index: i, handle: 'end' }; } } return null; }
+function getDistLoadHandleAtPos(pos) { if (!beam) return null; const handleSize = isTouchDevice ? 24 : 10; const gridSize = getGridSize(); const kNPerGrid = getKNPerGrid(); const pixelsPerKN = gridSize / kNPerGrid; for (let i = distributedLoads.length - 1; i >= 0; i--) { const load = distributedLoads[i]; const loadHeight = Math.abs(load.magnitude) * pixelsPerKN; const y_pos = (load.magnitude < 0) ? (beam.startY - 10) - loadHeight : (beam.startY - 10) + loadHeight; if (pos.x >= load.startX - handleSize / 2 && pos.x <= load.startX + handleSize / 2 && pos.y >= y_pos - handleSize / 2 && pos.y <= y_pos + handleSize / 2) { return { index: i, handle: 'start' }; } if (pos.x >= load.endX - handleSize / 2 && pos.x <= load.endX + handleSize / 2 && pos.y >= y_pos - handleSize / 2 && pos.y <= y_pos + handleSize / 2) { return { index: i, handle: 'end' }; } } return null; }
+function getDistLoadAtPos(pos) { if (!beam) return null; for (let i = distributedLoads.length - 1; i >= 0; i--) { const load = distributedLoads[i]; const gridSize = getGridSize(); const kNPerGrid = getKNPerGrid(); const pixelsPerKN = gridSize / kNPerGrid; const loadHeight = Math.abs(load.magnitude) * pixelsPerKN; const startX = Math.min(load.startX, load.endX); const endX = Math.max(load.startX, load.endX); const y_top = (beam.startY - 10) - loadHeight; const y_bottom = beam.startY - 10; if (pos.x >= startX && pos.x <= endX && pos.y >= y_top && pos.y <= y_bottom) { return i; } } return null; }
+function getTrapLoadHandleAtPos(pos) { if (!beam) return null; const handleSize = isTouchDevice ? 24 : 10; const gridSize = getGridSize(); const kNPerGrid = getKNPerGrid(); const pixelsPerKN = gridSize / kNPerGrid; for (let i = trapezoidalLoads.length - 1; i >= 0; i--) { const load = trapezoidalLoads[i]; const h1 = Math.abs(load.startMagnitude) * pixelsPerKN; const h2 = Math.abs(load.endMagnitude) * pixelsPerKN; const y1_pos = (load.startMagnitude < 0) ? (beam.startY - 10) - h1 : (beam.startY - 10) + h1; const y2_pos = (load.endMagnitude < 0) ? (beam.startY - 10) - h2 : (beam.startY - 10) + h2; if (pos.x >= load.startX - handleSize / 2 && pos.x <= load.startX + handleSize / 2 && pos.y >= y1_pos - handleSize/2 && pos.y <= y1_pos + handleSize/2) { return { index: i, handle: 'start' }; } if (pos.x >= load.endX - handleSize / 2 && pos.x <= load.endX + handleSize / 2 && pos.y >= y2_pos - handleSize/2 && pos.y <= y2_pos + handleSize/2) { return { index: i, handle: 'end' }; } } return null; }
 function getTrapLoadAtPos(pos) { if (!beam) return null; for (let i = trapezoidalLoads.length - 1; i >= 0; i--) { const load = trapezoidalLoads[i]; const startX = Math.min(load.startX, load.endX); const endX = Math.max(load.startX, load.endX); const y_bottom = beam.startY - 10; if (pos.x >= startX && pos.x <= endX && pos.y <= y_bottom) { return i; } } return null; }
 function getConcentratedLoadAtPos(pos) { if (!beam) return null; for (let i = concentratedLoads.length - 1; i >= 0; i--) { const load = concentratedLoads[i]; const lineLength = 50; let startX, startY, endX, endY; if (load.magnitude >= 0) { startX = load.x; startY = load.y; endX = load.x + lineLength * Math.cos(load.angle); endY = load.y + lineLength * Math.sin(load.angle); } else { startX = load.x + lineLength * Math.cos(load.angle); startY = load.y + lineLength * Math.sin(load.angle); endX = load.x; endY = load.y; } const padding = 10; const minX = Math.min(startX, endX) - padding; const maxX = Math.max(startX, endX) + padding; const minY = Math.min(startY, endY) - padding; const maxY = Math.max(startY, endY) + padding; if (pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY) { return i; } } return null; }
 function getConcentratedMomentAtPos(pos) { if (!beam) return null; for (let i = concentratedMoments.length - 1; i >= 0; i--) { const moment = concentratedMoments[i]; const radius = 20; const dist = Math.sqrt(Math.pow(pos.x - moment.x, 2) + Math.pow(pos.y - moment.y, 2)); if (dist <= radius + 5) { return i; } } return null; }
@@ -329,7 +338,7 @@ function getTorsionMomentAtPos(pos) { if (!beam) return null; for (let i = torsi
 
 function centerDrawing() {
     if (!beam) return;
-    const gridSize = parseInt(gridSizeInput.value);
+    const gridSize = getGridSize();
     const drawingWidth = beam.endX - beam.startX;
     const drawingCenterX = beam.startX + drawingWidth / 2;
     const canvasCenterX = canvas.clientWidth / 2;

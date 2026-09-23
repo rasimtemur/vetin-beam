@@ -167,15 +167,19 @@
 #elasticityModulus, #momentOfInertia { width: 65px; }
 .fluent-theme .toolbar-right > .tool-group:first-child { flex-shrink: 0; min-width: 100px; }
 
-.fluent-theme #center-btn, .fluent-theme #fullscreen-btn, .fluent-theme #download-model-btn {
+.fluent-theme #center-btn, .fluent-theme #fullscreen-btn, .fluent-theme #download-model-btn, .fluent-theme #cut-btn {
     position: absolute; top: 10px; width: 36px; padding: 6px;
 }
 .fluent-theme #center-btn svg { fill: var(--fluent-neutral-foreground-rest); stroke: none; }
 .fluent-theme #fullscreen-btn { right: 10px; }
 .fluent-theme #center-btn { right: 54px; }
 .fluent-theme #download-model-btn { right: 98px; }
+.fluent-theme #cut-btn { right: 142px; }
 
-.fluent-theme .table-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+/* Veri tabloları: paneller içerik genişliğinde yan yana dizilir; sığmayan
+   panel alt satıra kayar (satırda 1, 2 veya 3 panel olabilir). Paneller
+   uzatılmaz; sütun genişlikleri tablonun içeriğinden belirlenir. */
+.fluent-theme .table-grid { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px; }
 .toggle-button { right: 20px; }
 .download-btn { right: 64px; }
 
@@ -197,4 +201,69 @@
     z-index: 5;
     opacity: 0.9;
 }
-.fullscreen-mode #all-diagrams-container, .fullscreen-mode #data-tables-container, .fullscreen-mode .page-footer { display: none; }
+.fullscreen-mode #data-tables-container, .fullscreen-mode .page-footer { display: none; }
+
+/* Tam ekranda modelin altındaki çizimler (fullscreen-panels.js): yalnızca
+   kullanıcının seçtiği (.fs-visible) paneller gösterilir; hiçbiri seçilmezse
+   model tüm alanı kaplar. Paneller sığmazsa model en az 45vh kalır, alan kayar. */
+.fullscreen-mode .main-content { overflow-y: auto; min-height: 0; }
+.fullscreen-mode #canvas-wrapper { flex: 1 1 0; min-height: 45vh; }
+.fullscreen-mode .diagram-container:not(.fs-visible) { display: none; }
+.fullscreen-mode #all-diagrams-container:not(:has(.diagram-container.fs-visible:not(.hidden))) { display: none; }
+.fullscreen-mode #all-diagrams-container, .fullscreen-mode .diagram-container.fs-visible { flex-shrink: 0; }
+.fullscreen-mode #diagram-grid { gap: 0; }
+.fullscreen-mode .diagram-container.fs-visible {
+    border-radius: 0; border-left: none; border-right: none; border-bottom: none; box-shadow: none;
+}
+/* Seçilen panel, kullanıcı daha önce içeriğini gizlemiş olsa da tam ekranda açık gösterilir;
+   göz (göster/gizle) butonu bu modda anlamsız olduğu için gizlenir */
+.fullscreen-mode .diagram-container.fs-visible > .content-wrapper.hidden { display: block; }
+.fullscreen-mode .diagram-container.fs-visible > .toggle-button { display: none; }
+
+/* Tam ekranda üst menü (araç çubuğu) gizlenebilir; normal görünümde hep görünür */
+.fullscreen-mode.toolbar-hidden .toolbar { display: none; }
+#fs-toolbar-btn { display: none; }
+.fullscreen-mode #fs-toolbar-btn { display: flex; }
+.fluent-theme #fs-toolbar-btn { position: absolute; top: 10px; right: 230px; width: 36px; padding: 6px; }
+.fluent-theme #fs-toolbar-btn svg { fill: none; }
+#fs-toolbar-btn .icon-toolbar-show, .toolbar-hidden #fs-toolbar-btn .icon-toolbar-hide { display: none; }
+.toolbar-hidden #fs-toolbar-btn .icon-toolbar-show { display: block; }
+
+/* "Alttaki çizimler" butonu ve menüsü yalnızca tam ekranda */
+#fs-panels-btn { display: none; }
+.fullscreen-mode #fs-panels-btn { display: flex; }
+.fluent-theme #fs-panels-btn { position: absolute; top: 10px; right: 186px; width: 36px; padding: 6px; }
+.fluent-theme #fs-panels-btn svg { fill: none; }
+.fluent-theme #fs-panels-btn.active { background-color: var(--fluent-accent-fill-rest); border-color: var(--fluent-accent-fill-rest); color: #fff; }
+.fluent-theme #fs-panels-btn.active svg { stroke: #fff; }
+.fluent-theme #fs-panels-btn.active svg * { stroke: #fff; }
+
+.fs-panels-menu {
+    display: none; position: absolute; top: 52px; right: 186px; z-index: 2100;
+    min-width: 240px; padding: 5px;
+    background-color: var(--fluent-layer-fill-default);
+    border: 1px solid var(--fluent-stroke-color-default); border-radius: var(--fluent-border-radius);
+    box-shadow: var(--fluent-shadow-depth-16);
+}
+.fullscreen-mode .fs-panels-menu.show { display: block; }
+.fs-panels-menu-title {
+    padding: 6px 10px 8px; font-size: 12px; font-weight: 600;
+    color: var(--fluent-neutral-foreground-hint);
+    border-bottom: 1px solid var(--fluent-stroke-color-default); margin-bottom: 4px;
+}
+.fs-panel-item {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    padding: 7px 10px; border: none; border-radius: var(--fluent-border-radius);
+    background: transparent; color: var(--fluent-neutral-foreground-rest);
+    font: inherit; font-size: 13px; text-align: left; cursor: pointer;
+}
+.fs-panel-item:hover:not(:disabled) { background-color: var(--fluent-neutral-fill-hover); }
+.fs-panel-item:focus-visible { outline: 2px solid var(--fluent-accent-fill-rest); outline-offset: -2px; }
+.fs-panel-item:disabled { color: var(--fluent-neutral-foreground-hint); opacity: 0.5; cursor: default; }
+.fs-panel-check {
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+    width: 16px; height: 16px; border: 1.5px solid var(--fluent-neutral-foreground-hint); border-radius: 3px;
+}
+.fs-panel-check svg { width: 12px; height: 12px; fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; visibility: hidden; }
+.fs-panel-item[aria-checked="true"] .fs-panel-check { background-color: var(--fluent-accent-fill-rest); border-color: var(--fluent-accent-fill-rest); }
+.fs-panel-item[aria-checked="true"] .fs-panel-check svg { visibility: visible; }

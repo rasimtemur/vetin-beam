@@ -200,6 +200,10 @@
 .fluent-theme .canvas-overlay-btn { width: 40px; height: 40px; }
 .fluent-theme #fullscreen-btn { right: 5px; top: 5px; }
 .fluent-theme #center-btn { right: 50px; top: 5px; }
+.fluent-theme #cut-btn { position: absolute; right: 95px; top: 5px; padding: 6px; }
+.fluent-theme #fs-panels-btn { right: 140px; top: 5px; width: 40px; }
+.fs-panels-menu { top: 50px; right: 5px; }
+.fluent-theme #fs-toolbar-btn { right: 185px; top: 5px; width: 40px; }
 
 
 .fluent-theme .download-btn {
@@ -227,5 +231,5 @@
 .fluent-theme .diagram-container h4 { padding: 0; }
 .fluent-theme .diagram-container .toggle-button { top: 20px; }
 .fluent-theme .diagram-container .toggle-button { right: 15px; }
-.fluent-theme .table-grid { grid-template-columns: 1fr; }
+.fluent-theme .table-grid { display: flex; flex-direction: column; gap: 20px; }
 }

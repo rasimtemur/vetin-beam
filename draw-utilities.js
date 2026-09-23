@@ -1,7 +1,7 @@
 // common/draw-utilities.js
 
 function drawGrid(context, width, height) {
-    const gridSize = parseInt(gridSizeInput.value);
+    const gridSize = getGridSize();
     context.beginPath();
     context.strokeStyle = COLORS.GRID;
     context.lineWidth = 0.5;
@@ -37,8 +37,8 @@ function drawTapIndicator(context, point) {
 function drawResizeHandles(context) {
     if (!beam) return;
     const handleSize = 8;
-    const gridSize = parseInt(gridSizeInput.value);
-    const kNPerGrid = parseFloat(kNPerGridInput.value) || 1;
+    const gridSize = getGridSize();
+    const kNPerGrid = getKNPerGrid();
     const pixelsPerKN = gridSize / kNPerGrid;
     const beamTopY = beam.startY - (gridSize / 2);
 
@@ -132,7 +132,7 @@ function drawDimensions(context, y_pos) {
     // (yani kiriş başlangıç ve bitişi dışında ara noktalar varsa),
     // o zaman toplam uzunluk çizgisini de çiz.
     if (sortedPoints.length > 2) {
-        const gridSize = parseInt(gridSizeInput.value) || 20;
+        const gridSize = getGridSize();
         const totalLengthY = y_pos + (2 * gridSize);
         const beamStart = beam.startX;
         const beamEnd = beam.endX;
@@ -178,8 +178,8 @@ function drawDimensions(context, y_pos) {
 }
 
 function drawPreviewDimension(context, previewX_px, allPoints_px, y_pos) {
-    const gridSize = parseInt(gridSizeInput.value);
-    const metersPerGrid = parseFloat(metersPerGridInput.value) || 1;
+    const gridSize = getGridSize();
+    const metersPerGrid = getMetersPerGrid();
 
     const pointsWithPreview = [...new Set([...allPoints_px, previewX_px])].sort((a, b) => a - b);
     const previewIndex = pointsWithPreview.indexOf(previewX_px);
@@ -232,5 +232,75 @@ function drawPreviewDimension(context, previewX_px, allPoints_px, y_pos) {
         }
     }
     
+    context.restore();
+}
+
+// --- Serbest cisim diyagramı tepki okları (kalın gövde + dolu üçgen uç) ---
+const FBD_ARROW = { shaftWidth: 5, headLength: 18, headHalfWidth: 8 };
+
+function drawFilledArrow(context, x1, y1, x2, y2, color, style = FBD_ARROW) {
+    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+    if (len < 1e-6) return;
+    const ux = dx / len, uy = dy / len;
+    const hl = Math.min(style.headLength, len);
+    const bx = x2 - ux * hl, by = y2 - uy * hl;
+    context.save();
+    context.strokeStyle = color;
+    context.fillStyle = color;
+    context.lineWidth = style.shaftWidth;
+    context.lineCap = 'butt';
+    context.setLineDash([]);
+    // Gövde uç tabanının biraz içine kadar uzar; birleşimde boşluk kalmaz
+    context.beginPath(); context.moveTo(x1, y1); context.lineTo(bx + ux, by + uy); context.stroke();
+    context.beginPath();
+    context.moveTo(x2, y2);
+    context.lineTo(bx - uy * style.headHalfWidth, by + ux * style.headHalfWidth);
+    context.lineTo(bx + uy * style.headHalfWidth, by - ux * style.headHalfWidth);
+    context.closePath();
+    context.fill();
+    context.restore();
+}
+
+// Yay biçimli tepki oku (moment). Açılar tuval açısıdır; anticlockwise, arc() ile aynı anlamdadır.
+function drawFilledArcArrow(context, cx, cy, r, startAngle, endAngle, anticlockwise, color, style = FBD_ARROW) {
+    const dir = anticlockwise ? -1 : 1;
+    const baseAngle = endAngle - dir * (style.headLength / r);
+    context.save();
+    context.strokeStyle = color;
+    context.fillStyle = color;
+    context.lineWidth = style.shaftWidth;
+    context.lineCap = 'butt';
+    context.setLineDash([]);
+    context.beginPath();
+    context.arc(cx, cy, r, startAngle, baseAngle + dir * (1 / r), anticlockwise);
+    context.stroke();
+    const tipX = cx + r * Math.cos(endAngle), tipY = cy + r * Math.sin(endAngle);
+    const bx = cx + r * Math.cos(baseAngle), by = cy + r * Math.sin(baseAngle);
+    const nx = Math.cos(baseAngle), ny = Math.sin(baseAngle); // Uç tabanında yarıçap doğrultusu
+    context.beginPath();
+    context.moveTo(tipX, tipY);
+    context.lineTo(bx + nx * style.headHalfWidth, by + ny * style.headHalfWidth);
+    context.lineTo(bx - nx * style.headHalfWidth, by - ny * style.headHalfWidth);
+    context.closePath();
+    context.fill();
+    context.restore();
+}
+
+// Mesnet moment tepkisi: drawConcentratedMoment ile aynı dönme yönü (pozitif = ekranda
+// saat yönü). Yay, düşey tepki okuyla çakışmaması için kiriş ucunun dış tarafına çizilir.
+function drawReactionMoment(context, x, y, magnitude, color = COLORS.FBD_REACTION) {
+    const radius = 26;
+    const outsideLeft = !beam || x <= (beam.startX + beam.endX) / 2;
+    const a = 0.35 * Math.PI; // Yayın yatay eksenden yukarı/aşağı açıklığı
+    const c = outsideLeft ? Math.PI : 0; // Yayın ortası: sol uçta solda, sağ uçta sağda
+    // Artan tuval açısı = ekranda saat yönü
+    if (magnitude > 0) drawFilledArcArrow(context, x, y, radius, c - a, c + a, false, color);
+    else drawFilledArcArrow(context, x, y, radius, c + a, c - a, true, color);
+    context.save();
+    context.fillStyle = color;
+    context.font = '12px Arial';
+    context.textAlign = outsideLeft ? 'right' : 'left';
+    context.textBaseline = 'bottom';
+    context.fillText(Math.abs(magnitude).toFixed(2) + ' kNm', outsideLeft ? x - 10 : x + 10, y - radius - 4);
     context.restore();
 }

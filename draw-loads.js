@@ -13,7 +13,7 @@ function drawConcentratedLoad(context, load, isPreview = false) {
     context.lineWidth = 2;
 
     const lineLength = 50;
-    let startX, startY, endX, endY, effectiveAngle;
+    let startX, startY, endX, endY;
 
     const mag = (magnitude === undefined || magnitude === null || magnitude >= 0) ? 1 : -1;
 
@@ -22,30 +22,15 @@ function drawConcentratedLoad(context, load, isPreview = false) {
         startY = y;
         endX = x + lineLength * Math.cos(angle);
         endY = y + lineLength * Math.sin(angle);
-        effectiveAngle = angle;
     } else {
         startX = x + lineLength * Math.cos(angle);
         startY = y + lineLength * Math.sin(angle);
         endX = x;
         endY = y;
-        effectiveAngle = angle + Math.PI;
     }
     
-    context.beginPath();
-    context.moveTo(startX, startY);
-    context.lineTo(endX, endY);
-    context.stroke();
-
-    context.save();
-    context.translate(endX, endY);
-    context.rotate(effectiveAngle);
-    context.beginPath();
-    context.moveTo(0, 0);
-    context.lineTo(-10, -5);
-    context.moveTo(0, 0);
-    context.lineTo(-10, 5);
-    context.stroke();
-    context.restore();
+    // SCD tepkileriyle aynı stil: kalın gövde + dolu üçgen uç
+    drawFilledArrow(context, startX, startY, endX, endY, isPreview ? COLORS.PREVIEW : COLORS.LOAD);
     
     if (!isPreview) {
         context.font = '12px Arial';
@@ -62,10 +47,10 @@ function drawConcentratedLoad(context, load, isPreview = false) {
 
 function drawDistributedLoad(context, x1, x2, y, mag, isPreview = false) {
     // GÜNCELLENDİ: y_base, yük yönüne göre kirişin üst (aşağı yük) veya alt (yukarı yük) kenarına oturuyor.
-    const gridSize = parseInt(gridSizeInput.value);
+    const gridSize = getGridSize();
     const y_base = (mag < 0) ? y - (gridSize / 2) : y + (gridSize / 2);
 
-    const kNPerGrid = parseFloat(kNPerGridInput.value) || 1;
+    const kNPerGrid = getKNPerGrid();
     const pixelsPerKN = gridSize / kNPerGrid;
     const loadHeight = Math.abs(mag) * pixelsPerKN;
     
@@ -113,11 +98,11 @@ function drawDistributedLoad(context, x1, x2, y, mag, isPreview = false) {
 
 function drawTrapezoidalLoad(context, x1, x2, y, mag1, mag2, isPreview = false) {
     // GÜNCELLENDİ: y_base, yük yönüne göre kirişin üst (aşağı yük) veya alt (yukarı yük) kenarına oturuyor.
-    const gridSize = parseInt(gridSizeInput.value);
+    const gridSize = getGridSize();
     const isUpward = (mag1 >= 0 && mag2 >= 0);
     const y_base = isUpward ? y + (gridSize / 2) : y - (gridSize / 2);
     
-    const kNPerGrid = parseFloat(kNPerGridInput.value) || 1;
+    const kNPerGrid = getKNPerGrid();
 
     const pixelsPerKN = gridSize / kNPerGrid;
 
@@ -174,7 +159,7 @@ function drawTrapezoidalLoad(context, x1, x2, y, mag1, mag2, isPreview = false) 
 
 function drawConcentratedMoment(context, moment, color = COLORS.LOAD, isPreview = false) {
     const { x, y, magnitude } = moment;
-    const radius = 20;
+    const radius = 22;
     const isClockwise = magnitude < 0;
 
     context.save();
@@ -184,33 +169,13 @@ function drawConcentratedMoment(context, moment, color = COLORS.LOAD, isPreview 
     context.font = '12px Arial';
     context.textAlign = 'center';
 
-    context.beginPath();
+    // SCD tepkileriyle aynı stil: kalın yay + dolu üçgen uç (yay geometrisi ve yön değişmedi)
+    const arcColor = isPreview ? COLORS.PREVIEW : color;
     if (isClockwise) {
-        context.arc(x, y, radius, Math.PI * -0.4, Math.PI * 0.6, true);
+        drawFilledArcArrow(context, x, y, radius, Math.PI * -0.4, Math.PI * -1.4, true, arcColor);
     } else {
-        context.arc(x, y, radius, Math.PI * 0.4, Math.PI * -0.6, false);
+        drawFilledArcArrow(context, x, y, radius, Math.PI * 0.4, Math.PI * 1.4, false, arcColor);
     }
-    context.stroke();
-
-    context.beginPath();
-    if (isClockwise) {
-        const angle = Math.PI * 0.6;
-        const arrowX = x + radius * Math.cos(angle);
-        const arrowY = y + radius * Math.sin(angle);
-        context.moveTo(arrowX, arrowY);
-        context.lineTo(arrowX - 8, arrowY + 5);
-        context.moveTo(arrowX, arrowY);
-        context.lineTo(arrowX - 2, arrowY - 8);
-    } else {
-        const angle = Math.PI * -0.6;
-        const arrowX = x + radius * Math.cos(angle);
-        const arrowY = y + radius * Math.sin(angle);
-        context.moveTo(arrowX, arrowY);
-        context.lineTo(arrowX - 8, arrowY - 5);
-        context.moveTo(arrowX, arrowY);
-        context.lineTo(arrowX - 2, arrowY + 8);
-    }
-    context.stroke();
     
     context.fillText(Math.abs(magnitude).toFixed(2) + " kNm", x, y - radius - 5);
     context.beginPath();

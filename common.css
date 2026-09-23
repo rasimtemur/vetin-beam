@@ -89,8 +89,7 @@ body.dark-mode td[contenteditable="true"] {
 body.dark-mode .diagram-container .toggle-button, 
 body.dark-mode .diagram-container .download-btn, 
 body.dark-mode .data-tables-header .toggle-button, 
-body.dark-mode .data-tables-header .download-btn,
-body.dark-mode .delete-btn {
+body.dark-mode .data-tables-header .download-btn {
     background-color: rgba(60, 60, 60, 0.7);
     color: var(--fluent-neutral-foreground-hint);
 }
@@ -594,6 +593,14 @@ body.dark-mode .sun-icon { display: block !important; }
 .fluent-theme .canvas-overlay-btn:hover { background-color: rgba(245, 245, 245, 0.9); }
 .fluent-theme .canvas-overlay-btn svg { width: 24px; height: 24px; stroke: var(--fluent-neutral-foreground-rest); stroke-width: 1.5; fill: none; }
 
+/* Kesim Yöntemi butonu */
+.fluent-theme #cut-btn svg path { stroke: currentColor; }
+.fluent-theme #cut-btn.active,
+body.dark-mode #cut-btn.active { background-color: #8e24aa; border-color: #8e24aa; color: #fff; }
+.fluent-theme #cut-btn.active svg,
+body.dark-mode #cut-btn.active svg { stroke: #fff; fill: none; }
+body.cut-dragging, body.cut-dragging * { cursor: ew-resize !important; user-select: none; }
+
 /* Diyagram ve Tablo Ortak Stilleri */
 .fluent-theme #all-diagrams-container { 
     /* Bu konteyner artık görünmez bir gruplayıcı, kendi stili olmayacak */
@@ -646,14 +653,58 @@ body.dark-mode .sun-icon { display: block !important; }
     border-bottom: 1px solid var(--fluent-stroke-color-default); margin-bottom: 10px;
 }
 .fluent-theme #reactions-output b { color: #107C10; }
+
+/* SCD çizim seçenekleri: çizimin sağ üst köşesinde aç/kapa butonları.
+   Görünüm .canvas-overlay-btn'den gelir (Yapısal Model araç butonlarıyla aynı);
+   basılı durum Kesim Yöntemi butonunun etkin haliyle aynı düz dolgudur. */
+.fluent-theme #free-body-diagram-wrapper > .content-wrapper { position: relative; }
+.fbd-options { position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; gap: 8px; }
+.fluent-theme .canvas-overlay-btn.fbd-option-btn { width: auto; gap: 6px; padding: 0 12px 0 8px; white-space: nowrap; }
+.fluent-theme .canvas-overlay-btn.fbd-option-btn svg { width: 20px; height: 20px; stroke-linecap: round; stroke-linejoin: round; }
+.fluent-theme .fbd-option-btn[aria-pressed="true"],
+body.dark-mode .fbd-option-btn[aria-pressed="true"] {
+    background-color: var(--fluent-accent-fill-rest); border-color: var(--fluent-accent-fill-rest); color: #fff;
+}
+.fluent-theme .fbd-option-btn[aria-pressed="true"]:hover,
+body.dark-mode .fbd-option-btn[aria-pressed="true"]:hover {
+    background-color: var(--fluent-accent-fill-hover); border-color: var(--fluent-accent-fill-hover);
+}
+.fluent-theme .fbd-option-btn[aria-pressed="true"] svg,
+body.dark-mode .fbd-option-btn[aria-pressed="true"] svg { stroke: #fff; fill: none; }
+body.dark-mode .fbd-option-btn svg { fill: none; }
+.fbd-option-btn:focus-visible { outline: 2px solid var(--fluent-accent-fill-rest); outline-offset: 1px; }
+@media (max-width: 800px) {
+    .fbd-options { top: 5px; right: 5px; gap: 5px; }
+}
 .fluent-theme .data-tables-header { margin-bottom: 15px; }
-.fluent-theme .table-wrapper { overflow-x: auto; }
+.fluent-theme .table-wrapper { overflow-x: auto; flex: 0 0 auto; max-width: 100%; }
 .fluent-theme .table-grid-wrapper { max-height: 600px; overflow-y: auto; padding: 5px 15px 5px 5px; }
 .fluent-theme .table-wrapper h3 { font-size: 16px; font-weight: 600; margin-top: 0; margin-bottom: 10px; }
 .fluent-theme table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .fluent-theme th, .fluent-theme td { border: 1px solid var(--fluent-stroke-color-default); padding: 8px; text-align: left; white-space: nowrap; }
 .fluent-theme th { background-color: var(--fluent-neutral-fill-rest); font-weight: 600; }
 .fluent-theme td[contenteditable="true"] { background-color: #f5faff; }
+
+/* Sil sütunu içeriği kadar dar tutulur; butona göre ortalanır */
+.fluent-theme td.delete-cell { width: 1%; padding: 4px 8px; text-align: center; }
+.fluent-theme th[data-i18n="tableColDelete"] { width: 1%; text-align: center; }
+
+/* Sil butonu: sade ikon butonu, üzerine gelince kırmızı vurgu */
+.delete-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; padding: 0; vertical-align: middle;
+    background: transparent; border: 1px solid transparent; border-radius: var(--fluent-border-radius);
+    color: var(--fluent-neutral-foreground-hint); cursor: pointer;
+    transition: background-color 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out;
+}
+.delete-btn svg {
+    width: 18px; height: 18px; fill: none; stroke: currentColor;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.delete-btn:hover { background-color: rgba(209, 52, 56, 0.1); border-color: rgba(209, 52, 56, 0.35); color: #d13438; }
+.delete-btn:active { background-color: rgba(209, 52, 56, 0.18); }
+.delete-btn:focus-visible { outline: 2px solid var(--fluent-accent-fill-rest); outline-offset: 1px; }
+body.dark-mode .delete-btn:hover { background-color: rgba(248, 113, 113, 0.15); border-color: rgba(248, 113, 113, 0.4); color: #f87171; }
 .fluent-theme .hidden { display: none; }
 
 /* Butonlar (Toggle, Download vb.) */
@@ -714,6 +765,36 @@ body.dark-mode .sun-icon { display: block !important; }
 .hint-box.hidden {
     opacity: 0;
     transform: translateX(-50%) translateY(-10px); /* Gizlenirken yukarı kaybolma efekti */
+}
+
+/* === HESAPLAMA UYARI KUTUSU (alert yerine) === */
+.calc-warning-box {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background-color: rgba(255, 235, 230, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(217, 83, 79, 0.4);
+    border-radius: 3px;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #8a2622;
+    z-index: 16;
+    pointer-events: none;
+    box-shadow: var(--fluent-shadow-depth-8);
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.calc-warning-box.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+body.dark-mode .calc-warning-box {
+    background-color: rgba(60, 25, 20, 0.95);
+    border-color: rgba(255, 120, 110, 0.35);
+    color: #ff9d96;
 }
 /* === HAZIR MODEL GALERİSİ (AÇILIŞ KATMANI) === */
 #model-gallery-overlay {

@@ -124,11 +124,8 @@ const drawConcentratedLoadSVG = (load) => {
     const lineLength = 50, mag = (magnitude >= 0) ? 1 : -1;
     const startX = (mag >= 0) ? x : x + lineLength * Math.cos(angle), startY = (mag >= 0) ? y : y + lineLength * Math.sin(angle);
     const endX = (mag >= 0) ? x + lineLength * Math.cos(angle) : x, endY = (mag >= 0) ? y + lineLength * Math.sin(angle) : y;
-    const effectiveAngle = (mag >= 0) ? angle : angle + Math.PI, angleDeg = effectiveAngle * 180 / Math.PI;
-    const line = `<path d="M ${startX} ${startY} L ${endX} ${endY}" />`;
-    const arrowhead = `<path d="M 0 0 L -10 -5 M 0 0 L -10 5" transform="translate(${endX}, ${endY}) rotate(${angleDeg})" />`;
     const text = `<text x="${(startX + endX) / 2}" y="${Math.min(startY, endY) - 5}" text-anchor="middle" font-family="Arial" font-size="12px" fill="${COLORS.LOAD}">${Math.abs(magnitude).toFixed(1)} kN</text>`;
-    return `<g stroke="${COLORS.LOAD}" fill="none" stroke-width="2">${line}${arrowhead}</g>${text}`;
+    return filledArrowSVG(startX, startY, endX, endY, COLORS.LOAD) + text;
 };
 const drawDistributedLoadSVG = (load, yPos) => {
     const y_base = (load.magnitude < 0) ? yPos - 10 : yPos + 10;
@@ -150,20 +147,28 @@ const drawDistributedLoadSVG = (load, yPos) => {
     const text = `<text x="${(startX + endX) / 2}" y="${text_y}" text-anchor="middle" font-family="Arial" font-size="12px" fill="${COLORS.LOAD}">${Math.abs(load.magnitude).toFixed(2)} kN/m</text>`;
     return `<g stroke="${COLORS.LOAD}" fill="none" stroke-width="2">${top_line}${arrows}</g>${text}`;
 };
+// Yay biçimli dolu uçlu ok (tuvaldeki drawFilledArcArrow ile aynı geometri)
+const filledArcArrowSVG = (cx, cy, r, startAngle, endAngle, anticlockwise, color) => {
+    const dir = anticlockwise ? -1 : 1, hw = FBD_ARROW.headHalfWidth;
+    const baseAngle = endAngle - dir * (FBD_ARROW.headLength / r);
+    const shaftEnd = baseAngle + dir * (1 / r);
+    const pt = (a) => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+    const [sx, sy] = pt(startAngle), [ex, ey] = pt(shaftEnd), [tx, ty] = pt(endAngle), [bx, by] = pt(baseAngle);
+    const nx = Math.cos(baseAngle), ny = Math.sin(baseAngle);
+    const largeArc = Math.abs(shaftEnd - startAngle) > Math.PI ? 1 : 0;
+    const sweepFlag = anticlockwise ? 0 : 1; // SVG'de (y aşağı) 1 = artan açı yönü
+    return `<path d="M ${sx} ${sy} A ${r} ${r} 0 ${largeArc} ${sweepFlag} ${ex} ${ey}" stroke="${color}" stroke-width="${FBD_ARROW.shaftWidth}" fill="none" />` +
+        `<path d="M ${tx} ${ty} L ${bx + nx * hw} ${by + ny * hw} L ${bx - nx * hw} ${by - ny * hw} Z" fill="${color}" stroke="none" />`;
+};
 const drawConcentratedMomentSVG = (moment, color = COLORS.LOAD) => {
     const { x, y, magnitude } = moment;
-    const radius = 20, isClockwise = magnitude < 0;
-    const startAngle = isClockwise ? -0.4 * Math.PI : 0.4 * Math.PI, endAngle = isClockwise ? 0.6 * Math.PI : -0.6 * Math.PI;
-    const largeArcFlag = 0, sweepFlag = isClockwise ? 0 : 1;
-    const startX = x + radius * Math.cos(startAngle), startY = y + radius * Math.sin(startAngle);
-    const endX = x + radius * Math.cos(endAngle), endY = y + radius * Math.sin(endAngle);
-    const arc = `<path d="M ${startX} ${startY} A ${radius} ${radius} 0 ${largeArcFlag} ${sweepFlag} ${endX} ${endY}" />`;
-    let arrowhead;
-    if(isClockwise) { arrowhead = `<path d="M ${endX} ${endY} L ${endX - 8} ${endY + 5} M ${endX} ${endY} L ${endX - 2} ${endY - 8}" />`; } 
-    else { arrowhead = `<path d="M ${endX} ${endY} L ${endX - 8} ${endY - 5} M ${endX} ${endY} L ${endX - 2} ${endY + 8}" />`; }
+    const radius = 22, isClockwise = magnitude < 0;
+    const arc = isClockwise
+        ? filledArcArrowSVG(x, y, radius, -0.4 * Math.PI, -1.4 * Math.PI, true, color)
+        : filledArcArrowSVG(x, y, radius, 0.4 * Math.PI, 1.4 * Math.PI, false, color);
     const text = `<text x="${x}" y="${y - radius - 5}" text-anchor="middle" font-family="Arial" font-size="12px" fill="${color}">${Math.abs(magnitude).toFixed(2)} kNm</text>`;
     const centerDot = `<circle cx="${x}" cy="${y}" r="4" fill="white" stroke="${color}" stroke-width="2" />`;
-    return `<g stroke="${color}" fill="none" stroke-width="2">${arc}${arrowhead}</g>${text}${centerDot}`;
+    return `${arc}${text}${centerDot}`;
 };
 const drawTrapezoidalLoadSVG = (load, yPos) => {
     const y_base = (load.startMagnitude >= 0 && load.endMagnitude >= 0) ? yPos + 10 : yPos - 10;
@@ -206,33 +211,32 @@ const drawTorsionMomentSVG = (moment) => {
     const centerDot = `<circle cx="${x}" cy="${y}" r="4" fill="white" stroke="${color}" stroke-width="2" />`;
     return `<g stroke="${color}" fill="none" stroke-width="2">${line}${arrowhead}</g>${text}${centerDot}`;
 };
+// SCD tepkileri: kalın gövde + dolu üçgen uç (tuvaldeki FBD_ARROW stiliyle aynı)
+const filledArrowSVG = (x1, y1, x2, y2, color) => {
+    const len = Math.hypot(x2 - x1, y2 - y1); if (len < 1e-6) return '';
+    const ux = (x2 - x1) / len, uy = (y2 - y1) / len, hl = Math.min(FBD_ARROW.headLength, len), hw = FBD_ARROW.headHalfWidth;
+    const bx = x2 - ux * hl, by = y2 - uy * hl;
+    return `<path d="M ${x1} ${y1} L ${bx + ux} ${by + uy}" stroke="${color}" stroke-width="${FBD_ARROW.shaftWidth}" fill="none" />` +
+        `<path d="M ${x2} ${y2} L ${bx - uy * hw} ${by + ux * hw} L ${bx + uy * hw} ${by - ux * hw} Z" fill="${color}" stroke="none" />`;
+};
 const drawReactionArrowSVG = (reaction, yPos) => {
     const { x, magnitude } = reaction;
     if (Math.abs(magnitude) < EPSILON) return '';
-    const L = 40, T = 15, beamBottom = yPos + 10;
+    const L = 48, beamBottom = yPos + 10, color = COLORS.FBD_REACTION;
     const isUp = magnitude > 0;
     const startY = isUp ? beamBottom + L : beamBottom, targetY = isUp ? beamBottom : beamBottom + L;
-    const textY = isUp ? startY + T : startY + T; 
-    const tipOffset = isUp ? 10 : -10;
-    const line = `<path d="M ${x} ${startY} L ${x} ${targetY}" />`;
-    const arrowhead = `<path d="M ${x} ${targetY} L ${x - 5} ${targetY + tipOffset} M ${x} ${targetY} L ${x + 5} ${targetY + tipOffset}" />`;
-    const text = `<text x="${x}" y="${textY}" text-anchor="middle" font-family="Arial" font-size="12px" fill="${COLORS.REACTION}">${Math.abs(magnitude).toFixed(2)} kN</text>`;
-    return `<g stroke="${COLORS.REACTION}" fill="none" stroke-width="2">${line}${arrowhead}</g>${text}`;
+    const text = `<text x="${x}" y="${beamBottom + L + 16}" text-anchor="middle" font-family="Arial" font-size="12px" fill="${color}">${Math.abs(magnitude).toFixed(2)} kN</text>`;
+    return filledArrowSVG(x, startY, x, targetY, color) + text;
 };
 const drawAxialReactionSVG = (reaction, yPos) => {
     const { x, magnitude } = reaction;
     if (Math.abs(magnitude) < EPSILON) return '';
-    const L = 40, T = 5;
+    const L = 44, T = 5, color = COLORS.FBD_REACTION;
     const isRight = magnitude > 0;
-    const startX = isRight ? x - L : x + L;
-    const targetX = x;
     const textAnchor = isRight ? 'start' : 'end';
-    const textX = isRight ? targetX + T : targetX - T;
-    const tipOffset = isRight ? -10 : 10;
-    const line = `<path d="M ${startX} ${yPos} L ${targetX} ${yPos}" />`;
-    const arrowhead = `<path d="M ${targetX} ${yPos} L ${targetX + tipOffset} ${yPos - 5} M ${targetX} ${yPos} L ${targetX + tipOffset} ${yPos + 5}" />`;
-    const text = `<text x="${textX}" y="${yPos}" text-anchor="${textAnchor}" alignment-baseline="middle" font-family="Arial" font-size="12px" fill="${COLORS.REACTION}">${Math.abs(magnitude).toFixed(2)} kN</text>`;
-    return `<g stroke="${COLORS.REACTION}" fill="none" stroke-width="2">${line}${arrowhead}</g>${text}`;
+    const textX = isRight ? x + T : x - T;
+    const text = `<text x="${textX}" y="${yPos - 14}" text-anchor="${textAnchor}" alignment-baseline="middle" font-family="Arial" font-size="12px" fill="${color}">${Math.abs(magnitude).toFixed(2)} kN</text>`;
+    return filledArrowSVG(isRight ? x - L : x + L, yPos, x, yPos, color) + text;
 };
 const drawDimensionsSVG = (y_pos) => {
     if (!beam) return '';
@@ -273,18 +277,23 @@ function downloadDrawingAsTrueSvg(target, filename) {
     svgElements += drawBeamSVG(beam, yPos);
     if (target === 'model') { supports.forEach(s => svgElements += drawSupportSVG(s, yPos)); }
     hinges.forEach(h => svgElements += drawHingeSVG(h, yPos));
-    concentratedLoads.forEach(l => svgElements += drawConcentratedLoadSVG(l));
-    distributedLoads.forEach(l => svgElements += drawDistributedLoadSVG(l, yPos));
-    trapezoidalLoads.forEach(l => svgElements += drawTrapezoidalLoadSVG(l, yPos));
-    concentratedMoments.forEach(m => svgElements += drawConcentratedMomentSVG(m));
-    torsionMoments.forEach(t => svgElements += drawTorsionMomentSVG(t));
-    if (target === 'fbd' && calculatedReactions) {
+    // SCD indirilirken ekrandaki Kuvvetler / Mesnet Tepkileri seçimine uyulur
+    const showLoads = target !== 'fbd' || fbdDisplayOptions.loads;
+    const showReactions = target === 'fbd' && fbdDisplayOptions.reactions;
+    if (showLoads) {
+        concentratedLoads.forEach(l => svgElements += drawConcentratedLoadSVG(l));
+        distributedLoads.forEach(l => svgElements += drawDistributedLoadSVG(l, yPos));
+        trapezoidalLoads.forEach(l => svgElements += drawTrapezoidalLoadSVG(l, yPos));
+        concentratedMoments.forEach(m => svgElements += drawConcentratedMomentSVG(m));
+        torsionMoments.forEach(t => svgElements += drawTorsionMomentSVG(t));
+    }
+    if (showReactions && calculatedReactions) {
         calculatedReactions.forEach(r => svgElements += drawReactionArrowSVG(r, yPos));
         if (calculatedMomentReaction && Math.abs(calculatedMomentReaction) > EPSILON) {
             const fixedSupport = supports.find(s => s.type === 'fixed-support');
             if (fixedSupport) {
                 const momentReactionObject = { x: fixedSupport.x, y: yPos, magnitude: calculatedMomentReaction };
-                svgElements += drawConcentratedMomentSVG(momentReactionObject, COLORS.REACTION);
+                svgElements += drawConcentratedMomentSVG(momentReactionObject, COLORS.FBD_REACTION);
             }
         }
         if (calculatedAxialReaction) {
@@ -324,9 +333,27 @@ function downloadModelAsJson() {
 }
 
 function downloadTablesAsCsv(filename) {
-    let csvContent = '';
+    const escapeCsv = (value) => {
+        const text = String(value).replace(/\s+/g, ' ').trim();
+        return /[",;\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+    };
+    const lines = [];
     const visibleTables = document.querySelectorAll('.table-grid .table-wrapper:not(.hidden)');
-    visibleTables.forEach(wrapper => { /* ... */ });
-    
+    visibleTables.forEach(wrapper => {
+        const title = wrapper.querySelector('h3');
+        const table = wrapper.querySelector('table');
+        if (!table) return;
+        if (title) lines.push(escapeCsv(title.innerText));
+        table.querySelectorAll('tr').forEach(tr => {
+            const cells = Array.from(tr.querySelectorAll('th, td'))
+                // Silme butonu sütununu dışarıda bırak
+                .filter(cell => !cell.querySelector('.delete-btn') && cell.dataset.i18n !== 'tableColDelete')
+                .map(cell => escapeCsv(cell.innerText));
+            if (cells.length > 0) lines.push(cells.join(','));
+        });
+        lines.push('');
+    });
+    // BOM: Excel'in UTF-8 (Türkçe vb. karakterleri) doğru açması için
+    const csvContent = String.fromCharCode(0xFEFF) + lines.join('\r\n');
     triggerDownload(csvContent, filename, 'text/csv', '.csv');
 }
