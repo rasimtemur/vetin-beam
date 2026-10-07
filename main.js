@@ -19,7 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeDOMVariables(); 
     
     // 3.1 Temayı Başlat
-    initializeTheme(); 
+    initializeTheme();
+
+    // 3.1.1 vetin uygulamaları menüsü (logonun yanı)
+    initAppSwitcher();
 
     // 3.2 3B Elastik Eğri Başlat — Three.js yüklenemezse (ör. vendor/ eksik) yalnızca
     // 3B görünüm devre dışı kalır; olay dinleyicileri ve diğer kurulumlar yine yapılır.
@@ -31,7 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 4. Sadece mevcut platforma ait olay dinleyicilerini kur
+    // 4. Ortak eylemler (butonlar, model yükleme, ayar girdileri: actions.js),
+    //    ardından yalnızca mevcut platforma ait işaretçi dinleyicileri
+    initializeSharedActions();
     if (platform === 'desktop') {
         initializeDesktopEventListeners(); // desktop-events.js'deki fonksiyon
     } else {

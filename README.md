@@ -104,13 +104,14 @@ The elastic curve computation requires the specification of:
 
 ### Data Management
 
-- **Save / Open** — The structural model may be exported to and imported from a `.json` file, enabling session continuity
+- **Save / Open** — The structural model may be exported to and imported from a `.json` file, enabling session continuity. Files use format version 2: all positions are stored in metres from the beam start, independent of screen size or grid settings (material properties *E* and *I* are saved as well). Older pixel-based files (version 1) can still be opened.
 - **Vector Graphics Export** — The structural model and the corresponding free body diagram (FBD) can be exported directly in scalable vector graphics (SVG) format for high-resolution publishing
 - **Diagram Export** — Computed internal force and deformation diagrams may be downloaded as PNG image files
 - **Data Export** — Tabulated numerical output may be downloaded for external reference
 
 ### Interface Options
 
+- **App switcher** — a 3×3 grid button next to the logo opens the other vetin applications
 - **Light / Dark mode** — selectable display theme
 - **Fullscreen mode** — for unobstructed model construction
 - **Configurable grid** — horizontal scale (m), vertical scale (kN), and grid resolution (px)
@@ -143,7 +144,6 @@ The application is implemented using standard web technologies without dependenc
 |-----------|------|
 | **HTML5 / CSS3 / JavaScript (ES6+)** | Core application architecture |
 | **[Chart.js](https://www.chartjs.org/) 4.4.9** | Rendering of 2D internal force diagrams |
-| **[D3.js](https://d3js.org/) 7.9.0** | SVG-based structural diagram drawing |
 | **[Three.js](https://threejs.org/) 0.145.0** | WebGL-based 3D elastic curve visualisation |
 | **Service Worker API** | Offline caching and PWA functionality |
 | **Web App Manifest** | Home screen installation support |
@@ -160,20 +160,24 @@ beam/
 ├── manifest.json           # PWA manifest descriptor
 ├── sw.js                   # Service Worker (offline caching)
 │
-├── app.js                  # Application state management
 ├── main.js                 # Initialisation sequence
-├── setup.js                # Canvas and grid configuration
-├── calculations.js         # Internal force and reaction computations
-├── ui-handler.js           # User interface state and event dispatch
+├── setup.js                # Global state, colours, Chart.js helpers
+├── model.js                # Model file format (metres, v2) ↔ runtime state (pixels)
+├── actions.js              # Shared user actions (desktop + mobile): buttons, load/save, reset
+├── app.js                  # Canvas redraw, coordinate conversion, updateAll()
+├── calculations.js         # Statics solver — analyzeBeam() returns results, draws nothing
+├── ui-handler.js           # Rendering of results (FBD, diagrams), tables, theme, modals
+├── cut-method.js           # Interactive method of sections
+├── fullscreen-panels.js    # Drawings shown below the model in fullscreen
 │
 ├── draw-structure.js       # Beam and support element rendering
 ├── draw-loads.js           # Load visualisation
 ├── draw-utilities.js       # Shared drawing utilities
 ├── elastic-3d.js           # Three.js-based 3D elastic curve renderer
 │
-├── desktop-events.js       # Mouse and keyboard event handling
-├── mobile-events.js        # Touch event handling
-├── download.js             # PNG and JSON export logic
+├── desktop-events.js       # Mouse pointer interaction (drawing, dragging, drag & drop)
+├── mobile-events.js        # Touch pointer interaction
+├── download.js             # SVG, PNG, JSON and CSV export logic
 │
 ├── translations.js         # Localisation string repository
 ├── localization.js         # Language switching and i18n engine
@@ -186,14 +190,17 @@ beam/
 │
 ├── vendor/                 # Locally bundled third-party libraries
 │   ├── chart.umd.min.js    #   Chart.js 4.4.9
-│   ├── d3.v7.min.js        #   D3.js 7.9.0
 │   ├── three.min.js        #   Three.js 0.145.0
 │   └── OrbitControls.js    #   Three.js orbit camera controls
 │
 ├── tests/
-│   └── run-tests.js        # Unit tests for the statics solver (Node.js)
+│   └── run-tests.js        # Unit tests (Node.js): solver, file format, deploy integrity
 │
-├── models/                 # Example model files (.json)
+├── tools/
+│   ├── build-models-data.js  # Generates models/models-data.js from models/*.json
+│   └── check-deploy.js       # Pre-deploy check and list of files to upload
+│
+├── models/                 # Example models (.json, format v2) and embedded copy (models-data.js)
 │
 ├── logo.svg                # Application logotype
 ├── icon-192.png            # PWA icon (192 × 192 px)
@@ -226,6 +233,16 @@ npx serve .
 ```
 
 Navigate to `http://localhost:8000` in a web browser to launch the application.
+
+### Deploying to a Server
+
+Before uploading, run the deploy check. It verifies that every file loaded by `index.html` is listed in the Service Worker cache (`sw.js`) and exists on disk — a single missing file prevents the Service Worker from installing — and prints the complete list of files to upload:
+
+```bash
+node tools/check-deploy.js --list
+```
+
+Upload the listed files preserving the folder structure (including `vendor/` and `models/`). After changing any file, increase `CACHE_NAME` in `sw.js` so that installed clients receive the update. After editing or adding an example model in `models/`, regenerate the embedded copy with `node tools/build-models-data.js`.
 
 ### Installation as a Progressive Web App
 
@@ -264,7 +281,7 @@ The statics solver (support reactions, shear/moment functions, elastic curve, st
 node tests/run-tests.js
 ```
 
-The suite validates classical closed-form solutions (e.g. *R = P/2*, *M = wL²/2*, *δ = 5wL⁴/384EI*) including upward-load sign handling and Gerber (hinged) system stability rules.
+The suite validates classical closed-form solutions (e.g. *R = P/2*, *M = wL²/2*, *δ = 5wL⁴/384EI*) including upward-load sign handling and Gerber (hinged) system stability rules. It also checks that the solver performs no drawing, that the model file format round-trips without loss (and still reads version 1 files), that the example models are valid, and that the deploy file lists are consistent.
 
 ---
 

@@ -2,6 +2,9 @@
 
 const translations = {
   en: {
+    loadDialogAdd: "Add", loadDialogAngleHint: "The angle is measured clockwise from the horizontal (90° points down). A negative magnitude reverses the force direction.", loadDialogInvalid: "Please enter valid numbers. Positions must lie on the beam, and the start and end must differ.",
+    loadDialogStartMagnitude: "Start magnitude (kN/m)", loadDialogEndMagnitude: "End magnitude (kN/m)",
+    appsMenu: "vetin Apps", appMomentOfInertia: "Moment of Inertia", appInternalForce: "Internal Forces", appPlaneStress: "Plane Stress", appPlaneStrain: "Plane Strain", appBending: "Simple Bending", appEccentricity: "Eccentric Loading", appShear: "Shear & Bending", appTorsion: "Torsion",
     // Toolbar - Titles (Tooltips)
     beamTitle: "Draw Beam",
     pinSupportTitle: "Pinned Support",
@@ -168,6 +171,9 @@ const translations = {
     }
   },
   de: {
+    loadDialogAdd: "Hinzufügen", loadDialogAngleHint: "Der Winkel wird von der Horizontalen im Uhrzeigersinn gemessen (90° zeigt nach unten). Ein negativer Betrag kehrt die Kraftrichtung um.", loadDialogInvalid: "Bitte gültige Zahlen eingeben. Positionen müssen auf dem Träger liegen, Anfang und Ende müssen sich unterscheiden.",
+    loadDialogStartMagnitude: "Anfangswert (kN/m)", loadDialogEndMagnitude: "Endwert (kN/m)",
+    appsMenu: "vetin-Apps", appMomentOfInertia: "Flächenträgheitsmoment", appInternalForce: "Schnittgrößen", appPlaneStress: "Ebener Spannungszustand", appPlaneStrain: "Ebener Verzerrungszustand", appBending: "Reine Biegung", appEccentricity: "Exzentrizität", appShear: "Querkraftbiegung", appTorsion: "Torsion",
     // Toolbar - Titles (Tooltips)
     beamTitle: "Träger zeichnen",
     pinSupportTitle: "Festlager",
@@ -326,6 +332,9 @@ const translations = {
     }
   },
   cn: {
+    loadDialogAdd: "添加", loadDialogAngleHint: "角度从水平方向按顺时针测量（90° 向下）。负值表示力的方向相反。", loadDialogInvalid: "请输入有效数字。位置必须位于梁上，且起点与终点不能相同。",
+    loadDialogStartMagnitude: "起点荷载集度 (kN/m)", loadDialogEndMagnitude: "终点荷载集度 (kN/m)",
+    appsMenu: "vetin 应用", appMomentOfInertia: "惯性矩", appInternalForce: "内力图", appPlaneStress: "平面应力", appPlaneStrain: "平面应变", appBending: "纯弯曲", appEccentricity: "偏心受力", appShear: "剪切弯曲", appTorsion: "扭转",
     // Toolbar - Titles (Tooltips)
     beamTitle: "绘制梁",
     pinSupportTitle: "固定铰支座",
@@ -484,6 +493,9 @@ const translations = {
     }
   },
   tr: {
+    loadDialogAdd: "Ekle", loadDialogAngleHint: "Açı yataydan saat yönünde ölçülür (90° aşağı yönlüdür). Negatif şiddet kuvvetin yönünü ters çevirir.", loadDialogInvalid: "Lütfen geçerli sayılar girin. Konumlar kiriş üzerinde olmalı, başlangıç ve bitiş farklı olmalıdır.",
+    loadDialogStartMagnitude: "Başlangıç şiddeti (kN/m)", loadDialogEndMagnitude: "Bitiş şiddeti (kN/m)",
+    appsMenu: "vetin Uygulamaları", appMomentOfInertia: "Atalet Momenti", appInternalForce: "İç Kuvvetler", appPlaneStress: "Düzlem Gerilme", appPlaneStrain: "Düzlem Gerinim", appBending: "Basit Eğilme", appEccentricity: "Dış Merkezlik", appShear: "Kesmeli Eğilme", appTorsion: "Burulma",
     // Toolbar - Titles (Tooltips)
     beamTitle: "Kiriş Çiz",
     pinSupportTitle: "Sabit Mesnet",
@@ -671,6 +683,9 @@ const createTranslation = (overrides) => {
 
 // Spanish (Español)
 translations.es = createTranslation({
+    loadDialogAdd: "Añadir", loadDialogAngleHint: "El ángulo se mide en sentido horario desde la horizontal (90° apunta hacia abajo). Una magnitud negativa invierte la dirección de la fuerza.", loadDialogInvalid: "Introduzca números válidos. Las posiciones deben estar sobre la viga y el inicio y el final deben ser distintos.",
+    loadDialogStartMagnitude: "Magnitud inicial (kN/m)", loadDialogEndMagnitude: "Magnitud final (kN/m)",
+    appsMenu: "Aplicaciones vetin", appMomentOfInertia: "Momento de inercia", appInternalForce: "Esfuerzos internos", appPlaneStress: "Tensión plana", appPlaneStrain: "Deformación plana", appBending: "Flexión simple", appEccentricity: "Excentricidad", appShear: "Flexión con cortante", appTorsion: "Torsión",
     fbdShowLoads: "Fuerzas Externas", fbdShowReactions: "Reacciones en los Apoyos", fbdOptionsTitle: "Mostrar u ocultar en el diagrama de cuerpo libre", fullscreenPanelsTitle: "Dibujos mostrados debajo", hideToolbar: "Ocultar menú superior", showToolbar: "Mostrar menú superior",
     beamTitle: "Dibujar Viga", pinSupportTitle: "Soporte Fijo", rollerSupportTitle: "Soporte de Rodillo", fixedSupportTitle: "Soporte Empotrado", hingeTitle: "Articulación",
     pointLoadTitle: "Carga Puntual", momentTitle: "Momento Flector", torsionTitle: "Momento Torsor", distLoadTitle: "Carga Distribuida", trapLoadTitle: "Carga Trapezoidal",
@@ -749,6 +764,9 @@ translations.es = createTranslation({
 
 // French (Français)
 translations.fr = createTranslation({
+    loadDialogAdd: "Ajouter", loadDialogAngleHint: "L'angle est mesuré dans le sens horaire à partir de l'horizontale (90° vers le bas). Une intensité négative inverse le sens de la force.", loadDialogInvalid: "Veuillez saisir des nombres valides. Les positions doivent se trouver sur la poutre, et le début et la fin doivent être différents.",
+    loadDialogStartMagnitude: "Intensité de début (kN/m)", loadDialogEndMagnitude: "Intensité de fin (kN/m)",
+    appsMenu: "Applications vetin", appMomentOfInertia: "Moment d'inertie", appInternalForce: "Efforts internes", appPlaneStress: "Contraintes planes", appPlaneStrain: "Déformations planes", appBending: "Flexion simple", appEccentricity: "Excentricité", appShear: "Flexion et cisaillement", appTorsion: "Torsion",
     fbdShowLoads: "Forces Extérieures", fbdShowReactions: "Réactions d'Appui", fbdOptionsTitle: "Afficher ou masquer sur le diagramme du corps libre", fullscreenPanelsTitle: "Dessins affichés en dessous", hideToolbar: "Masquer le menu supérieur", showToolbar: "Afficher le menu supérieur",
     beamTitle: "Dessiner Poutre", pinSupportTitle: "Appui Simple", rollerSupportTitle: "Appui Rouleau", fixedSupportTitle: "Encastrement", hingeTitle: "Rotule",
     pointLoadTitle: "Charge Ponctuelle", momentTitle: "Moment Fléchissant", torsionTitle: "Moment de Torsion", distLoadTitle: "Charge Répartie", trapLoadTitle: "Charge Trapézoïdale",
@@ -829,6 +847,9 @@ translations.fr = createTranslation({
 
 // Italian (Italiano)
 translations.it = createTranslation({
+    loadDialogAdd: "Aggiungi", loadDialogAngleHint: "L'angolo è misurato in senso orario dall'orizzontale (90° verso il basso). Un'intensità negativa inverte la direzione della forza.", loadDialogInvalid: "Inserisci numeri validi. Le posizioni devono trovarsi sulla trave e inizio e fine devono essere diversi.",
+    loadDialogStartMagnitude: "Intensità iniziale (kN/m)", loadDialogEndMagnitude: "Intensità finale (kN/m)",
+    appsMenu: "App vetin", appMomentOfInertia: "Momento d'inerzia", appInternalForce: "Sollecitazioni interne", appPlaneStress: "Tensione piana", appPlaneStrain: "Deformazione piana", appBending: "Flessione semplice", appEccentricity: "Eccentricità", appShear: "Flessione e taglio", appTorsion: "Torsione",
     fbdShowLoads: "Forze Esterne", fbdShowReactions: "Reazioni Vincolari", fbdOptionsTitle: "Mostra o nascondi nel diagramma di corpo libero", fullscreenPanelsTitle: "Disegni mostrati sotto", hideToolbar: "Nascondi menu superiore", showToolbar: "Mostra menu superiore",
     beamTitle: "Disegna Trave", pinSupportTitle: "Cerniera", rollerSupportTitle: "Carrello", fixedSupportTitle: "Incastro", hingeTitle: "Cerniera Interna",
     pointLoadTitle: "Carico Concentrato", momentTitle: "Momento Flettente", torsionTitle: "Momento Torcente", distLoadTitle: "Carico Distribuito",
@@ -914,6 +935,9 @@ translations.it = createTranslation({
 
 // Portuguese (Português)
 translations.pt = createTranslation({
+    loadDialogAdd: "Adicionar", loadDialogAngleHint: "O ângulo é medido no sentido horário a partir da horizontal (90° aponta para baixo). Uma intensidade negativa inverte o sentido da força.", loadDialogInvalid: "Introduza números válidos. As posições devem estar sobre a viga e o início e o fim devem ser diferentes.",
+    loadDialogStartMagnitude: "Intensidade inicial (kN/m)", loadDialogEndMagnitude: "Intensidade final (kN/m)",
+    appsMenu: "Aplicativos vetin", appMomentOfInertia: "Momento de inércia", appInternalForce: "Esforços internos", appPlaneStress: "Estado plano de tensão", appPlaneStrain: "Estado plano de deformação", appBending: "Flexão simples", appEccentricity: "Excentricidade", appShear: "Flexão com cortante", appTorsion: "Torção",
     fbdShowLoads: "Forças Externas", fbdShowReactions: "Reações de Apoio", fbdOptionsTitle: "Mostrar ou ocultar no diagrama de corpo livre", fullscreenPanelsTitle: "Desenhos exibidos abaixo", hideToolbar: "Ocultar menu superior", showToolbar: "Mostrar menu superior",
     beamTitle: "Desenhar Viga", pinSupportTitle: "Apoio Fixo", rollerSupportTitle: "Apoio Móvel", fixedSupportTitle: "Engaste", hingeTitle: "Rótula",
     pointLoadTitle: "Carga Pontual", momentTitle: "Momento Fletor", torsionTitle: "Momento Torsor", distLoadTitle: "Carga Distribuída",
@@ -997,6 +1021,9 @@ translations.pt = createTranslation({
 
 // Russian (Русский)
 translations.ru = createTranslation({
+    loadDialogAdd: "Добавить", loadDialogAngleHint: "Угол отсчитывается от горизонтали по часовой стрелке (90° — вниз). Отрицательная величина меняет направление силы на противоположное.", loadDialogInvalid: "Введите корректные числа. Положения должны находиться на балке, а начало и конец должны различаться.",
+    loadDialogStartMagnitude: "Начальная интенсивность (кН/м)", loadDialogEndMagnitude: "Конечная интенсивность (кН/м)",
+    appsMenu: "Приложения vetin", appMomentOfInertia: "Момент инерции", appInternalForce: "Внутренние усилия", appPlaneStress: "Плоское напряжённое состояние", appPlaneStrain: "Плоская деформация", appBending: "Чистый изгиб", appEccentricity: "Внецентренное нагружение", appShear: "Поперечный изгиб", appTorsion: "Кручение",
     fbdShowLoads: "Внешние силы", fbdShowReactions: "Опорные реакции", fbdOptionsTitle: "Показать или скрыть на схеме свободного тела", fullscreenPanelsTitle: "Чертежи, показываемые ниже", hideToolbar: "Скрыть верхнее меню", showToolbar: "Показать верхнее меню",
     beamTitle: "Нарисовать балку", pinSupportTitle: "Шарнирно-неподвижная", rollerSupportTitle: "Шарнирно-подвижная", fixedSupportTitle: "Заделка", hingeTitle: "Шарнир",
     pointLoadTitle: "Сосредоточенная сила", momentTitle: "Изгибающий момент", torsionTitle: "Крутящий момент", distLoadTitle: "Распред. нагрузка",
@@ -1079,6 +1106,9 @@ translations.ru = createTranslation({
 
 // Japanese (日本語)
 translations.ja = createTranslation({
+    loadDialogAdd: "追加", loadDialogAngleHint: "角度は水平から時計回りに測ります（90° は下向き）。負の値は力の向きを反転します。", loadDialogInvalid: "有効な数値を入力してください。位置は梁の上にあり、始点と終点は異なる必要があります。",
+    loadDialogStartMagnitude: "始点の荷重強度 (kN/m)", loadDialogEndMagnitude: "終点の荷重強度 (kN/m)",
+    appsMenu: "vetin アプリ", appMomentOfInertia: "断面二次モーメント", appInternalForce: "断面力図", appPlaneStress: "平面応力", appPlaneStrain: "平面ひずみ", appBending: "単純曲げ", appEccentricity: "偏心荷重", appShear: "せん断と曲げ", appTorsion: "ねじり",
     fbdShowLoads: "外力", fbdShowReactions: "支点反力", fbdOptionsTitle: "自由体図に表示／非表示", fullscreenPanelsTitle: "下に表示する図", hideToolbar: "上部メニューを隠す", showToolbar: "上部メニューを表示",
     beamTitle: "梁を描く", pinSupportTitle: "回転端", rollerSupportTitle: "移動端", fixedSupportTitle: "固定端", hingeTitle: "ヒンジ",
     pointLoadTitle: "集中荷重", momentTitle: "曲げモーメント", torsionTitle: "ねじりモーメント", distLoadTitle: "等分布荷重",
@@ -1161,6 +1191,9 @@ translations.ja = createTranslation({
 
 // Arabic (العربية)
 translations.ar = createTranslation({
+    loadDialogAdd: "إضافة", loadDialogAngleHint: "تُقاس الزاوية من الأفقي باتجاه عقارب الساعة (90° نحو الأسفل). القيمة السالبة تعكس اتجاه القوة.", loadDialogInvalid: "يرجى إدخال أرقام صحيحة. يجب أن تقع المواضع على الجائز وأن تختلف البداية عن النهاية.",
+    loadDialogStartMagnitude: "شدة البداية (kN/m)", loadDialogEndMagnitude: "شدة النهاية (kN/m)",
+    appsMenu: "تطبيقات vetin", appMomentOfInertia: "عزم القصور الذاتي", appInternalForce: "القوى الداخلية", appPlaneStress: "الإجهاد المستوي", appPlaneStrain: "الانفعال المستوي", appBending: "الانحناء البسيط", appEccentricity: "اللامركزية", appShear: "الانحناء مع القص", appTorsion: "الالتواء",
     fbdShowLoads: "القوى الخارجية", fbdShowReactions: "ردود أفعال الركائز", fbdOptionsTitle: "إظهار أو إخفاء في مخطط الجسم الحر", fullscreenPanelsTitle: "الرسومات المعروضة في الأسفل", hideToolbar: "إخفاء القائمة العلوية", showToolbar: "إظهار القائمة العلوية",
     beamTitle: "رسم العارضة", pinSupportTitle: "دعامة مفصلية", rollerSupportTitle: "دعامة منزلقة", fixedSupportTitle: "دعامة ثابتة", hingeTitle: "مفصل",
     pointLoadTitle: "حمل مركز", momentTitle: "عزم الانحناء", torsionTitle: "عزم الالتواء", distLoadTitle: "حمل موزع",
@@ -1243,6 +1276,9 @@ translations.ar = createTranslation({
 
 // Persian (فارسی)
 translations.fa = createTranslation({
+    loadDialogAdd: "افزودن", loadDialogAngleHint: "زاویه از افق در جهت ساعتگرد اندازه‌گیری می‌شود (90° رو به پایین). مقدار منفی جهت نیرو را معکوس می‌کند.", loadDialogInvalid: "لطفاً اعداد معتبر وارد کنید. موقعیت‌ها باید روی تیر باشند و ابتدا و انتها متفاوت باشند.",
+    loadDialogStartMagnitude: "شدت ابتدا (kN/m)", loadDialogEndMagnitude: "شدت انتها (kN/m)",
+    appsMenu: "برنامه‌های vetin", appMomentOfInertia: "ممان اینرسی", appInternalForce: "نیروهای داخلی", appPlaneStress: "تنش صفحه‌ای", appPlaneStrain: "کرنش صفحه‌ای", appBending: "خمش ساده", appEccentricity: "خروج از مرکزیت", appShear: "خمش و برش", appTorsion: "پیچش",
     fbdShowLoads: "نیروهای خارجی", fbdShowReactions: "واکنش‌های تکیه‌گاهی", fbdOptionsTitle: "نمایش یا پنهان کردن در نمودار جسم آزاد", fullscreenPanelsTitle: "نمودارهای نمایش داده‌شده در پایین", hideToolbar: "پنهان کردن منوی بالا", showToolbar: "نمایش منوی بالا",
     beamTitle: "رسم تیر", beam: "تیر", supports: "تکیه‌گاه‌ها", loads: "بارها",
     pinSupportTitle: "تکیه‌گاه مفصلی", rollerSupportTitle: "تکیه‌گاه غلتکی", fixedSupportTitle: "تکیه‌گاه گیردار", hingeTitle: "لولا",
@@ -1327,6 +1363,9 @@ translations.fa = createTranslation({
 
 // Hindi (हिन्दी)
 translations.hi = createTranslation({
+    loadDialogAdd: "जोड़ें", loadDialogAngleHint: "कोण क्षैतिज से दक्षिणावर्त मापा जाता है (90° नीचे की ओर)। ऋणात्मक मान बल की दिशा उलट देता है।", loadDialogInvalid: "कृपया मान्य संख्याएँ दर्ज करें। स्थितियाँ बीम पर होनी चाहिए और आरंभ व अंत अलग होने चाहिए।",
+    loadDialogStartMagnitude: "आरंभिक तीव्रता (kN/m)", loadDialogEndMagnitude: "अंतिम तीव्रता (kN/m)",
+    appsMenu: "vetin ऐप्स", appMomentOfInertia: "जड़त्व आघूर्ण", appInternalForce: "आंतरिक बल", appPlaneStress: "समतल प्रतिबल", appPlaneStrain: "समतल विकृति", appBending: "सरल बंकन", appEccentricity: "उत्केंद्रता", appShear: "अपरूपण और बंकन", appTorsion: "मरोड़",
     fbdShowLoads: "बाह्य बल", fbdShowReactions: "आधार प्रतिक्रियाएँ", fbdOptionsTitle: "मुक्त पिंड आरेख में दिखाएँ या छिपाएँ", fullscreenPanelsTitle: "नीचे दिखाए जाने वाले आरेख", hideToolbar: "ऊपरी मेनू छिपाएँ", showToolbar: "ऊपरी मेनू दिखाएँ",
     beamTitle: "धरन बनाएं", beam: "धरन", supports: "आधार", loads: "भार",
     pinSupportTitle: "कीलक आधार", rollerSupportTitle: "घूर्णिक आधार", fixedSupportTitle: "स्थिर आधार", hingeTitle: "कब्जा",
@@ -1410,6 +1449,9 @@ translations.hi = createTranslation({
 
 // Nepali (नेपाली)
 translations.ne = createTranslation({
+    loadDialogAdd: "थप्नुहोस्", loadDialogAngleHint: "कोण तेर्सोबाट घडीको दिशामा नापिन्छ (90° तलतिर)। ऋणात्मक मानले बलको दिशा उल्टाउँछ।", loadDialogInvalid: "कृपया मान्य सङ्ख्याहरू प्रविष्ट गर्नुहोस्। स्थानहरू बीममा हुनुपर्छ र सुरु र अन्त्य फरक हुनुपर्छ।",
+    loadDialogStartMagnitude: "सुरुको तीव्रता (kN/m)", loadDialogEndMagnitude: "अन्त्यको तीव्रता (kN/m)",
+    appsMenu: "vetin एपहरू", appMomentOfInertia: "जडत्व आघूर्ण", appInternalForce: "आन्तरिक बलहरू", appPlaneStress: "समतल प्रतिबल", appPlaneStrain: "समतल विकृति", appBending: "सरल बङ्कन", appEccentricity: "उत्केन्द्रता", appShear: "अपरूपण र बङ्कन", appTorsion: "मरोड",
     fbdShowLoads: "बाह्य बलहरू", fbdShowReactions: "आधार प्रतिक्रियाहरू", fbdOptionsTitle: "मुक्त पिण्ड रेखाचित्रमा देखाउनुहोस् वा लुकाउनुहोस्", fullscreenPanelsTitle: "तल देखाइने रेखाचित्रहरू", hideToolbar: "माथिल्लो मेनु लुकाउनुहोस्", showToolbar: "माथिल्लो मेनु देखाउनुहोस्",
     beamTitle: "धरन कोर्नुहोस्", beam: "धरन", supports: "आधार", loads: "भार",
     pinSupportTitle: "कीलक आधार", rollerSupportTitle: "घुम्ने आधार", fixedSupportTitle: "स्थिर आधार", hingeTitle: "कब्जा",
@@ -1496,6 +1538,9 @@ translations.ne = createTranslation({
 
 // Armenian (Հայերեն)
 translations.hy = createTranslation({
+    loadDialogAdd: "Ավելացնել", loadDialogAngleHint: "Անկյունը չափվում է հորիզոնականից ժամսլաքի ուղղությամբ (90°՝ դեպի ներքև)։ Բացասական մեծությունը շրջում է ուժի ուղղությունը։", loadDialogInvalid: "Մուտքագրեք վավեր թվեր։ Դիրքերը պետք է լինեն հեծանի վրա, իսկ սկիզբն ու վերջը՝ տարբեր։",
+    loadDialogStartMagnitude: "Սկզբնական ինտենսիվություն (kN/m)", loadDialogEndMagnitude: "Վերջնական ինտենսիվություն (kN/m)",
+    appsMenu: "vetin հավելվածներ", appMomentOfInertia: "Իներցիայի մոմենտ", appInternalForce: "Ներքին ուժեր", appPlaneStress: "Հարթ լարվածություն", appPlaneStrain: "Հարթ դեֆորմացիա", appBending: "Պարզ ծռում", appEccentricity: "Էքսցենտրիսիտետ", appShear: "Ծռում և սահք", appTorsion: "Ոլորում",
     fbdShowLoads: "Արտաքին ուժեր", fbdShowReactions: "Հենարանային ռեակցիաներ", fbdOptionsTitle: "Ցույց տալ կամ թաքցնել ազատ մարմնի դիագրամում", fullscreenPanelsTitle: "Ներքևում ցուցադրվող գծագրեր", hideToolbar: "Թաքցնել վերին ընտրացանկը", showToolbar: "Ցույց տալ վերին ընտրացանկը",
     beamTitle: "Գծել հենակ", pinSupportTitle: "Կընիքային հենարան", rollerSupportTitle: "Գլանան հենարան", fixedSupportTitle: "Ամրացման", hingeTitle: "Կընիք",
     pointLoadTitle: "Կենտրոնացված բեռ", momentTitle: "Ճկման մոմենտ", torsionTitle: "Ոլորման մոմենտ", distLoadTitle: "Բաշխված բեռ",
@@ -1578,6 +1623,9 @@ translations.hy = createTranslation({
 
 // Greek (Ελληνικά)
 translations.el = createTranslation({
+    loadDialogAdd: "Προσθήκη", loadDialogAngleHint: "Η γωνία μετριέται δεξιόστροφα από την οριζόντια (90° προς τα κάτω). Αρνητικό μέγεθος αντιστρέφει τη φορά της δύναμης.", loadDialogInvalid: "Εισαγάγετε έγκυρους αριθμούς. Οι θέσεις πρέπει να βρίσκονται πάνω στη δοκό και η αρχή και το τέλος να διαφέρουν.",
+    loadDialogStartMagnitude: "Ένταση αρχής (kN/m)", loadDialogEndMagnitude: "Ένταση τέλους (kN/m)",
+    appsMenu: "Εφαρμογές vetin", appMomentOfInertia: "Ροπή αδράνειας", appInternalForce: "Εσωτερικά εντατικά μεγέθη", appPlaneStress: "Επίπεδη ένταση", appPlaneStrain: "Επίπεδη παραμόρφωση", appBending: "Απλή κάμψη", appEccentricity: "Εκκεντρότητα", appShear: "Κάμψη με διάτμηση", appTorsion: "Στρέψη",
     fbdShowLoads: "Εξωτερικές δυνάμεις", fbdShowReactions: "Αντιδράσεις στήριξης", fbdOptionsTitle: "Εμφάνιση ή απόκρυψη στο διάγραμμα ελεύθερου σώματος", fullscreenPanelsTitle: "Σχέδια που εμφανίζονται από κάτω", hideToolbar: "Απόκρυψη επάνω μενού", showToolbar: "Εμφάνιση επάνω μενού",
     beamTitle: "Σχεδίαση δοκού", beam: "Δοκός", supports: "Στηρίξεις", loads: "Φορτία",
     pinSupportTitle: "Άρθρωση", rollerSupportTitle: "Κύλιση", fixedSupportTitle: "Πάκτωση", hingeTitle: "Άρθρωση",
@@ -1661,6 +1709,9 @@ translations.el = createTranslation({
 
 // Romanian (Română)
 translations.ro = createTranslation({
+    loadDialogAdd: "Adaugă", loadDialogAngleHint: "Unghiul se măsoară în sens orar față de orizontală (90° în jos). O valoare negativă inversează sensul forței.", loadDialogInvalid: "Introduceți numere valide. Pozițiile trebuie să fie pe grindă, iar începutul și sfârșitul trebuie să difere.",
+    loadDialogStartMagnitude: "Intensitate la început (kN/m)", loadDialogEndMagnitude: "Intensitate la sfârșit (kN/m)",
+    appsMenu: "Aplicații vetin", appMomentOfInertia: "Moment de inerție", appInternalForce: "Eforturi secționale", appPlaneStress: "Stare plană de tensiune", appPlaneStrain: "Stare plană de deformație", appBending: "Încovoiere simplă", appEccentricity: "Excentricitate", appShear: "Încovoiere cu forfecare", appTorsion: "Torsiune",
     fbdShowLoads: "Forțe Exterioare", fbdShowReactions: "Reacțiuni în Reazeme", fbdOptionsTitle: "Afișează sau ascunde în diagrama corpului liber", fullscreenPanelsTitle: "Desene afișate dedesubt", hideToolbar: "Ascunde meniul de sus", showToolbar: "Afișează meniul de sus",
     beamTitle: "Desenează grindă", beam: "Grindă", supports: "Reazeme", loads: "Încărcări",
     pinSupportTitle: "Reazem articulat", rollerSupportTitle: "Reazem mobil", fixedSupportTitle: "Încastrare", hingeTitle: "Articulație",
@@ -1746,6 +1797,9 @@ translations.ro = createTranslation({
 
 // Indonesian (Bahasa Indonesia)
 translations.id = createTranslation({
+    loadDialogAdd: "Tambah", loadDialogAngleHint: "Sudut diukur searah jarum jam dari horizontal (90° mengarah ke bawah). Besaran negatif membalik arah gaya.", loadDialogInvalid: "Masukkan angka yang valid. Posisi harus berada pada balok, dan awal serta akhir harus berbeda.",
+    loadDialogStartMagnitude: "Besaran awal (kN/m)", loadDialogEndMagnitude: "Besaran akhir (kN/m)",
+    appsMenu: "Aplikasi vetin", appMomentOfInertia: "Momen inersia", appInternalForce: "Gaya dalam", appPlaneStress: "Tegangan bidang", appPlaneStrain: "Regangan bidang", appBending: "Lentur sederhana", appEccentricity: "Eksentrisitas", appShear: "Lentur dan geser", appTorsion: "Torsi",
     fbdShowLoads: "Gaya Luar", fbdShowReactions: "Reaksi Tumpuan", fbdOptionsTitle: "Tampilkan atau sembunyikan pada diagram benda bebas", fullscreenPanelsTitle: "Gambar yang ditampilkan di bawah", hideToolbar: "Sembunyikan menu atas", showToolbar: "Tampilkan menu atas",
     beamTitle: "Gambar Balok", beam: "Balok", supports: "Tumpuan", loads: "Beban",
     pinSupportTitle: "Tumpuan Sendi", rollerSupportTitle: "Tumpuan Rol", fixedSupportTitle: "Tumpuan Jepit", hingeTitle: "Engsel",
@@ -1831,6 +1885,9 @@ translations.id = createTranslation({
 
 // Tagalog (Filipino)
 translations.tl = createTranslation({
+    loadDialogAdd: "Idagdag", loadDialogAngleHint: "Sinusukat ang anggulo nang pakanan mula sa pahalang (90° ay pababa). Binabaligtad ng negatibong halaga ang direksyon ng puwersa.", loadDialogInvalid: "Maglagay ng wastong mga numero. Dapat nasa biga ang mga posisyon at magkaiba ang simula at dulo.",
+    loadDialogStartMagnitude: "Simulang halaga (kN/m)", loadDialogEndMagnitude: "Huling halaga (kN/m)",
+    appsMenu: "Mga App ng vetin", appMomentOfInertia: "Moment of Inertia", appInternalForce: "Panloob na Puwersa", appPlaneStress: "Plane Stress", appPlaneStrain: "Plane Strain", appBending: "Simpleng Pagbaluktot", appEccentricity: "Eccentricity", appShear: "Shear at Pagbaluktot", appTorsion: "Torsyon",
     fbdShowLoads: "Panlabas na Puwersa", fbdShowReactions: "Reaksyon ng Suporta", fbdOptionsTitle: "Ipakita o itago sa diagram ng malayang katawan", fullscreenPanelsTitle: "Mga guhit na ipinapakita sa ibaba", hideToolbar: "Itago ang itaas na menu", showToolbar: "Ipakita ang itaas na menu",
     beamTitle: "Gumuhit ng Biga", beam: "Biga", supports: "Tungkod", loads: "Karga",
     pinSupportTitle: "Tungkod na Nakabaon", rollerSupportTitle: "Tungkod na Gumugulong", fixedSupportTitle: "Tungkod na Nakakabit", hingeTitle: "Bisagra",
@@ -1915,6 +1972,9 @@ translations.tl = createTranslation({
 
 // Korean (한국어)
 translations.ko = createTranslation({
+    loadDialogAdd: "추가", loadDialogAngleHint: "각도는 수평에서 시계 방향으로 측정합니다(90°는 아래쪽). 음수 크기는 힘의 방향을 반대로 합니다.", loadDialogInvalid: "올바른 숫자를 입력하세요. 위치는 보 위에 있어야 하며 시작과 끝은 달라야 합니다.",
+    loadDialogStartMagnitude: "시작 크기 (kN/m)", loadDialogEndMagnitude: "끝 크기 (kN/m)",
+    appsMenu: "vetin 앱", appMomentOfInertia: "단면 2차 모멘트", appInternalForce: "단면력도", appPlaneStress: "평면 응력", appPlaneStrain: "평면 변형률", appBending: "단순 굽힘", appEccentricity: "편심 하중", appShear: "전단과 굽힘", appTorsion: "비틀림",
     fbdShowLoads: "외력", fbdShowReactions: "지점 반력", fbdOptionsTitle: "자유물체도에 표시/숨기기", fullscreenPanelsTitle: "아래에 표시할 도면", hideToolbar: "상단 메뉴 숨기기", showToolbar: "상단 메뉴 표시",
     beamTitle: "보 그리기", beam: "보", supports: "지점", loads: "하중",
     pinSupportTitle: "힌지 지점", rollerSupportTitle: "롤러 지점", fixedSupportTitle: "고정 지점", hingeTitle: "힌지",
@@ -1998,6 +2058,9 @@ translations.ko = createTranslation({
 
 // Bengali (বাংলা)
 translations.bn = createTranslation({
+    loadDialogAdd: "যোগ করুন", loadDialogAngleHint: "কোণ অনুভূমিক থেকে ঘড়ির কাঁটার দিকে মাপা হয় (90° নিচের দিকে)। ঋণাত্মক মান বলের দিক উল্টে দেয়।", loadDialogInvalid: "অনুগ্রহ করে বৈধ সংখ্যা লিখুন। অবস্থানগুলো বিমের উপর থাকতে হবে এবং শুরু ও শেষ আলাদা হতে হবে।",
+    loadDialogStartMagnitude: "শুরুর তীব্রতা (kN/m)", loadDialogEndMagnitude: "শেষের তীব্রতা (kN/m)",
+    appsMenu: "vetin অ্যাপ", appMomentOfInertia: "জড়তার ভ্রামক", appInternalForce: "অভ্যন্তরীণ বল", appPlaneStress: "সমতল পীড়ন", appPlaneStrain: "সমতল বিকৃতি", appBending: "সরল বঙ্কন", appEccentricity: "উৎকেন্দ্রিকতা", appShear: "কর্তন ও বঙ্কন", appTorsion: "মোচড়",
     fbdShowLoads: "বাহ্যিক বল", fbdShowReactions: "সাপোর্ট প্রতিক্রিয়া", fbdOptionsTitle: "ফ্রি বডি ডায়াগ্রামে দেখান বা লুকান", fullscreenPanelsTitle: "নিচে দেখানো অঙ্কনসমূহ", hideToolbar: "উপরের মেনু লুকান", showToolbar: "উপরের মেনু দেখান",
     beamTitle: "বীম আঁকুন", beam: "বীম", supports: "সমর্থন", loads: "লোড",
     pinSupportTitle: "কব্জা সমর্থন", rollerSupportTitle: "ঘূর্ণায়মান সমর্থন", fixedSupportTitle: "স্থির সমর্থন", hingeTitle: "কব্জা",
@@ -2084,6 +2147,9 @@ translations.bn = createTranslation({
 
 // Burmese (မြန်မာ)
 translations.my = createTranslation({
+    loadDialogAdd: "ထည့်ရန်", loadDialogAngleHint: "ထောင့်ကို အလျားလိုက်မှ နာရီလက်တံအတိုင်း တိုင်းသည် (90° သည် အောက်သို့)။ အနုတ်တန်ဖိုးသည် အား၏ ဦးတည်ရာကို ပြောင်းပြန်လှန်သည်။", loadDialogInvalid: "မှန်ကန်သော ဂဏန်းများ ထည့်ပါ။ တည်နေရာများသည် ရက်မပေါ်တွင် ရှိရမည်ဖြစ်ပြီး အစနှင့် အဆုံး မတူရပါ။",
+    loadDialogStartMagnitude: "အစ ပြင်းအား (kN/m)", loadDialogEndMagnitude: "အဆုံး ပြင်းအား (kN/m)",
+    appsMenu: "vetin အက်ပ်များ", appMomentOfInertia: "အင်နာရှာမိုမင့်", appInternalForce: "အတွင်းအားများ", appPlaneStress: "ပြင်ညီဖိအား", appPlaneStrain: "ပြင်ညီပုံပျက်မှု", appBending: "ရိုးရှင်းသော ကွေးညွှတ်မှု", appEccentricity: "ဗဟိုချော်မှု", appShear: "ညှပ်ဖြတ်နှင့် ကွေးညွှတ်မှု", appTorsion: "လိမ်ခြင်း",
     fbdShowLoads: "ပြင်ပအား", fbdShowReactions: "ထောက်ကန့်တုံ့ပြန်အား", fbdOptionsTitle: "လွတ်လပ်ကိုယ်ထည်ပုံတွင် ပြရန် သို့မဟုတ် ဖျောက်ရန်", fullscreenPanelsTitle: "အောက်တွင် ပြသမည့် ပုံများ", hideToolbar: "အပေါ်မီနူးကို ဖျောက်ရန်", showToolbar: "အပေါ်မီနူးကို ပြရန်",
     beamTitle: "ခံးနပ်ဆွဲရန်", beam: "ခံးနပ်", supports: "ထောက်ပံ့မှု", loads: "ဝန်",
     pinSupportTitle: "အကျစ်ံထောက်", rollerSupportTitle: "ဆပ်ထောက်", fixedSupportTitle: "ပိတေထောက်", hingeTitle: "ဘိလပ်",
@@ -2167,6 +2233,9 @@ translations.my = createTranslation({
 
 // Thai (ไทย)
 translations.th = createTranslation({
+    loadDialogAdd: "เพิ่ม", loadDialogAngleHint: "วัดมุมตามเข็มนาฬิกาจากแนวนอน (90° ชี้ลง) ค่าลบจะกลับทิศทางของแรง", loadDialogInvalid: "โปรดป้อนตัวเลขที่ถูกต้อง ตำแหน่งต้องอยู่บนคาน และจุดเริ่มต้นกับจุดสิ้นสุดต้องไม่เท่ากัน",
+    loadDialogStartMagnitude: "ความเข้มเริ่มต้น (kN/m)", loadDialogEndMagnitude: "ความเข้มสิ้นสุด (kN/m)",
+    appsMenu: "แอป vetin", appMomentOfInertia: "โมเมนต์ความเฉื่อย", appInternalForce: "แรงภายใน", appPlaneStress: "ความเค้นระนาบ", appPlaneStrain: "ความเครียดระนาบ", appBending: "การดัดอย่างง่าย", appEccentricity: "การเยื้องศูนย์", appShear: "การดัดและแรงเฉือน", appTorsion: "การบิด",
     fbdShowLoads: "แรงภายนอก", fbdShowReactions: "แรงปฏิกิริยาที่จุดรองรับ", fbdOptionsTitle: "แสดงหรือซ่อนในแผนภาพวัตถุอิสระ", fullscreenPanelsTitle: "ภาพวาดที่แสดงด้านล่าง", hideToolbar: "ซ่อนเมนูด้านบน", showToolbar: "แสดงเมนูด้านบน",
     beamTitle: "วาดคาน", beam: "คาน", supports: "ฐานรองรับ", loads: "น้ำหนัก",
     pinSupportTitle: "จุดหมุน", rollerSupportTitle: "ลูกกลิ้ง", fixedSupportTitle: "ยึดแน่น", hingeTitle: "บานพับ",
@@ -2250,6 +2319,9 @@ translations.th = createTranslation({
 
 // Uzbek (O'zbek)
 translations.uz = createTranslation({
+    loadDialogAdd: "Qo‘shish", loadDialogAngleHint: "Burchak gorizontaldan soat mili yo‘nalishida o‘lchanadi (90° pastga). Manfiy qiymat kuch yo‘nalishini teskari qiladi.", loadDialogInvalid: "To‘g‘ri sonlarni kiriting. Holatlar to‘sin ustida bo‘lishi, boshi va oxiri esa har xil bo‘lishi kerak.",
+    loadDialogStartMagnitude: "Boshlang‘ich qiymat (kN/m)", loadDialogEndMagnitude: "Oxirgi qiymat (kN/m)",
+    appsMenu: "vetin ilovalari", appMomentOfInertia: "Inersiya momenti", appInternalForce: "Ichki kuchlar", appPlaneStress: "Tekis kuchlanish", appPlaneStrain: "Tekis deformatsiya", appBending: "Oddiy egilish", appEccentricity: "Ekssentrisitet", appShear: "Kesuvchi kuchli egilish", appTorsion: "Buralish",
     fbdShowLoads: "Tashqi kuchlar", fbdShowReactions: "Tayanch reaksiyalari", fbdOptionsTitle: "Erkin tana diagrammasida ko'rsatish yoki yashirish", fullscreenPanelsTitle: "Pastda ko'rsatiladigan chizmalar", hideToolbar: "Yuqori menyuni yashirish", showToolbar: "Yuqori menyuni ko'rsatish",
     beamTitle: "To'sin chizish", beam: "To'sin", supports: "Tayanch", loads: "Yuklar",
     pinSupportTitle: "Buriluvchi tayanch", rollerSupportTitle: "Rolikli tayanch", fixedSupportTitle: "Qattiq tayanch", hingeTitle: "Ilgak",
@@ -2337,6 +2409,7 @@ translations.uz = createTranslation({
 
 // Dzongkha (རྫོང་ཁ)
 translations.dz = createTranslation({
+    appsMenu: "vetin གློག་རིམ།", appMomentOfInertia: "Moment of Inertia", appInternalForce: "Internal Forces", appPlaneStress: "Plane Stress", appPlaneStrain: "Plane Strain", appBending: "Simple Bending", appEccentricity: "Eccentric Loading", appShear: "Shear & Bending", appTorsion: "Torsion",
     fbdShowLoads: "ཕྱི་ཕྱོགས་ཀྱི་ཤུགས།", fbdShowReactions: "རྟེན་གཞིའི་ལན་ཤུགས།", fbdOptionsTitle: "རང་དབང་གཟུགས་ཀྱི་རི་མོ་ནང་སྟོན་ནི་ཡང་ན་སྦ་ནི།", fullscreenPanelsTitle: "འོག་ལུ་སྟོན་མི་རི་མོ་ཚུ།", hideToolbar: "ཡར་གྱི་ཐོ་ཡིག་སྦ་ནི།", showToolbar: "ཡར་གྱི་ཐོ་ཡིག་སྟོན་ནི།",
     beamTitle: "ཆཱ་གཅིག་འདྲི་བསྐྲུན།", beam: "ཆཱ་གཅིག", supports: "རྟེན་འདེགས", loads: "ཁུར་བ།",
     pinSupportTitle: "འཁོར་རྟེན", rollerSupportTitle: "འགྲིམས་རྟེན", fixedSupportTitle: "བརྟན་རྟེན", hingeTitle: "སྒོ་འཁྲུལ",
@@ -2426,6 +2499,9 @@ translations.dz = createTranslation({
 
 // Tajik (Тоҷикӣ)
 translations.tg = createTranslation({
+    loadDialogAdd: "Илова кардан", loadDialogAngleHint: "Кунҷ аз уфуқӣ бо самти ақрабаки соат чен карда мешавад (90° ба поён). Бузургии манфӣ самти қувваро баръакс мекунад.", loadDialogInvalid: "Лутфан рақамҳои дуруст ворид кунед. Мавқеъҳо бояд дар болор бошанд ва ибтидо ва интиҳо фарқ кунанд.",
+    loadDialogStartMagnitude: "Шиддати ибтидоӣ (kN/m)", loadDialogEndMagnitude: "Шиддати интиҳоӣ (kN/m)",
+    appsMenu: "Барномаҳои vetin", appMomentOfInertia: "Моменти инерсия", appInternalForce: "Қувваҳои дохилӣ", appPlaneStress: "Шиддати ҳамворӣ", appPlaneStrain: "Деформатсияи ҳамворӣ", appBending: "Хамшавии содда", appEccentricity: "Эксентриситет", appShear: "Хамшавӣ бо буриш", appTorsion: "Тобхӯрӣ",
     fbdShowLoads: "Қувваҳои берунӣ", fbdShowReactions: "Реаксияҳои такягоҳ", fbdOptionsTitle: "Дар диаграммаи бадани озод нишон додан ё пинҳон кардан", fullscreenPanelsTitle: "Нақшаҳое, ки дар поён нишон дода мешаванд", hideToolbar: "Пинҳон кардани менюи боло", showToolbar: "Нишон додани менюи боло",
     beamTitle: "Тир кашидан", beam: "Тир", supports: "Такягоҳ", loads: "Бор",
     pinSupportTitle: "Вилоӣ такягоҳ", rollerSupportTitle: "Ғалтакӣ такягоҳ", fixedSupportTitle: "Собит такягоҳ", hingeTitle: "Лавлак",
@@ -2512,6 +2588,9 @@ translations.tg = createTranslation({
 
 // Kyrgyz (Кыргызча)
 translations.ky = createTranslation({
+    loadDialogAdd: "Кошуу", loadDialogAngleHint: "Бурч горизонталдан саат жебесинин багыты боюнча өлчөнөт (90° — ылдый). Терс маани күчтүн багытын тескери кылат.", loadDialogInvalid: "Туура сандарды киргизиңиз. Абалдар устундун үстүндө болушу керек, башы менен аягы ар башка болушу керек.",
+    loadDialogStartMagnitude: "Баштапкы чоңдук (kN/m)", loadDialogEndMagnitude: "Акыркы чоңдук (kN/m)",
+    appsMenu: "vetin колдонмолору", appMomentOfInertia: "Инерция моменти", appInternalForce: "Ички күчтөр", appPlaneStress: "Тегиз чыңалуу", appPlaneStrain: "Тегиз деформация", appBending: "Жөнөкөй ийилүү", appEccentricity: "Эксцентриситет", appShear: "Кесүү менен ийилүү", appTorsion: "Буралуу",
     fbdShowLoads: "Тышкы күчтөр", fbdShowReactions: "Таяныч реакциялары", fbdOptionsTitle: "Эркин дене диаграммасында көрсөтүү же жашыруу", fullscreenPanelsTitle: "Төмөндө көрсөтүлүүчү чиймелер", hideToolbar: "Жогорку менюну жашыруу", showToolbar: "Жогорку менюну көрсөтүү",
     beamTitle: "Балка тартуу", beam: "Балка", supports: "Таяныч", loads: "Жүк",
     pinSupportTitle: "Шарнирдүү таяныч", rollerSupportTitle: "Роликтүү таяныч", fixedSupportTitle: "Катуу таяныч", hingeTitle: "Илмек",
@@ -2598,6 +2677,9 @@ translations.ky = createTranslation({
 
 // Bulgarian (Български)
 translations.bg = createTranslation({
+    loadDialogAdd: "Добави", loadDialogAngleHint: "Ъгълът се измерва по часовниковата стрелка от хоризонталата (90° е надолу). Отрицателна стойност обръща посоката на силата.", loadDialogInvalid: "Въведете валидни числа. Позициите трябва да са върху гредата, а началото и краят да се различават.",
+    loadDialogStartMagnitude: "Начална интензивност (kN/m)", loadDialogEndMagnitude: "Крайна интензивност (kN/m)",
+    appsMenu: "Приложения vetin", appMomentOfInertia: "Инерционен момент", appInternalForce: "Вътрешни усилия", appPlaneStress: "Равнинно напрегнато състояние", appPlaneStrain: "Равнинна деформация", appBending: "Чисто огъване", appEccentricity: "Ексцентрицитет", appShear: "Огъване с срязване", appTorsion: "Усукване",
     fbdShowLoads: "Външни сили", fbdShowReactions: "Опорни реакции", fbdOptionsTitle: "Показване или скриване в диаграмата на свободното тяло", fullscreenPanelsTitle: "Чертежи, показвани отдолу", hideToolbar: "Скриване на горното меню", showToolbar: "Показване на горното меню",
     beamTitle: "Начертай греда", beam: "Греда", supports: "Опори", loads: "Товари",
     pinSupportTitle: "Шарнирна опора", rollerSupportTitle: "Подвижна опора", fixedSupportTitle: "Запъване", hingeTitle: "Шарнир",
@@ -2681,6 +2763,9 @@ translations.bg = createTranslation({
 
 // Hebrew (עברית)
 translations.he = createTranslation({
+    loadDialogAdd: "הוסף", loadDialogAngleHint: "הזווית נמדדת מהאופק בכיוון השעון (90° כלפי מטה). גודל שלילי הופך את כיוון הכוח.", loadDialogInvalid: "נא להזין מספרים תקינים. המיקומים חייבים להיות על הקורה, וההתחלה והסוף חייבים להיות שונים.",
+    loadDialogStartMagnitude: "עוצמה בהתחלה (kN/m)", loadDialogEndMagnitude: "עוצמה בסוף (kN/m)",
+    appsMenu: "אפליקציות vetin", appMomentOfInertia: "מומנט התמד", appInternalForce: "כוחות פנימיים", appPlaneStress: "מאמץ מישורי", appPlaneStrain: "עיבור מישורי", appBending: "כפיפה פשוטה", appEccentricity: "אקסצנטריות", appShear: "כפיפה וגזירה", appTorsion: "פיתול",
     fbdShowLoads: "כוחות חיצוניים", fbdShowReactions: "תגובות סמוכים", fbdOptionsTitle: "הצג או הסתר בדיאגרמת הגוף החופשי", fullscreenPanelsTitle: "שרטוטים המוצגים למטה", hideToolbar: "הסתר את התפריט העליון", showToolbar: "הצג את התפריט העליון",
     beamTitle: "צייר קורה", beam: "קורה", supports: "תמיכות", loads: "עומסים",
     pinSupportTitle: "תמיכת ציר", rollerSupportTitle: "תמיכת גלגל", fixedSupportTitle: "ריתום", hingeTitle: "ציר",
@@ -2764,6 +2849,9 @@ translations.he = createTranslation({
 
 // Slovenian (Slovenščina)
 translations.sl = createTranslation({
+    loadDialogAdd: "Dodaj", loadDialogAngleHint: "Kot se meri v smeri urnega kazalca od vodoravnice (90° kaže navzdol). Negativna vrednost obrne smer sile.", loadDialogInvalid: "Vnesite veljavna števila. Položaji morajo biti na nosilcu, začetek in konec pa se morata razlikovati.",
+    loadDialogStartMagnitude: "Začetna jakost (kN/m)", loadDialogEndMagnitude: "Končna jakost (kN/m)",
+    appsMenu: "Aplikacije vetin", appMomentOfInertia: "Vztrajnostni moment", appInternalForce: "Notranje sile", appPlaneStress: "Ravninsko napetostno stanje", appPlaneStrain: "Ravninsko deformacijsko stanje", appBending: "Enostavni upogib", appEccentricity: "Ekscentričnost", appShear: "Upogib s strigom", appTorsion: "Torzija",
     fbdShowLoads: "Zunanje sile", fbdShowReactions: "Reakcije podpor", fbdOptionsTitle: "Prikaži ali skrij na diagramu prostega telesa", fullscreenPanelsTitle: "Risbe, prikazane spodaj", hideToolbar: "Skrij zgornji meni", showToolbar: "Prikaži zgornji meni",
     beamTitle: "Nariši nosilec", beam: "Nosilec", supports: "Podpore", loads: "Obtežbe",
     pinSupportTitle: "Členkasta podpora", rollerSupportTitle: "Premična podpora", fixedSupportTitle: "Vpetje", hingeTitle: "Členek",
@@ -2850,6 +2938,9 @@ translations.sl = createTranslation({
 
 // Albanian (Shqip)
 translations.sq = createTranslation({
+    loadDialogAdd: "Shto", loadDialogAngleHint: "Këndi matet në drejtim të akrepave të orës nga horizontalja (90° poshtë). Një vlerë negative e kthen drejtimin e forcës.", loadDialogInvalid: "Ju lutemi vendosni numra të vlefshëm. Pozicionet duhet të jenë mbi tra, dhe fillimi e fundi duhet të ndryshojnë.",
+    loadDialogStartMagnitude: "Intensiteti fillestar (kN/m)", loadDialogEndMagnitude: "Intensiteti përfundimtar (kN/m)",
+    appsMenu: "Aplikacionet vetin", appMomentOfInertia: "Momenti i inercisë", appInternalForce: "Forcat e brendshme", appPlaneStress: "Sforcimi plan", appPlaneStrain: "Deformimi plan", appBending: "Përkulja e thjeshtë", appEccentricity: "Ekscentriciteti", appShear: "Përkulja me prerje", appTorsion: "Përdredhja",
     fbdShowLoads: "Forcat e Jashtme", fbdShowReactions: "Reaksionet e Mbështetjeve", fbdOptionsTitle: "Shfaq ose fshih në diagramin e trupit të lirë", fullscreenPanelsTitle: "Vizatimet e shfaqura poshtë", hideToolbar: "Fshih menunë e sipërme", showToolbar: "Shfaq menunë e sipërme",
     beamTitle: "Vizato tra", beam: "Tra", supports: "Mbështetje", loads: "Ngarkesa",
     pinSupportTitle: "Mbështetje me kunj", rollerSupportTitle: "Mbështetje me rula", fixedSupportTitle: "Mbështetje e fiksuar", hingeTitle: "Menteshë",
@@ -2936,6 +3027,9 @@ translations.sq = createTranslation({
 
 // Georgian (ქართული)
 translations.ka = createTranslation({
+    loadDialogAdd: "დამატება", loadDialogAngleHint: "კუთხე იზომება ჰორიზონტალიდან საათის ისრის მიმართულებით (90° — ქვემოთ). უარყოფითი მნიშვნელობა ძალის მიმართულებას აბრუნებს.", loadDialogInvalid: "შეიყვანეთ სწორი რიცხვები. მდებარეობები უნდა იყოს ძელზე, ხოლო დასაწყისი და დასასრული უნდა განსხვავდებოდეს.",
+    loadDialogStartMagnitude: "საწყისი ინტენსივობა (kN/m)", loadDialogEndMagnitude: "საბოლოო ინტენსივობა (kN/m)",
+    appsMenu: "vetin აპლიკაციები", appMomentOfInertia: "ინერციის მომენტი", appInternalForce: "შინაგანი ძალები", appPlaneStress: "ბრტყელი დაძაბულობა", appPlaneStrain: "ბრტყელი დეფორმაცია", appBending: "მარტივი ღუნვა", appEccentricity: "ექსცენტრისიტეტი", appShear: "ღუნვა ძვრით", appTorsion: "გრეხა",
     fbdShowLoads: "გარე ძალები", fbdShowReactions: "საყრდენის რეაქციები", fbdOptionsTitle: "თავისუფალი სხეულის დიაგრამაზე ჩვენება ან დამალვა", fullscreenPanelsTitle: "ქვემოთ ნაჩვენები ნახაზები", hideToolbar: "ზედა მენიუს დამალვა", showToolbar: "ზედა მენიუს ჩვენება",
     beamTitle: "კოჭის დახატვა", beam: "კოჭი", supports: "საყრდენები", loads: "დატვირთვები",
     pinSupportTitle: "სახსრული საყრდენი", rollerSupportTitle: "მოძრავი საყრდენი", fixedSupportTitle: "ჩამაგრება", hingeTitle: "სახსარი",
@@ -3021,6 +3115,9 @@ translations.ka = createTranslation({
 
 // Urdu (اردو)
 translations.ur = createTranslation({
+    loadDialogAdd: "شامل کریں", loadDialogAngleHint: "زاویہ افقی سے گھڑی کی سمت میں ناپا جاتا ہے (90° نیچے کی طرف)۔ منفی مقدار قوت کی سمت الٹ دیتی ہے۔", loadDialogInvalid: "براہ کرم درست اعداد درج کریں۔ مقامات شہتیر پر ہونے چاہئیں اور آغاز و اختتام مختلف ہونے چاہئیں۔",
+    loadDialogStartMagnitude: "ابتدائی شدت (kN/m)", loadDialogEndMagnitude: "اختتامی شدت (kN/m)",
+    appsMenu: "vetin ایپس", appMomentOfInertia: "جمودی معیار اثر", appInternalForce: "اندرونی قوتیں", appPlaneStress: "مستوی تناؤ", appPlaneStrain: "مستوی انفعال", appBending: "سادہ خمیدگی", appEccentricity: "غیر مرکزیت", appShear: "قینچی اور خمیدگی", appTorsion: "مروڑ",
     fbdShowLoads: "بیرونی قوتیں", fbdShowReactions: "سہارے کے ردعمل", fbdOptionsTitle: "آزاد جسم خاکے میں دکھائیں یا چھپائیں", fullscreenPanelsTitle: "نیچے دکھائی جانے والی ڈرائنگز", hideToolbar: "اوپری مینو چھپائیں", showToolbar: "اوپری مینو دکھائیں",
     beamTitle: "شہتیر بنائیں", beam: "شہتیر", supports: "سہارے", loads: "بوجھ",
     pinSupportTitle: "محوری سہارا", rollerSupportTitle: "گردشی سہارا", fixedSupportTitle: "مقید سہارا", hingeTitle: "قلابہ",

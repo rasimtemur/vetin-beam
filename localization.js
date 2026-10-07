@@ -57,9 +57,9 @@ function buildInitialHTML(lang) {
                 <p class="tool-group-title" data-i18n="actions">${t.actions}</p>
                 <div class="tool-group-actions">
                     <button class="tool-button tool-button-large" id="tool-edit" data-i18n-title="editMoveTitle" title="${t.editMoveTitle}"><svg viewBox="0 0 24 24"><path d="M 18 2 l -9 9 l -2 5 l 5 -2 l 9 -9 l -3 -3 z M 10 10 l 3 3"></path></svg><span data-i18n="editMove">${t.editMove}</span></button>
-                    <div class="actions-stack" style="display: none;">
-                        <button class="tool-button" id="save-btn" data-i18n-title="saveTitle" title="${t.saveTitle}"><svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"></path></svg><span data-i18n="save">${t.save}</span></button>
-                        <button class="tool-button" id="open-btn" data-i18n-title="openTitle" title="${t.openTitle}"><svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"></path></svg><span data-i18n="open">${t.open}</span></button>
+                    <div class="actions-stack">
+                        <button class="tool-button" id="save-btn" data-i18n-title="saveTitle" title="${t.saveTitle}"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></svg><span data-i18n="save">${t.save}</span></button>
+                        <button class="tool-button" id="open-btn" data-i18n-title="openTitle" title="${t.openTitle}"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg><span data-i18n="open">${t.open}</span></button>
                         <input type="file" id="file-input" accept=".json" style="display: none;" />
                     </div>
                     <button class="tool-button tool-button-large" id="reset-btn" data-i18n-title="resetTitle" title="${t.resetTitle}">

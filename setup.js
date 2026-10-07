@@ -54,6 +54,8 @@ let currentRawMousePos = { x: 0, y: 0 };
 let shearChart = null, momentChart = null, normalForceChart = null, torsionChart = null, elasticCurveChart = null;
 let firstTapPoint = null;
 let calculatedReactions = [], calculatedMomentReaction = 0, calculatedAxialReaction = null;
+// Son hesabın sonucu (calculations.js/analyzeBeam); yeniden çizimler hesap yapmadan bunu kullanır
+let lastAnalysis = null;
 let userVisibilityPrefs = {};
 // Serbest cisim diyagramında neyin çizileceği (SCD sağ üstündeki butonlar)
 let fbdDisplayOptions = { loads: true, reactions: true };
@@ -101,11 +103,6 @@ const chartAlignmentPlugin = {
 };
 
 /**
- * Mevcut bir Chart örneğini veri/ayar güncelleyerek yeniden kullanır;
- * yoksa (veya farklı bir tuvale aitse) yenisini oluşturur. Her hesapta
- * destroy + new Chart yapmaktan çok daha akıcıdır (canlı sürüklemede önemli).
- */
-/**
  * Diyagram eksenlerinin (ızgara, değerler, başlık) renklerini geçerli temaya
  * (açık/karanlık) göre ayarlar. Tüm diyagramlar aynı renkleri kullansın diye
  * hem grafik oluşturulurken hem de tema değiştiğinde çağrılır.
@@ -133,6 +130,11 @@ function refreshChartThemes() {
     });
 }
 
+/**
+ * Mevcut bir Chart örneğini veri/ayar güncelleyerek yeniden kullanır;
+ * yoksa (veya farklı bir tuvale aitse) yenisini oluşturur. Her hesapta
+ * destroy + new Chart yapmaktan çok daha akıcıdır (canlı sürüklemede önemli).
+ */
 function upsertLineChart(chartRef, canvasId, dataset, options, skipAnimation = false) {
     applyChartThemeColors(options);
     if (chartRef && chartRef.canvas && chartRef.canvas.id === canvasId) {

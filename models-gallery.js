@@ -22,33 +22,10 @@
         return (dict && dict[key]) || (translations['en'] && translations['en'][key]) || fallback;
     }
 
-    // JSON model verisini projeye uygular
+    // JSON model verisini projeye uygular (sürüm 1 piksel / sürüm 2 metre; bkz. model.js)
+    // Hata durumunda kullanıcıyı loadModelIntoApp uyarır; burada yalnızca sonuç döner
     function applyModelData(projectData) {
-        const resetBtn = document.getElementById('reset-btn');
-        if (resetBtn) {
-            window.__skipResetConfirm = true;
-            resetBtn.click();
-            window.__skipResetConfirm = false;
-        }
-        beam = projectData.beam;
-        supports = projectData.supports || [];
-        hinges = projectData.hinges || [];
-        concentratedLoads = projectData.concentratedLoads || [];
-        distributedLoads = projectData.distributedLoads || [];
-        trapezoidalLoads = projectData.trapezoidalLoads || [];
-        concentratedMoments = projectData.concentratedMoments || [];
-        torsionMoments = projectData.torsionMoments || [];
-        if (projectData.gridSettings) {
-            if (metersPerGridInput) metersPerGridInput.value = projectData.gridSettings.metersPerGrid;
-            if (kNPerGridInput) kNPerGridInput.value = projectData.gridSettings.kNPerGrid;
-            if (gridSizeInput) gridSizeInput.value = projectData.gridSettings.gridSize;
-        }
-        scaleCanvasForHiDPI(canvas, ctx);
-        redrawCanvas();
-        updateAll();
-        if (typeof getCurrentModelHash === 'function') {
-            window.__lastSavedHash = getCurrentModelHash();
-        }
+        return loadModelIntoApp(projectData);
     }
 
     function scalePanel() {
@@ -129,8 +106,7 @@
         // Kopya alınır; model düzenlenince gömülü veri bozulmasın.
         const embedded = window.VETIN_MODELS && window.VETIN_MODELS[name];
         if (embedded) {
-            applyModelData(JSON.parse(JSON.stringify(embedded)));
-            hideGallery();
+            if (applyModelData(JSON.parse(JSON.stringify(embedded)))) hideGallery();
             return;
         }
 
@@ -141,8 +117,7 @@
         xhr.onload = function () {
             try {
                 const data = xhr.response || JSON.parse(xhr.responseText);
-                applyModelData(data);
-                hideGallery();
+                if (applyModelData(data)) hideGallery();
             } catch (err) {
                 console.error('Model parse hatası:', name, err);
                 alert('Model yüklenemedi: ' + name);

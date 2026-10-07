@@ -66,11 +66,8 @@ function getRawMousePos(evt) {
 function updateAll() {
     updateDiagramsVisibility();
     updateTables();
-    if (isSystemStable()) {
-        calculate(false);
-        calculateAndDrawAxialDiagram(false);
-    }
-    calculateAndDrawTorsionDiagram();
+    // Hesap (calculations.js/analyzeBeam) ve çizim (ui-handler.js/renderAnalysis)
+    runAnalysis(false);
 }
 
 function redrawCanvas(options = {}) {
@@ -332,7 +329,7 @@ function getDistLoadHandleAtPos(pos) { if (!beam) return null; const handleSize 
 function getDistLoadAtPos(pos) { if (!beam) return null; for (let i = distributedLoads.length - 1; i >= 0; i--) { const load = distributedLoads[i]; const gridSize = getGridSize(); const kNPerGrid = getKNPerGrid(); const pixelsPerKN = gridSize / kNPerGrid; const loadHeight = Math.abs(load.magnitude) * pixelsPerKN; const startX = Math.min(load.startX, load.endX); const endX = Math.max(load.startX, load.endX); const y_top = (beam.startY - 10) - loadHeight; const y_bottom = beam.startY - 10; if (pos.x >= startX && pos.x <= endX && pos.y >= y_top && pos.y <= y_bottom) { return i; } } return null; }
 function getTrapLoadHandleAtPos(pos) { if (!beam) return null; const handleSize = isTouchDevice ? 24 : 10; const gridSize = getGridSize(); const kNPerGrid = getKNPerGrid(); const pixelsPerKN = gridSize / kNPerGrid; for (let i = trapezoidalLoads.length - 1; i >= 0; i--) { const load = trapezoidalLoads[i]; const h1 = Math.abs(load.startMagnitude) * pixelsPerKN; const h2 = Math.abs(load.endMagnitude) * pixelsPerKN; const y1_pos = (load.startMagnitude < 0) ? (beam.startY - 10) - h1 : (beam.startY - 10) + h1; const y2_pos = (load.endMagnitude < 0) ? (beam.startY - 10) - h2 : (beam.startY - 10) + h2; if (pos.x >= load.startX - handleSize / 2 && pos.x <= load.startX + handleSize / 2 && pos.y >= y1_pos - handleSize/2 && pos.y <= y1_pos + handleSize/2) { return { index: i, handle: 'start' }; } if (pos.x >= load.endX - handleSize / 2 && pos.x <= load.endX + handleSize / 2 && pos.y >= y2_pos - handleSize/2 && pos.y <= y2_pos + handleSize/2) { return { index: i, handle: 'end' }; } } return null; }
 function getTrapLoadAtPos(pos) { if (!beam) return null; for (let i = trapezoidalLoads.length - 1; i >= 0; i--) { const load = trapezoidalLoads[i]; const startX = Math.min(load.startX, load.endX); const endX = Math.max(load.startX, load.endX); const y_bottom = beam.startY - 10; if (pos.x >= startX && pos.x <= endX && pos.y <= y_bottom) { return i; } } return null; }
-function getConcentratedLoadAtPos(pos) { if (!beam) return null; for (let i = concentratedLoads.length - 1; i >= 0; i--) { const load = concentratedLoads[i]; const lineLength = 50; let startX, startY, endX, endY; if (load.magnitude >= 0) { startX = load.x; startY = load.y; endX = load.x + lineLength * Math.cos(load.angle); endY = load.y + lineLength * Math.sin(load.angle); } else { startX = load.x + lineLength * Math.cos(load.angle); startY = load.y + lineLength * Math.sin(load.angle); endX = load.x; endY = load.y; } const padding = 10; const minX = Math.min(startX, endX) - padding; const maxX = Math.max(startX, endX) + padding; const minY = Math.min(startY, endY) - padding; const maxY = Math.max(startY, endY) + padding; if (pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY) { return i; } } return null; }
+function getConcentratedLoadAtPos(pos) { if (!beam) return null; for (let i = concentratedLoads.length - 1; i >= 0; i--) { const load = concentratedLoads[i]; const { startX, startY, endX, endY } = getConcentratedLoadArrow(load, getGridSize()); const padding = 10; const minX = Math.min(startX, endX) - padding; const maxX = Math.max(startX, endX) + padding; const minY = Math.min(startY, endY) - padding; const maxY = Math.max(startY, endY) + padding; if (pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY) { return i; } } return null; }
 function getConcentratedMomentAtPos(pos) { if (!beam) return null; for (let i = concentratedMoments.length - 1; i >= 0; i--) { const moment = concentratedMoments[i]; const radius = 20; const dist = Math.sqrt(Math.pow(pos.x - moment.x, 2) + Math.pow(pos.y - moment.y, 2)); if (dist <= radius + 5) { return i; } } return null; }
 function getTorsionMomentAtPos(pos) { if (!beam) return null; for (let i = torsionMoments.length - 1; i >= 0; i--) { const moment = torsionMoments[i]; const halfWidth = 30; const halfHeight = 10; if (pos.x >= moment.x - halfWidth && pos.x <= moment.x + halfWidth && pos.y >= moment.y - halfHeight && pos.y <= moment.y + halfHeight) { return i; } } return null; }
 
@@ -356,11 +353,5 @@ function centerDrawing() {
     trapezoidalLoads.forEach(l => { l.startX += finalDx; l.endX += finalDx; });
     concentratedMoments.forEach(m => { m.x += finalDx; });
     torsionMoments.forEach(t => { t.x += finalDx; });
-
-    if (calculatedReactions) {
-        calculatedReactions.forEach(r => { r.x += finalDx; });
-    }
-    if (calculatedAxialReaction) {
-        calculatedAxialReaction.x += finalDx;
-    }
+    // Hesap sonuçları kaydırılmaz: ortalamadan sonra model yeniden hesaplanır (commitModelChange)
 }

@@ -120,11 +120,12 @@ const drawSupportSVG = (support, yPos) => {
     return `<g stroke="${COLORS.SUPPORT}" fill="none" stroke-width="2">${paths}</g>`;
 };
 const drawConcentratedLoadSVG = (load) => {
-    const { x, y, magnitude, angle = Math.PI / 2 } = load;
-    const lineLength = 50, mag = (magnitude >= 0) ? 1 : -1;
-    const startX = (mag >= 0) ? x : x + lineLength * Math.cos(angle), startY = (mag >= 0) ? y : y + lineLength * Math.sin(angle);
-    const endX = (mag >= 0) ? x + lineLength * Math.cos(angle) : x, endY = (mag >= 0) ? y + lineLength * Math.sin(angle) : y;
-    const text = `<text x="${(startX + endX) / 2}" y="${Math.min(startY, endY) - 5}" text-anchor="middle" font-family="Arial" font-size="12px" fill="${COLORS.LOAD}">${Math.abs(magnitude).toFixed(1)} kN</text>`;
+    const { startX, startY, endX, endY, below } = getConcentratedLoadArrow(load, getGridSize());
+    const label = `${Math.abs(load.magnitude).toFixed(1)} kN`;
+    const leansLeft = startX < endX - 1;
+    const text = below
+        ? `<text x="${startX + (leansLeft ? -8 : 8)}" y="${startY - 6}" text-anchor="${leansLeft ? 'end' : 'start'}" dominant-baseline="middle" font-family="Arial" font-size="12px" fill="${COLORS.LOAD}">${label}</text>`
+        : `<text x="${startX}" y="${startY - 5}" text-anchor="middle" font-family="Arial" font-size="12px" fill="${COLORS.LOAD}">${label}</text>`;
     return filledArrowSVG(startX, startY, endX, endY, COLORS.LOAD) + text;
 };
 const drawDistributedLoadSVG = (load, yPos) => {
@@ -310,21 +311,9 @@ function downloadDrawingAsTrueSvg(target, filename) {
 // === JSON ve CSV İNDİRME FONKSİYONLARI ===
 
 function downloadModelAsJson() {
-    const projectData = {
-        beam: beam,
-        supports: supports,
-        hinges: hinges,
-        concentratedLoads: concentratedLoads,
-        distributedLoads: distributedLoads,
-        trapezoidalLoads: trapezoidalLoads,
-        concentratedMoments: concentratedMoments,
-        torsionMoments: torsionMoments,
-        gridSettings: {
-            metersPerGrid: metersPerGridInput.value,
-            kNPerGrid: kNPerGridInput.value,
-            gridSize: gridSizeInput.value
-        }
-    };
+    // Dosya biçimi sürüm 2: konumlar metre cinsinden, görünümden bağımsız (bkz. model.js)
+    const projectData = getModelSnapshot();
+    if (!projectData) return;
     const jsonContent = JSON.stringify(projectData, null, 2);
     triggerDownload(jsonContent, 'vetin_model.json', 'application/json', '.json');
     if (typeof getCurrentModelHash === 'function') {

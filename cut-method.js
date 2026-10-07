@@ -13,7 +13,6 @@
 let cutModeActive = false;
 let cutPositionM = null;          // Kesim konumu (kiriş başlangıcından itibaren, m)
 let isDraggingCut = false;
-let lastFbdArgs = null;           // SCD'yi hesap yapmadan yeniden çizmek için son argümanlar
 
 const CUT_COLOR = '#8e24aa';
 const CUT_FORCE_COLOR = COLORS.FBD_REACTION; // Kesimdeki iç kuvvetler (N, V, M), mesnet tepkileriyle aynı
@@ -295,9 +294,9 @@ function interpolateLeftLimit(points, x) {
 function getCutDiagramValue(chart, symbol) {
     // Kesme ve moment, SCD'deki kesim tepkileriyle birebir aynı olsun diye
     // doğrudan hesaplanır (diyagram eğrisi seyrek noktalarla çizilir).
-    if ((symbol === 'V' || symbol === 'M') && lastFbdArgs && isSystemStable()) {
-        const [allReactions, M_reaction, , axialReaction] = lastFbdArgs;
-        const r = computeCutReactions(getCutPixelX(), allReactions, M_reaction, axialReaction);
+    const solution = lastAnalysis && lastAnalysis.solution;
+    if ((symbol === 'V' || symbol === 'M') && solution) {
+        const r = computeCutReactions(getCutPixelX(), solution.reactions, solution.M_fixed, lastAnalysis.axialReaction);
         return symbol === 'V' ? -r.Ry : r.Mz;
     }
     // N ve T basamaklı olduğundan veriden okunan değer kesindir; sehim (δ)
@@ -360,13 +359,10 @@ const cutDiagramPlugin = {
     }
 };
 
-function redrawFreeBodyDiagramOnly() {
-    if (lastFbdArgs) drawFreeBodyDiagram(...lastFbdArgs);
-}
-
+// Kesim çizgisi hareket edince hesap yapılmaz: model, SCD ve diyagramlar son sonuçtan çizilir
 function refreshCutViews() {
     redrawCanvas();
-    redrawFreeBodyDiagramOnly();
+    redrawFreeBodyDiagram();
     getCutCharts().forEach(c => c.draw());
 }
 
@@ -463,9 +459,8 @@ function initializeCutMethod() {
     const btn = document.getElementById('cut-btn');
     if (btn) btn.addEventListener('click', () => setCutMode(!cutModeActive));
 
-    // Model sıfırlanınca kesim konumu yeni kirişin ortasından başlasın
-    const resetBtn = document.getElementById('reset-btn');
-    if (resetBtn) resetBtn.addEventListener('click', () => { cutPositionM = null; lastFbdArgs = null; });
+    // Model sıfırlanınca (ya da yeni model yüklenince) kesim konumu yeni kirişin ortasından başlasın
+    document.addEventListener('vetin:model-reset', () => { cutPositionM = null; });
 
     // Yapısal model: çizgiyi yakalama. Dinleyici tuvalin üst öğesinde yakalama
     // fazında çalışır; böylece mevcut çizim/düzenleme işleyicilerinden önce

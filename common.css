@@ -143,6 +143,93 @@ body.dark-mode img[src*="logo.svg"] {
     margin-bottom: 0px;
     text-align:center;
 }
+
+/* --- UYGULAMA DEĞİŞTİRİCİ (logonun sağı) ---
+   Logo kabı satır içi kalır (başlık yüksekliği değişmesin); düğme ve menü ona göre
+   konumlanır. Menü başlığın dışına, araç çubuğunun ve tuvalin üstüne taşar. */
+.logo-container {
+    position: relative;
+    display: inline-block;
+}
+.app-switcher-btn {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 8px);
+    margin-top: -16px;
+    width: 32px;
+    height: 32px;
+    padding: 6px;
+    border: none;
+    border-radius: 4px; /* ayarlar düğmesiyle (#app-menu-toggle) aynı */
+    background: transparent;
+    color: var(--fluent-neutral-foreground-hint);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease-out, color 0.15s ease-out;
+}
+.app-switcher-btn svg { width: 20px; height: 20px; fill: currentColor; }
+.app-switcher-btn:hover,
+.app-switcher-btn[aria-expanded="true"] {
+    background-color: var(--fluent-neutral-fill-hover);
+    color: var(--fluent-neutral-foreground-rest);
+}
+.app-switcher-btn:focus-visible { outline: 2px solid var(--fluent-accent-fill-rest); outline-offset: 1px; }
+
+.app-switcher-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 50%;
+    translate: -50% 0; /* transform açılış animasyonuna (appMenuFade) bırakılır */
+    width: 312px;
+    box-sizing: border-box;
+    display: none;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    padding: 12px;
+    background-color: var(--fluent-layer-fill-default);
+    border: 1px solid var(--fluent-stroke-color-default);
+    border-radius: 12px;
+    box-shadow: var(--fluent-shadow-depth-16);
+    z-index: 3000;
+    animation: appMenuFade 0.2s ease;
+}
+.app-switcher-menu.show { display: grid; }
+.page-header2.app-menu-open { position: relative; z-index: 3000; }
+.app-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 4px;
+    border-radius: 8px;
+    color: var(--fluent-accent-fill-rest);
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+.app-tile svg { width: 36px; height: 36px; }
+.app-tile span {
+    font-size: 12px;
+    line-height: 1.25;
+    text-align: center;
+    color: var(--fluent-neutral-foreground-rest);
+}
+.app-tile .app-tile-wordmark {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--fluent-neutral-foreground-hint);
+}
+.app-tile:hover, .app-tile:focus-visible { background-color: var(--fluent-neutral-fill-hover); outline: none; }
+.app-tile.current { background-color: var(--fluent-neutral-fill-rest); cursor: default; }
+@media (max-width: 640px) {
+    .app-switcher-menu { width: min(312px, calc(100vw - 32px)); }
+}
+
 .fluent-theme .app-wrapper {
     width: 100%;
     max-width: 1470px;
@@ -183,7 +270,9 @@ body.dark-mode img[src*="logo.svg"] {
     transition: background-color 0.15s ease-out, color 0.15s ease-out; opacity: 1;
     display: flex; align-items: center; justify-content: center;
 }
-.fluent-theme .language-switcher button:hover { opacity: 1; background-color: var(--fluent-neutral-fill-hover); }
+/* Yalnız doğrudan çocuklar (dil düğmeleri, "+" ve ayarlar düğmesi): dil listesi ile
+   ayarlar menüsü öğeleri iç içe bir kapta durur ve kendi hover kurallarını taşır. */
+.fluent-theme .language-switcher > button:hover { opacity: 1; background-color: var(--fluent-neutral-fill-hover); }
 .fluent-theme .language-switcher button.active { background-color: var(--fluent-accent-fill-rest); opacity: 1; color: white; }
 .fluent-theme .language-switcher button.active:hover { background-color: var(--fluent-accent-fill-hover); }
 
@@ -550,6 +639,50 @@ body.dark-mode .sun-icon { display: block !important; }
     background: rgba(28, 62, 104, 0.12);
     color: var(--fluent-accent-fill-rest);
 }
+
+/* Yük ekleme/düzenleme penceresi (load-dialog.js) — onay modalının görünümünü kullanır */
+.load-dialog .confirm-modal-header .icon svg {
+    fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+.load-dialog-fields {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 140px);
+    align-items: center;
+    gap: 10px 16px;
+    margin-bottom: 16px;
+}
+.load-dialog-label {
+    font-size: 13px;
+    color: var(--fluent-neutral-foreground-rest);
+}
+.load-dialog-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 7px 10px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--fluent-neutral-foreground-rest);
+    background: var(--fluent-layer-fill-default);
+    border: 1px solid var(--fluent-stroke-color-default);
+    border-radius: 8px;
+    text-align: right;
+}
+.load-dialog-input:focus {
+    outline: none;
+    border-color: var(--fluent-accent-fill-rest);
+    box-shadow: 0 0 0 2px rgba(28, 62, 104, 0.15);
+}
+.load-dialog-input[aria-invalid="true"] { border-color: #D83B01; box-shadow: 0 0 0 2px rgba(216, 59, 1, 0.15); }
+.confirm-modal .load-dialog-hint,
+.confirm-modal .load-dialog-error {
+    margin: 0 0 16px 0;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.confirm-modal .load-dialog-error { color: #D83B01; }
+.load-dialog .confirm-modal-footer { flex-wrap: wrap; gap: 10px; }
+/* Sil düğmesi solda, İptal/Kaydet sağda */
+.load-dialog .confirm-modal-footer .load-dialog-delete { margin-right: auto; }
 
 @media (max-width: 700px) {
     .about-modal-grid { flex-direction: column; min-height: 0; }

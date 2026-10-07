@@ -1,4 +1,9 @@
 // common/calculations.js
+//
+// Statik hesap katmanı: tepkiler, kesit tesiri (V, M, N, T) ve elastik eğri.
+// Bu dosya çizim yapmaz; analyzeBeam() tüm sonuçları tek bir nesne olarak
+// döndürür, çizimi ui-handler.js/renderAnalysis() yapar. Konumlar çalışma
+// durumundaki gibi pikseldir; toMeters ile metreye çevrilerek hesaplanır.
 
 function isSystemStable() {
     if (!beam) return false;
@@ -30,30 +35,31 @@ function isSystemStable() {
     return isCantilever || isSimplySupported;
 }
 
-function calculate(isLiveUpdate = false) {
-    if (!beam || beam.length <= 0) return;
-    if (hinges && hinges.length > 0) {
-        solveGerberSystem(isLiveUpdate);
-    } else {
-        solveStandardSystem(isLiveUpdate);
-    }
+/**
+ * Mesnet tepkilerini çözer (çizim yapmaz).
+ * @returns {{ reactions, M_fixed, fbdDistLoads, fbdTrapLoads, hingeData }|null}
+ *   fbdDistLoads/fbdTrapLoads: SCD'de gösterilecek yükler (Gerber'de mafsalda bölünmüş)
+ */
+function solveReactions() {
+    if (!beam || beam.length <= 0) return null;
+    return (hinges && hinges.length > 0) ? solveGerberSystem() : solveStandardSystem();
 }
 
-function solveStandardSystem(isLiveUpdate = false) {
+function solveStandardSystem() {
     const results = solveIsostaticPart(beam, supports, {
         concentrated: concentratedLoads,
         distributed: distributedLoads,
         trapezoidal: trapezoidalLoads,
         moments: concentratedMoments
     });
-    if (!results) return;
-    generateAndDrawDiagrams(results.allReactions, results.M_fixed, null, isLiveUpdate, distributedLoads, trapezoidalLoads, null);
+    if (!results) return null;
+    return { reactions: results.allReactions, M_fixed: results.M_fixed, fbdDistLoads: distributedLoads, fbdTrapLoads: trapezoidalLoads, hingeData: null };
 }
 
-function solveGerberSystem(isLiveUpdate = false) {
+function solveGerberSystem() {
     if (hinges.length !== 1) {
         if (typeof showCalcWarning === 'function') showCalcWarning('warnMultiHinge');
-        return;
+        return null;
     }
     let computationalDistLoads = [...distributedLoads];
     let computationalTrapLoads = [...trapezoidalLoads];
@@ -105,7 +111,7 @@ function solveGerberSystem(isLiveUpdate = false) {
         } else if (supports_part2.length === 1 && supports_part1.length >= 1) {
             secondarySupports = supports_part2; primarySupports = supports_part1;
             secondaryBeam = { startX: hinge_x, endX: beam.endX }; primaryBeam = { startX: beam.startX, endX: hinge_x };
-        } else { console.error("Sistem çözülemiyor..."); return; }
+        } else { console.error("Sistem çözülemiyor..."); return null; }
     }
     const tempHingeSupport = { type: 'pin-support', x: hinge_x };
     const secondarySupportsWithHinge = [...secondarySupports, tempHingeSupport];
@@ -122,9 +128,9 @@ function solveGerberSystem(isLiveUpdate = false) {
         moments: concentratedMoments.filter(m => atHinge(m.x) || (inSegment(m.x, secondaryBeam) && !atHinge(m.x) && !inSegment(m.x, primaryBeam)))
     };
     const secondaryResult = solveIsostaticPart(secondaryBeam, secondarySupportsWithHinge, secondaryLoads);
-    if (!secondaryResult) return;
+    if (!secondaryResult) return null;
     const hingeReaction = secondaryResult.allReactions.find(r => atHinge(r.x));
-    if (!hingeReaction) return;
+    if (!hingeReaction) return null;
     const reactionAsLoad = { x: hinge_x, y: beam.startY - 10, magnitude: hingeReaction.magnitude, angle: Math.PI / 2 };
     const primaryLoads = {
         concentrated: concentratedLoads.filter(l => !atHinge(l.x) && inSegment(l.x, primaryBeam)),
@@ -134,10 +140,10 @@ function solveGerberSystem(isLiveUpdate = false) {
     };
     primaryLoads.concentrated.push(reactionAsLoad);
     const primaryResult = solveIsostaticPart(primaryBeam, primarySupports, primaryLoads);
-    if (!primaryResult) return;
+    if (!primaryResult) return null;
     const finalReactions = [ ...primaryResult.allReactions, ...secondaryResult.allReactions.filter(r => !atHinge(r.x)) ];
     const hingeData = { x: hinge.x, magnitude: hingeReaction.magnitude };
-    generateAndDrawDiagrams(finalReactions, primaryResult.M_fixed, null, isLiveUpdate, computationalDistLoads, computationalTrapLoads, hingeData);
+    return { reactions: finalReactions, M_fixed: primaryResult.M_fixed, fbdDistLoads: computationalDistLoads, fbdTrapLoads: computationalTrapLoads, hingeData };
 }
 
 function solveIsostaticPart(partBeam, partSupports, partLoads) {
@@ -185,7 +191,14 @@ function calculateAxialReaction() {
     return { x: axialSupports[0].x, magnitude: -totalAxialLoad };
 }
 
-function generateAndDrawDiagrams(allReactions, M_fixed, T_reaction, isLiveUpdate, compDistLoads = distributedLoads, compTrapLoads = trapezoidalLoads, hingeData = null, interpolationPoints = 50) {
+/**
+ * Kesme, moment ve elastik eğri noktalarını üretir (çizim yapmaz).
+ * @param {object} solution - solveReactions() sonucu
+ * @param {number} interpolationPoints - kiriş boyunca örnek sayısı (canlı: 50, ayrıntılı: 1200)
+ * @returns {{ L, shearPoints, momentPoints, elasticCurvePoints }} x metre (kiriş başından)
+ */
+function computeBeamDiagrams(solution, interpolationPoints = 50) {
+    const allReactions = solution.reactions, M_fixed = solution.M_fixed;
     const { toMeters } = getConversionFunctions();
     const L = toMeters(beam.endX) - toMeters(beam.startX);
     let eventPoints_m = [0, L];
@@ -222,24 +235,13 @@ function generateAndDrawDiagrams(allReactions, M_fixed, T_reaction, isLiveUpdate
         if (momentPoints.length === 0 || Math.abs(x - momentPoints[momentPoints.length - 1].x) > EPSILON) { momentPoints.push({ x: x, y: M_before }); }
         momentPoints.push({ x: x, y: M_at });
     });
-    
-    diagramData.shear = { labels: shearPoints.map(p => p.x), datasets: [{ data: shearPoints.map(p => p.y), borderColor: COLORS.LOAD }] };
-    diagramData.moment = { labels: momentPoints.map(p => p.x), datasets: [{ data: momentPoints.map(p => p.y), borderColor: COLORS.BEAM_STROKE }] };
-    
+
     // Elastic Curve Calculation
     // Varsayılanlar arayüzdeki başlangıç değerleriyle aynı tutulmalı (E=200 GPa, I=100000 cm⁴)
     const E = (elasticityInput && parseFloat(elasticityInput.value) > 0) ? parseFloat(elasticityInput.value) : 200;
     const I = (momentOfInertiaInput && parseFloat(momentOfInertiaInput.value) > 0) ? parseFloat(momentOfInertiaInput.value) : 100000;
     const elasticCurvePoints = getElasticCurvePoints(uniqueSortedPoints, allReactions, M_fixed, toMeters, E, I);
-    diagramData.elasticCurve = { labels: elasticCurvePoints.map(p => p.x), datasets: [{ data: elasticCurvePoints.map(p => p.y), borderColor: COLORS.BEAM_STROKE }] };
-
-    const axialReaction = calculateAxialReaction();
-    drawFreeBodyDiagram(allReactions, M_fixed, T_reaction, axialReaction, compDistLoads, compTrapLoads, hingeData);
-    drawDiagrams(shearPoints, momentPoints, elasticCurvePoints, L, isLiveUpdate);
-    
-    calculatedReactions = allReactions;
-    calculatedMomentReaction = M_fixed;
-    calculatedAxialReaction = axialReaction;
+    return { L, shearPoints, momentPoints, elasticCurvePoints };
 }
 
 const getShearAt = (x_m, allReactions, toMetersFunc) => {
@@ -327,101 +329,61 @@ function buildStepDiagramPoints(forces, L, toMetersFunc) {
     return points;
 }
 
-function calculateAndDrawAxialDiagram(isLiveUpdate = false) {
+/**
+ * Eksenel kuvvet diyagramı (çizim yapmaz). Yatay yük yoksa ya da eksenel
+ * tepki belirsizse null.
+ * @returns {{ L, points }|null}
+ */
+function computeAxialDiagram() {
     const hasAxialForces = concentratedLoads.some(l => Math.abs(l.magnitude * Math.cos(l.angle)) > EPSILON);
-    if (!beam || !isSystemStable() || !hasAxialForces) { if (normalForceChart) { normalForceChart.destroy(); normalForceChart = null; } return; }
+    if (!beam || !isSystemStable() || !hasAxialForces) return null;
     const axialReaction = calculateAxialReaction();
-    if (!axialReaction) { return; }
+    if (!axialReaction) return null;
     const { toMeters } = getConversionFunctions();
     const L = toMeters(beam.endX) - toMeters(beam.startX);
     const horizontalComponents = concentratedLoads.map(l => ({ x: l.x, magnitude: l.magnitude * Math.cos(l.angle) }));
     const allHorizontalForces = [...horizontalComponents, axialReaction].sort((a, b) => a.x - b.x);
-    const normalForcePoints = buildStepDiagramPoints(allHorizontalForces, L, toMeters);
-    
-    diagramData.normal = { labels: normalForcePoints.map(p => p.x), datasets: [{ data: normalForcePoints.map(p => p.y), borderColor: COLORS.REACTION }] };
-    
-    const metersPerGrid = getMetersPerGrid();
-    const currentLang = document.documentElement.lang || 'tr';
-    const axisTitles = translations[currentLang].diagramAxes;
-    
-    const chartOptions = { 
-        scales: { 
-            x: { 
-                type: 'linear', min: 0, max: L, ticks: { autoSkip: false, stepSize: metersPerGrid, font: { size: 10 }, callback: function(v) { return v.toFixed(1) + 'm'; } },
-                title: {
-                    display: true,
-                    text: `${axisTitles.length} (${axisTitles.unitM})`
-                }
-            }, 
-            y: { 
-                grid: { color: COLORS.GRID }, 
-                ticks: { padding: 10 },
-                title: {
-                    display: true,
-                    text: `${axisTitles.axialForce} (${axisTitles.unitKN})`,
-                    padding: { top: 25 }
-                },
-                afterFit: (axis) => { axis.width = 100; }
-            } 
-        }, 
-        plugins: { legend: { display: false }, tooltip: { intersect: false, mode: 'index' } }, 
-        elements: { point: { radius: 0, hoverRadius: 4 } }, 
-        maintainAspectRatio: false, 
-        hover: { mode: 'index', intersect: false, animation: { duration: 0 } }
-    };
-    if (isLiveUpdate) chartOptions.animation = { duration: 0 };
-    normalForceChart = upsertLineChart(normalForceChart, 'normalForceDiagram',
-        { data: normalForcePoints, borderColor: COLORS.REACTION, backgroundColor: COLORS.REACTION + '33', borderWidth: 2, fill: 'origin', stepped: true },
-        chartOptions, isLiveUpdate);
+    return { L, points: buildStepDiagramPoints(allHorizontalForces, L, toMeters) };
 }
 
-function calculateAndDrawTorsionDiagram() {
-    if (hinges && hinges.length > 0) { if (torsionChart) { torsionChart.destroy(); torsionChart = null; } return; }
-    const hasTorsion = torsionMoments.length > 0;
-    if (!beam || !hasTorsion) { if (torsionChart) { torsionChart.destroy(); torsionChart = null; } return; }
+/**
+ * Burulma momenti diyagramı (çizim yapmaz). Burulma yükü yoksa ya da mafsallı
+ * sistemde null; ankastre mesnet yoksa { warning } döner.
+ * @returns {{ L, points }|{ warning: string }|null}
+ */
+function computeTorsionDiagram() {
+    if (hinges && hinges.length > 0) return null;
+    if (!beam || torsionMoments.length === 0) return null;
     const fixedSupport = supports.find(s => s.type === 'fixed-support');
-    if (!fixedSupport) { if (typeof showCalcWarning === 'function') showCalcWarning('warnTorsionNeedsFixed'); if (torsionChart) { torsionChart.destroy(); torsionChart = null; } return; }
+    if (!fixedSupport) return { warning: 'warnTorsionNeedsFixed' };
     const { toMeters } = getConversionFunctions();
     const L = toMeters(beam.endX) - toMeters(beam.startX);
     const totalTorsion = torsionMoments.reduce((sum, t) => sum + t.magnitude, 0);
     const torsionReaction = { x: fixedSupport.x, magnitude: -totalTorsion };
     const allTorsionForces = [...torsionMoments, torsionReaction].sort((a, b) => a.x - b.x);
-    const torsionPoints = buildStepDiagramPoints(allTorsionForces, L, toMeters);
-    
-    diagramData.torsion = { labels: torsionPoints.map(p => p.x), datasets: [{ data: torsionPoints.map(p => p.y), borderColor: COLORS.LOAD }] };
-    
-    const metersPerGrid = getMetersPerGrid();
-    const currentLang = document.documentElement.lang || 'tr';
-    const axisTitles = translations[currentLang].diagramAxes;
-    
-    const chartOptions = { 
-        scales: { 
-            x: { 
-                type: 'linear', min: 0, max: L, ticks: { autoSkip: false, stepSize: metersPerGrid, font: { size: 10 }, callback: function(v) { return v.toFixed(1) + 'm'; } },
-                title: {
-                    display: true,
-                    text: `${axisTitles.length} (${axisTitles.unitM})`
-                }
-            }, 
-            y: { 
-                grid: { color: COLORS.GRID }, 
-                ticks: { padding: 10 },
-                title: {
-                    display: true,
-                    text: `${axisTitles.torsionalMoment} (${axisTitles.unitKNM})`,
-                    padding: { top: 25 }
-                },
-                afterFit: (axis) => { axis.width = 100; }
-            } 
-        }, 
-        plugins: { legend: { display: false }, tooltip: { intersect: false, mode: 'index' } }, 
-        elements: { point: { radius: 0, hoverRadius: 4 } }, 
-        maintainAspectRatio: false, 
-        hover: { mode: 'index', intersect: false, animation: { duration: 0 } }
+    return { L, points: buildStepDiagramPoints(allTorsionForces, L, toMeters) };
+}
+
+/**
+ * Modelin tüm statik analizini yapar; hiçbir şey çizmez.
+ * @param {{ interpolationPoints?: number }} [options]
+ * @returns {{ stable, solution, axialReaction, diagrams, axial, torsion }}
+ *   stable: sistem izostatik ve stabil mi
+ *   solution: solveReactions() sonucu (stabil değilse null)
+ *   diagrams: computeBeamDiagrams() sonucu (çözüm yoksa null)
+ *   axial / torsion: computeAxialDiagram() / computeTorsionDiagram() sonuçları
+ */
+function analyzeBeam(options = {}) {
+    const stable = isSystemStable();
+    const solution = stable ? solveReactions() : null;
+    return {
+        stable,
+        solution,
+        axialReaction: solution ? calculateAxialReaction() : null,
+        diagrams: solution ? computeBeamDiagrams(solution, options.interpolationPoints || 50) : null,
+        axial: stable ? computeAxialDiagram() : null,
+        torsion: computeTorsionDiagram()
     };
-    torsionChart = upsertLineChart(torsionChart, 'torsionMomentDiagram',
-        { data: torsionPoints, borderColor: COLORS.LOAD, backgroundColor: COLORS.LOAD + '33', borderWidth: 2, fill: 'origin', stepped: true },
-        chartOptions);
 }
 
 function getElasticCurvePoints(points, allReactions, M_fixed, toMetersFunc, E_gpa, I_cm4) {

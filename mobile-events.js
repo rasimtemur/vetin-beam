@@ -2,207 +2,7 @@
 
 function initializeMobileEventListeners() {
 
-const fileInput = document.getElementById('file-input');
-
-function performCanvasUpdate() {
-    scaleCanvasForHiDPI(canvas, ctx); 
-    redrawCanvas(); 
-    updateAll();
-}
-
-function loadProjectFromFile(file) {
-    if (!file || !file.type.match('application/json')) { return; }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const projectData = JSON.parse(e.target.result);
-            window.__skipResetConfirm = true;
-            document.getElementById('reset-btn').click();
-            window.__skipResetConfirm = false;
-            beam = projectData.beam; supports = projectData.supports || []; hinges = projectData.hinges || [];
-            concentratedLoads = projectData.concentratedLoads || []; distributedLoads = projectData.distributedLoads || [];
-            trapezoidalLoads = projectData.trapezoidalLoads || []; concentratedMoments = projectData.concentratedMoments || [];
-            torsionMoments = projectData.torsionMoments || [];
-            if (projectData.gridSettings) {
-                metersPerGridInput.value = projectData.gridSettings.metersPerGrid;
-                kNPerGridInput.value = projectData.gridSettings.kNPerGrid;
-                gridSizeInput.value = projectData.gridSettings.gridSize;
-            }
-            performCanvasUpdate();
-            if (typeof getCurrentModelHash === 'function') {
-                window.__lastSavedHash = getCurrentModelHash();
-            }
-        } catch (error) { console.error("JSON dosyası okunurken hata oluştu:", error); alert("Geçersiz veya bozuk bir model dosyası seçildi."); }
-    };
-    reader.readAsText(file);
-}
-
-document.body.addEventListener('click', (event) => {
-    const target = event.target;
-    if (target.matches('.tool-group-title')) {
-        if (window.innerWidth <= 800) {
-            const clickedGroup = target.closest('.tool-group');
-            if (!clickedGroup) return;
-            document.querySelectorAll('.toolbar .tool-group').forEach(group => {
-                if (group !== clickedGroup) {
-                    group.classList.remove('is-open');
-                }
-            });
-            clickedGroup.classList.toggle('is-open');
-        }
-        return;
-    }
-    const button = target.closest('button');
-    if (!button) {
-        const panel = target.closest('.diagram-container, #data-tables-container');
-        if (panel) {
-            const content = panel.querySelector('.content-wrapper, .table-grid-wrapper');
-            if (content && content.classList.contains('hidden')) {
-                const toggleBtn = panel.querySelector('.toggle-button');
-                if (toggleBtn) toggleBtn.click();
-            }
-        }
-        return;
-    }
-    if (button.parentElement.classList.contains('language-switcher') && button.dataset.lang) {
-        setLanguage(button.dataset.lang); return;
-    }
-    if (button.classList.contains('delete-btn')) {
-
-        const type = button.dataset.type;
-        const index = parseInt(button.dataset.index, 10);
-        if (isNaN(index)) return;
-        let wasDeleted = false;
-        switch (type) {
-            case 'support': if(supports[index]) { supports.splice(index, 1); wasDeleted = true; } break;
-            case 'hinge': if(hinges[index]) { hinges.splice(index, 1); wasDeleted = true; } break;
-            case 'concentratedLoad': if(concentratedLoads[index]) { concentratedLoads.splice(index, 1); wasDeleted = true; } break;
-            case 'distributedLoad': if(distributedLoads[index]) { distributedLoads.splice(index, 1); wasDeleted = true; } break;
-            case 'trapezoidalLoad': if(trapezoidalLoads[index]) { trapezoidalLoads.splice(index, 1); wasDeleted = true; } break;
-            case 'concentratedMoment': if(concentratedMoments[index]) { concentratedMoments.splice(index, 1); wasDeleted = true; } break;
-            case 'torsionMoment': if(torsionMoments[index]) { torsionMoments.splice(index, 1); wasDeleted = true; } break;
-        }
-        if (wasDeleted) updateAll(); return;
-    }
-    if (button.id === 'reset-btn') {
-        beam=null; supports=[]; hinges=[]; concentratedLoads=[]; distributedLoads=[]; trapezoidalLoads=[];
-        concentratedMoments=[]; torsionMoments=[];
-        isDrawing=false; drawingStage = 0; isDrawingConcentratedLoad = false;
-        isResizing=false; activeHandle=null; isDraggingSupport=false; draggedSupportIndex=null; isDraggingHinge=false; draggedHingeIndex=null; isMovingConcentratedLoad = false; draggedConcentratedLoadIndex = null; isResizingDistLoad = false; resizedDistLoadIndex = null; activeDistLoadHandle = null; isResizingTrapLoad = false; resizedTrapLoadIndex = null; activeTrapLoadHandle = null;
-
-        isMovingConcentratedMoment = false; draggedConcentratedMomentIndex = null; clickedConcentratedMomentIndex = null;
-        isMovingTorsionMoment = false; draggedTorsionMomentIndex = null; clickedTorsionMomentIndex = null;
-        isDrawingConcentratedMoment = false; isDrawingTorsionMoment = false; momentStartPoint = null;
-        firstTapPoint = null;
-        
-        if(document.getElementById('reactions-output')) document.getElementById('reactions-output').innerHTML="";
-        if(shearChart){shearChart.destroy(); shearChart=null;} if(momentChart){momentChart.destroy(); momentChart=null;} if(normalForceChart){normalForceChart.destroy(); normalForceChart=null;} if(torsionChart){torsionChart.destroy(); torsionChart=null;}
-        if(fbdCtx) fbdCtx.clearRect(0,0,fbdCanvas.clientWidth,fbdCanvas.clientHeight); 
-        
-        document.querySelectorAll('.tool-button').forEach(btn => btn.classList.remove('active'));
-        document.getElementById('tool-beam').classList.add('active');
-        currentTool = 'beam';
-
-        updateHintBox(); // DÜZELTME: Sıfırlama sonrası ipucunu güncelle
-
-        redrawCanvas(); updateTables(); updateDiagramsVisibility(); return;
-    }
-    
-    if (button.id === 'center-btn' && beam) {
-        centerDrawing();
-        redrawCanvas();
-        // SCD ve diyagramlar da kirişin yeni konumuna hizalanır
-        realignDiagramsToModel();
-        return;
-    }
-    
-    if (button.id === 'fullscreen-btn') {
-        body.classList.toggle('fullscreen-mode');
-        const isFullscreen = body.classList.contains('fullscreen-mode');
-        const currentLang = document.documentElement.lang || 'tr';
-        const expandIcon = fullscreenBtn.querySelector('.icon-expand');
-        const shrinkIcon = fullscreenBtn.querySelector('.icon-shrink');
-        if (isFullscreen) {
-            expandIcon.style.display = 'none'; shrinkIcon.style.display = 'block';
-            button.setAttribute('title', translations[currentLang]['hideFullscreen']);
-            button.dataset.i18nTitle = 'hideFullscreen';
-        } else {
-            expandIcon.style.display = 'block'; shrinkIcon.style.display = 'none';
-            button.setAttribute('title', translations[currentLang]['showFullscreen']);
-            button.dataset.i18nTitle = 'showFullscreen';
-        }
-        setTimeout(() => {
-            if(beam) { centerDrawing(); }
-            performCanvasUpdate();
-        }, 100);
-        return;
-    }
-
-    // --- YENİ EKLENEN KOD BLOĞU ---
-    if (button.id.startsWith('download-')) {
-        switch(button.id) {
-            case 'download-model-btn': downloadDrawingAsTrueSvg('model', 'vetin_structural_model.svg'); break;
-            case 'download-fbd-btn': downloadDrawingAsTrueSvg('fbd', 'vetin_free_body_diagram.svg'); break;
-            case 'download-nfd-btn': if (normalForceChart) downloadCanvasAsPngInSvg(normalForceChart.canvas, 'vetin_normal_force_diagram.png'); break;
-            case 'download-sfd-btn': if (shearChart) downloadCanvasAsPngInSvg(shearChart.canvas, 'vetin_shear_force_diagram.png'); break;
-            case 'download-bmd-btn': if (momentChart) downloadCanvasAsPngInSvg(momentChart.canvas, 'vetin_bending_moment_diagram.png'); break;
-            case 'download-tmd-btn': if (torsionChart) downloadCanvasAsPngInSvg(torsionChart.canvas, 'vetin_torsion_diagram.png'); break;
-            case 'download-ecd-btn': if (elasticCurveChart) downloadCanvasAsPngInSvg(elasticCurveChart.canvas, 'vetin_elastic_curve_diagram.png'); break;
-            case 'download-tables-btn': downloadTablesAsCsv('vetin_data_tables.csv'); break;
-        }
-        return;
-    }
-
-    if (button.classList.contains('toggle-button')) {
-        const parentContainer = button.closest('.diagram-container, #data-tables-container');
-        if(!parentContainer) return;
-        let contentWrapper = parentContainer.querySelector('.content-wrapper, .table-grid-wrapper');
-        if (!contentWrapper) return;
-        const currentLang = document.documentElement.lang || 'tr';
-        const showIcon = ICON_EYE_SHOW;
-        const hideIcon = ICON_EYE_HIDE;
-        contentWrapper.classList.toggle('hidden');
-        const isHidden = contentWrapper.classList.contains('hidden');
-        
-        if (parentContainer.id) {
-            userVisibilityPrefs[parentContainer.id] = !isHidden;
-        }
-
-        if (isHidden) { button.innerHTML = showIcon; button.setAttribute('title', translations[currentLang]['show']); button.dataset.i18nTitle = 'show'; } 
-        else { 
-            button.innerHTML = hideIcon; button.setAttribute('title', translations[currentLang]['hide']); button.dataset.i18nTitle = 'hide'; 
-            redrawFbdIfShown(parentContainer); // gizliyken değişen SCD'yi yeniden çiz
-            if (parentContainer.id === 'elastic-curve-3d-wrapper' && typeof onWindowResize3d === 'function') {
-                setTimeout(() => {
-                    onWindowResize3d();
-                    drawElasticCurve3D();
-                }, 50);
-            }
-        }
-        return;
-    }
-    if (button.classList.contains('tool-button')) {
-        document.querySelectorAll('.tool-button').forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        currentTool = button.id.replace('tool-', '');
-
-        updateHintBox(); // DÜZELTME: Araç değiştiğinde i18n ipucunu güncelle
-
-        isDrawing = false; drawingStage = 0; loadStartPoint = null; firstTapPoint = null;
-        confirmedMagnitude1 = 0; isDrawingConcentratedLoad = false;
-        isDrawingConcentratedMoment = false; isDrawingTorsionMoment = false; momentStartPoint = null;
-        redrawCanvas();
-        return;
-    }
-    // --- KOD BLOĞU SONU ---
-});
-
-gridSizeInput.addEventListener('change', redrawCanvas);
-metersPerGridInput.addEventListener('change', () => { if (beam) { beam.metersPerGridOnCreation = getMetersPerGrid(); } redrawCanvas(); updateAll(); });
-kNPerGridInput.addEventListener('change', redrawCanvas);
-elasticityInput.addEventListener('change', updateAll);
-momentOfInertiaInput.addEventListener('change', updateAll);
-fileInput.addEventListener('change', (event) => { const file = event.target.files; if (!file) return; loadProjectFromFile(file); fileInput.value = ''; });
+// Ortak buton eylemleri, model yükleme/kaydetme ve ayar girdileri: actions.js
 
 function handleTouchStart(e) {
     // --- DEĞİŞİKLİK: Kaydırmayı engellemek için hem <html> hem <body> hedefleniyor ---
@@ -282,71 +82,10 @@ function handleTouchEnd(e) {
     const pos = getSnappedMousePos(e);
     const rawPos = getRawMousePos(e);
 
-    if (currentTool === 'edit' && !hasDragged) {
-        if (clickedConcentratedLoadIndex !== null) {
-            const load = concentratedLoads[clickedConcentratedLoadIndex];
-            const newMagStr = prompt("Yeni yük şiddetini girin (kN):", load.magnitude.toFixed(2));
-            if (newMagStr !== null) {
-                const newMag = parseFloat(newMagStr);
-                if (!isNaN(newMag)) load.magnitude = newMag;
-            }
-            const newAngleStr = prompt("Yeni yük açısını girin (°):", (load.angle * 180 / Math.PI).toFixed(1));
-            if (newAngleStr !== null) {
-                const newAngle = parseFloat(newAngleStr);
-                if (!isNaN(newAngle)) load.angle = newAngle * Math.PI / 180;
-            }
-        } else if (clickedDistLoadIndex !== null) {
-            const load = distributedLoads[clickedDistLoadIndex];
-            const newMagStr = prompt("Yeni yayılı yük şiddetini girin (kN/m):", (load.magnitude).toFixed(2));
-            if (newMagStr !== null) {
-                const newMag = parseFloat(newMagStr);
-                if (!isNaN(newMag)) load.magnitude = newMag;
-            }
-        } else if (clickedTrapLoadIndex !== null) {
-            const load = trapezoidalLoads[clickedTrapLoadIndex];
-            const newMag1Str = prompt("Yeni başlangıç şiddetini girin (kN/m):", (load.startMagnitude).toFixed(2));
-            if (newMag1Str !== null) {
-                const newMag1 = parseFloat(newMag1Str);
-                if (!isNaN(newMag1)) {
-                    const newMag2Str = prompt("Yeni bitiş şiddetini girin (kN/m):", (load.endMagnitude).toFixed(2));
-                    if (newMag2Str !== null) {
-                       const newMag2 = parseFloat(newMag2Str);
-                       if (!isNaN(newMag2)) {
-                            load.startMagnitude = newMag1;
-                            load.endMagnitude = newMag2;
-                        }
-                    }
-                }
-            }
-        } else if (clickedConcentratedMomentIndex !== null) {
-            const moment = concentratedMoments[clickedConcentratedMomentIndex];
-            const newMagStr = prompt("Yeni eğilme momenti şiddetini girin (kNm):", moment.magnitude.toFixed(2));
-            if (newMagStr !== null) {
-                const newMag = parseFloat(newMagStr);
-                if (!isNaN(newMag)) moment.magnitude = newMag;
-            }
-        } else if (clickedTorsionMomentIndex !== null) {
-            const moment = torsionMoments[clickedTorsionMomentIndex];
-            const newMagStr = prompt("Yeni burulma momenti şiddetini girin (kNm):", moment.magnitude.toFixed(2));
-            if (newMagStr !== null) {
-                const newMag = parseFloat(newMagStr);
-                if (!isNaN(newMag)) moment.magnitude = newMag;
-            }
-        }
-    }
+    if (currentTool === 'edit' && !hasDragged) openLoadDialogForClickedItem();
 
     if (isDrawingConcentratedLoad) {
-        const startPos = concentratedLoadStartPoint;
-        const endPos = rawPos;
-        const dx = endPos.x - startPos.x;
-        const dy = endPos.y - startPos.y;
-        if (Math.abs(dx) > EPSILON || Math.abs(dy) > EPSILON) {
-            const finalAngleRad = Math.atan2(dy, dx);
-            const length = Math.sqrt(dx * dx + dy * dy);
-            const gridSize = getGridSize(), kNPerGrid = getKNPerGrid();
-            const magnitude = (length / gridSize) * kNPerGrid;
-            concentratedLoads.push({ x: startPos.x, y: startPos.y, magnitude: magnitude, angle: finalAngleRad });
-        }
+        openNewConcentratedLoadDialog(concentratedLoadStartPoint, rawPos);
     } else if (isDrawingConcentratedMoment || isDrawingTorsionMoment) {
         const startPos = momentStartPoint;
         const endPos = rawPos;
@@ -452,12 +191,11 @@ function handleTouchMove(e) {
         drawPreviewDimension(ctx, snappedPos.x, allPoints, dimensionY);
     }
 
-    if (needsLiveUpdate && isSystemStable()) { calculate(true); calculateAndDrawAxialDiagram(true); }
+    if (needsLiveUpdate && isSystemStable()) runAnalysis(true);
 }
 
 canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
 canvas.addEventListener('touchend', handleTouchEnd);
 canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
 
-window.addEventListener('resize', () => { setTimeout(performCanvasUpdate, 100); });
 }

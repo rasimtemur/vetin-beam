@@ -142,9 +142,11 @@
 
 #tool-edit, #reset-btn {
     width: 100%;
+    min-width: 0;
 }
 
-.actions-stack { display: none; }
+/* Kaydet/Aç düğmeleri dar ekranda da sütundaki diğer simgelerle aynı sırada görünür */
+.actions-stack { display: contents; }
 
 .fluent-theme .tool-group-title {
     white-space: nowrap;

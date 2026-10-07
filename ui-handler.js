@@ -1,10 +1,11 @@
 // common/ui-handler.js
+//
+// Arayüz katmanı: hesap sonucunu (calculations.js/analyzeBeam) çizer (SCD,
+// Chart.js diyagramları), tabloları ve panelleri günceller, tema ve modalları yönetir.
 
 function drawFreeBodyDiagram(allReactions, M_reaction, T_reaction, axialReaction, loadsToDraw = distributedLoads, trapLoadsToDraw = trapezoidalLoads, hingeData = null, drawGridLines = true) {
-    // Kesim çizgisi sürüklenirken SCD'yi yeniden hesap yapmadan çizebilmek için
-    lastFbdArgs = [allReactions, M_reaction, T_reaction, axialReaction, loadsToDraw, trapLoadsToDraw, hingeData, drawGridLines];
     // Panel gizliyken tuvalin boyutu 0'dır; çizmeye çalışmak tuvali 0×0'a küçültür.
-    // Panel açılınca SCD, lastFbdArgs ile yeniden çizilir (bkz. redrawFbdIfShown).
+    // Panel açılınca SCD, lastAnalysis ile yeniden çizilir (bkz. redrawFbdIfShown).
     if (fbdCanvas.clientWidth === 0 || fbdCanvas.clientHeight === 0) return;
     scaleCanvasForHiDPI(fbdCanvas, fbdCtx);
     
@@ -157,13 +158,106 @@ function drawFreeBodyDiagram(allReactions, M_reaction, T_reaction, axialReaction
     fbdCtx.restore();
 }
 
+// === Hesap sonucunun çizimi ===
+
+/** Modeli analiz eder (calculations.js) ve sonucu çizer. */
+function runAnalysis(isLiveUpdate = false) {
+    const analysis = analyzeBeam();
+    renderAnalysis(analysis, isLiveUpdate);
+    return analysis;
+}
+
 /**
- * Kiriş tuvalde kaydırıldığında (ör. "Görünümü ortala") SCD'yi ve diyagramları
- * hesap yapmadan yeni konuma hizalar. Diyagram hizası chartAlignmentPlugin'in
+ * analyzeBeam() sonucunu çizer: SCD, kesme/moment/elastik eğri, eksenel ve
+ * burulma diyagramları. Sonuç lastAnalysis'te saklanır; sonraki yeniden
+ * çizimler (tema, SCD seçenekleri, kesim çizgisi, panel açma) hesap yapmaz.
+ */
+function renderAnalysis(analysis, isLiveUpdate = false) {
+    lastAnalysis = analysis;
+
+    if (analysis.solution) {
+        calculatedReactions = analysis.solution.reactions;
+        calculatedMomentReaction = analysis.solution.M_fixed;
+        calculatedAxialReaction = analysis.axialReaction;
+        redrawFreeBodyDiagram();
+        renderBeamDiagrams(analysis.diagrams, isLiveUpdate);
+    }
+    // Sistem stabil değilken diyagram alanı zaten gizlidir (updateDiagramsVisibility)
+    if (analysis.stable) renderStepDiagram('axial', analysis.axial, isLiveUpdate);
+    // Burulma uyarısı canlı sürüklemede tekrar tekrar gösterilmesin
+    if (!isLiveUpdate) renderStepDiagram('torsion', analysis.torsion, false);
+}
+
+function toDiagramData(points, color) {
+    return { labels: points.map(p => p.x), datasets: [{ data: points.map(p => p.y), borderColor: color }] };
+}
+
+function renderBeamDiagrams(d, isLiveUpdate) {
+    diagramData.shear = toDiagramData(d.shearPoints, COLORS.LOAD);
+    diagramData.moment = toDiagramData(d.momentPoints, COLORS.BEAM_STROKE);
+    diagramData.elasticCurve = toDiagramData(d.elasticCurvePoints, COLORS.BEAM_STROKE);
+    drawDiagrams(d.shearPoints, d.momentPoints, d.elasticCurvePoints, d.L, isLiveUpdate);
+}
+
+// Eksenel kuvvet ve burulma momenti: basamaklı diyagramlar (aynı grafik ayarları)
+const STEP_DIAGRAMS = {
+    axial:   { canvasId: 'normalForceDiagram',   dataKey: 'normal',  color: () => COLORS.REACTION, title: 'axialForce',      unit: 'unitKN',
+               get: () => normalForceChart, set: (c) => { normalForceChart = c; } },
+    torsion: { canvasId: 'torsionMomentDiagram', dataKey: 'torsion', color: () => COLORS.LOAD,     title: 'torsionalMoment', unit: 'unitKNM',
+               get: () => torsionChart,     set: (c) => { torsionChart = c; } }
+};
+
+function renderStepDiagram(kind, result, isLiveUpdate) {
+    const cfg = STEP_DIAGRAMS[kind];
+    if (!result || result.warning) {
+        if (result && result.warning && typeof showCalcWarning === 'function') showCalcWarning(result.warning);
+        const chart = cfg.get();
+        if (chart) { chart.destroy(); cfg.set(null); }
+        return;
+    }
+    const color = cfg.color();
+    diagramData[cfg.dataKey] = toDiagramData(result.points, color);
+
+    const axisTitles = translations[document.documentElement.lang || 'tr'].diagramAxes;
+    const options = {
+        scales: {
+            x: {
+                type: 'linear', min: 0, max: result.L,
+                ticks: { autoSkip: false, stepSize: getMetersPerGrid(), font: { size: 10 }, callback: (v) => v.toFixed(1) + 'm' },
+                title: { display: true, text: `${axisTitles.length} (${axisTitles.unitM})` }
+            },
+            y: {
+                grid: { color: COLORS.GRID },
+                ticks: { padding: 10 },
+                title: { display: true, text: `${axisTitles[cfg.title]} (${axisTitles[cfg.unit]})`, padding: { top: 25 } },
+                afterFit: (axis) => { axis.width = 100; }
+            }
+        },
+        plugins: { legend: { display: false }, tooltip: { intersect: false, mode: 'index' } },
+        elements: { point: { radius: 0, hoverRadius: 4 } },
+        maintainAspectRatio: false,
+        hover: { mode: 'index', intersect: false, animation: { duration: 0 } }
+    };
+    if (isLiveUpdate) options.animation = { duration: 0 };
+    cfg.set(upsertLineChart(cfg.get(), cfg.canvasId,
+        { data: result.points, borderColor: color, backgroundColor: color + '33', borderWidth: 2, fill: 'origin', stepped: true },
+        options, isLiveUpdate));
+}
+
+/** SCD'yi son hesap sonucundan (hesap yapmadan) yeniden çizer. */
+function redrawFreeBodyDiagram() {
+    const s = lastAnalysis && lastAnalysis.solution;
+    if (!s) return;
+    drawFreeBodyDiagram(s.reactions, s.M_fixed, null, lastAnalysis.axialReaction, s.fbdDistLoads, s.fbdTrapLoads, s.hingeData);
+}
+
+/**
+ * Model alanının boyutu/konumu değiştiğinde (ör. tam ekran panelleri) SCD'yi ve
+ * diyagramları hesap yapmadan hizalar. Diyagram hizası chartAlignmentPlugin'in
  * beforeLayout adımında kurulduğu için grafiklerin yeniden yerleşmesi gerekir.
  */
 function realignDiagramsToModel() {
-    if (typeof lastFbdArgs !== 'undefined' && lastFbdArgs) drawFreeBodyDiagram(...lastFbdArgs);
+    redrawFreeBodyDiagram();
     [normalForceChart, shearChart, momentChart, torsionChart, elasticCurveChart]
         .forEach(chart => { if (chart) chart.update('none'); });
 }
@@ -171,41 +265,37 @@ function realignDiagramsToModel() {
 // Göster/gizle butonuyla açılan panel SCD ise, gizliyken yapılan değişiklikler
 // (kesim çizgisi, model düzenlemesi) görünsün diye son haliyle yeniden çizilir.
 function redrawFbdIfShown(panel) {
-    if (panel && panel.id === 'free-body-diagram-wrapper' && typeof lastFbdArgs !== 'undefined' && lastFbdArgs) {
-        drawFreeBodyDiagram(...lastFbdArgs);
-    }
+    if (panel && panel.id === 'free-body-diagram-wrapper') redrawFreeBodyDiagram();
 }
 
-// SCD seçenek butonları (Kuvvetler / Mesnet Tepkileri). Diyagram HTML'i dil
-// değişince yeniden üretildiği için dinleyici belgeye bağlanır.
+// SCD seçenek butonları (Dış Kuvvetler / Mesnet Tepkileri): dinleyici belgeye bağlanır
 document.addEventListener('click', (e) => {
     const btn = e.target.closest('.fbd-option-btn');
     if (!btn) return;
     const option = btn.dataset.fbdOption;
     fbdDisplayOptions[option] = !fbdDisplayOptions[option];
     btn.setAttribute('aria-pressed', String(fbdDisplayOptions[option]));
-    if (typeof lastFbdArgs !== 'undefined' && lastFbdArgs) drawFreeBodyDiagram(...lastFbdArgs);
+    redrawFreeBodyDiagram();
 });
 
-// --- YENİ YARDIMCI FONKSİYONLAR ---
-let isHighRes = false; // Yüksek çözünürlük modunda olup olmadığımızı takip etmek için
+// Diyagramın üzerine gelince ayrıntılı (1200 nokta), ayrılınca hızlı (50 nokta)
+// çizim. Tepkiler yeniden çözülmez; yalnızca eğri noktaları yeniden üretilir.
+let isHighRes = false;
+
+function renderDiagramResolution(interpolationPoints) {
+    if (!lastAnalysis || !lastAnalysis.solution) return;
+    lastAnalysis.diagrams = computeBeamDiagrams(lastAnalysis.solution, interpolationPoints);
+    renderBeamDiagrams(lastAnalysis.diagrams, true);
+}
 
 function switchToHighResDiagrams() {
-    if (!isHighRes && calculatedReactions) {
-        isHighRes = true;
-        generateAndDrawDiagrams(calculatedReactions, calculatedMomentReaction, null, true, distributedLoads, trapezoidalLoads, null, 1200);
-    }
+    if (!isHighRes) { isHighRes = true; renderDiagramResolution(1200); }
 }
 
 function switchToLowResDiagrams() {
-    if (isHighRes && calculatedReactions) {
-        isHighRes = false;
-        generateAndDrawDiagrams(calculatedReactions, calculatedMomentReaction, null, true, distributedLoads, trapezoidalLoads, null, 50);
-    }
+    if (isHighRes) { isHighRes = false; renderDiagramResolution(50); }
 }
-// ------------------------------------
 
-// ------------------------------------
 
 function drawDiagrams(shearPoints, momentPoints, elasticCurvePoints, L, isLiveUpdate = false) {
     const metersPerGrid = getMetersPerGrid();
@@ -603,6 +693,8 @@ function initializeTheme() {
         appMenuBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             appMenu.classList.toggle('show');
+            // stopPropagation belge dinleyicisini atladığından uygulama menüsü elle kapanır
+            closeAppSwitcher();
         });
         document.addEventListener('click', (e) => {
             if (!appMenu.contains(e.target) && e.target !== appMenuBtn) {
@@ -689,6 +781,44 @@ function initializeTheme() {
     }
 }
 
+// --- UYGULAMA DEĞİŞTİRİCİ ---
+// vetin uygulamaları arası geçiş menüsü (logonun yanındaki 3×3 simge).
+// Kutucuklar düz bağlantıdır; burada yalnız aç/kapa ve klavye erişimi var.
+function setAppSwitcherOpen(open) {
+    const btn = document.getElementById('btnAppSwitcher');
+    const menu = document.getElementById('appSwitcherMenu');
+    if (!btn || !menu) return;
+    menu.classList.toggle('show', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    // Menü araç çubuğu ve tuvalin üstüne taşar; başlık yığında onların üstüne alınır
+    document.querySelector('.page-header2')?.classList.toggle('app-menu-open', open);
+}
+
+function closeAppSwitcher() {
+    setAppSwitcherOpen(false);
+}
+
+function initAppSwitcher() {
+    const btn = document.getElementById('btnAppSwitcher');
+    const menu = document.getElementById('appSwitcherMenu');
+    if (!btn || !menu) return;
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = !menu.classList.contains('show');
+        setAppSwitcherOpen(open);
+        if (open) document.getElementById('appMenu')?.classList.remove('show');
+    });
+    document.addEventListener('click', (e) => {
+        if (menu.classList.contains('show') && !menu.contains(e.target)) closeAppSwitcher();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menu.classList.contains('show')) {
+            closeAppSwitcher();
+            btn.focus();
+        }
+    });
+}
+
 function showAboutModal() {
     const lang = document.documentElement.lang || 'en';
     const t = (typeof translations !== 'undefined' && translations[lang]) || (typeof translations !== 'undefined' && translations['en']) || {};
@@ -737,32 +867,7 @@ function showAboutModal() {
     backdrop.addEventListener('click', (e) => { if (e.target === backdrop) backdrop.classList.remove('show'); });
 }
 
-function getCurrentModelHash() {
-    try {
-        return JSON.stringify({
-            beam: typeof beam !== 'undefined' ? beam : null,
-            supports: typeof supports !== 'undefined' ? supports : [],
-            hinges: typeof hinges !== 'undefined' ? hinges : [],
-            concentratedLoads: typeof concentratedLoads !== 'undefined' ? concentratedLoads : [],
-            distributedLoads: typeof distributedLoads !== 'undefined' ? distributedLoads : [],
-            trapezoidalLoads: typeof trapezoidalLoads !== 'undefined' ? trapezoidalLoads : [],
-            concentratedMoments: typeof concentratedMoments !== 'undefined' ? concentratedMoments : [],
-            torsionMoments: typeof torsionMoments !== 'undefined' ? torsionMoments : []
-        });
-    } catch (e) { return ''; }
-}
-
-function isModelEmpty() {
-    const empty = (arr) => !arr || arr.length === 0;
-    return (typeof beam === 'undefined' || !beam) &&
-           empty(typeof supports !== 'undefined' ? supports : []) &&
-           empty(typeof hinges !== 'undefined' ? hinges : []) &&
-           empty(typeof concentratedLoads !== 'undefined' ? concentratedLoads : []) &&
-           empty(typeof distributedLoads !== 'undefined' ? distributedLoads : []) &&
-           empty(typeof trapezoidalLoads !== 'undefined' ? trapezoidalLoads : []) &&
-           empty(typeof concentratedMoments !== 'undefined' ? concentratedMoments : []) &&
-           empty(typeof torsionMoments !== 'undefined' ? torsionMoments : []);
-}
+// getCurrentModelHash ve isModelEmpty: model.js
 
 const CONFIRM_VARIANT_ICONS = {
     danger: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>',
@@ -828,9 +933,7 @@ function enableDarkMode(shouldRedraw = false) {
     if (shouldRedraw && typeof redrawCanvas === 'function') {
         // FBD güncellemesi - En öncelikli çizim
         const fbdWrapper = document.getElementById('freeBodyDiagramCanvas');
-        if (fbdWrapper && !fbdWrapper.closest('.hidden') && typeof calculatedReactions !== 'undefined' && calculatedReactions.length > 0) {
-             drawFreeBodyDiagram(calculatedReactions, calculatedMomentReaction, null, calculatedAxialReaction);
-        }
+        if (fbdWrapper && !fbdWrapper.closest('.hidden')) redrawFreeBodyDiagram();
 
         redrawCanvas();
         // Tüm diyagramların (EKD ve burulma dahil) eksen renkleri temaya uyarlanır
@@ -852,9 +955,7 @@ function enableLightMode(shouldRedraw = false) {
     if (shouldRedraw && typeof redrawCanvas === 'function') {
         // FBD güncellemesi - En öncelikli çizim
         const fbdWrapper = document.getElementById('freeBodyDiagramCanvas');
-        if (fbdWrapper && !fbdWrapper.closest('.hidden') && typeof calculatedReactions !== 'undefined' && calculatedReactions.length > 0) {
-             drawFreeBodyDiagram(calculatedReactions, calculatedMomentReaction, null, calculatedAxialReaction);
-        }
+        if (fbdWrapper && !fbdWrapper.closest('.hidden')) redrawFreeBodyDiagram();
 
         redrawCanvas();
         // Tüm diyagramların (EKD ve burulma dahil) eksen renkleri temaya uyarlanır

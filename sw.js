@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vetin-cache-v25';
+const CACHE_NAME = 'vetin-cache-v29';
 const ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const ASSETS = [
   './controls-3d.css',
   './main.js',
   './setup.js',
+  './model.js',
   './localization.js',
   './translations.js',
   './ui-handler.js',
@@ -20,13 +21,14 @@ const ASSETS = [
   './draw-loads.js',
   './draw-utilities.js',
   './download.js',
+  './actions.js',
+  './load-dialog.js',
   './desktop-events.js',
   './mobile-events.js',
   './elastic-3d.js',
   './models-gallery.js',
   './models/models-data.js',
   './vendor/chart.umd.min.js',
-  './vendor/d3.v7.min.js',
   './vendor/three.min.js',
   './vendor/OrbitControls.js',
   './logo.svg',
