@@ -104,17 +104,36 @@ The elastic curve computation requires the specification of:
 
 ### Data Management
 
-- **Save / Open** — The structural model may be exported to and imported from a `.json` file, enabling session continuity
+- **Save / Open** — The structural model may be exported to and imported from a `.json` file, enabling session continuity. Files use format version 2: all positions are stored in metres from the beam start, independent of screen size or grid settings (material properties *E* and *I* are saved as well). Older pixel-based files (version 1) can still be opened.
 - **Vector Graphics Export** — The structural model and the corresponding free body diagram (FBD) can be exported directly in scalable vector graphics (SVG) format for high-resolution publishing
 - **Diagram Export** — Computed internal force and deformation diagrams may be downloaded as PNG image files
 - **Data Export** — Tabulated numerical output may be downloaded for external reference
 
 ### Interface Options
 
+- **App switcher** — a 3×3 grid button next to the logo opens the other vetin applications
 - **Light / Dark mode** — selectable display theme
 - **Fullscreen mode** — for unobstructed model construction
 - **Configurable grid** — horizontal scale (m), vertical scale (kN), and grid resolution (px)
 - **Contextual guidance** — a dynamic hint panel provides task-specific usage instructions for each selected tool
+
+---
+
+## 🎓 Learning Features
+
+The tool is designed to teach *how* internal force diagrams are obtained, not only to display them.
+
+- **Statical determinacy status** — every model is classified as statically determinate, indeterminate (with degree, e.g. *r = 4 > 3*) or unstable (mechanism, no horizontal restraint, coincident supports, geometrically unstable), with an explanation instead of silently hiding the diagrams.
+- **Step-by-step solution** — free body diagram and unknowns, load resultants and centroids, the equilibrium equations written term by term with numbers (ΣFx, ΣM, hinge conditions, ΣFy), the solution, an independent check, region-by-region V(x)/M(x) expressions and critical points.
+- **Region equations** — q(x), V(x) and M(x) polynomials for every region (in global *x* or local *ξ*), the curve degree of each, and a check of *dM/dx = V*.
+- **Method of sections** — drag or type the cut position, choose the left or right part, see the internal forces drawn in their positive directions with signed values, the resultant of the distributed load on the part, and the equilibrium equations of the part. On the shear diagram the area up to the cut is shaded (*area = ΔM*); on the moment diagram the tangent shows *slope = V*.
+- **Annotated diagrams** — values at every critical point (both sides of a jump), (+)/(−) regions, *M*max where *V = 0*, *δ*max, point names (A, B, C …) shared by the model, the FBD, the diagrams and the tables; dashed guide lines through every event point.
+- **Results tables** — reactions with directions, hinge forces, extreme values and a critical-point table (V⁻, V⁺, M⁻, M⁺); exported to CSV together with the input tables.
+- **Sign convention** — a dedicated window (± button) shows the positive N, V, M, T on both cut faces, the load conventions and the differential relations.
+- **Practice mode** — seeded random problems at three levels (the same seed, e.g. a student number, always gives the same problem). Reactions, diagrams and solutions stay hidden; the student enters reactions, V and M at critical points, the zero-shear point and the curve type of each region, and gets feedback targeted at common mistakes (sign error, forgotten jump, swapped reactions, moment at a hinge), graded hints and “show solution”.
+- **Sharing and assignments** — a model link (`#m=…`, the model is encoded in the URL fragment and never sent to a server), a practice link (`#p=level:seed`), a printable solution report (print / PDF) and Moodle XML export of numerical questions for the current problem.
+- **Curriculum-ordered examples** — 14 examples grouped as Basic / Intermediate / Advanced, each with a title and a learning objective, including an overhanging beam, an inclined load, a cantilever with torque, multi-hinge Gerber beams and an indeterminate beam that explains why it cannot be solved. The gallery can be reopened from the menu (Examples).
+- **Editing** — every element (beam length, supports, hinges, loads) can be edited numerically in a dialog, from the canvas or the data tables; undo / redo (Ctrl+Z / Ctrl+Y); Esc cancels a drawing in progress; elements are kept on the beam.
 
 ---
 
@@ -143,7 +162,6 @@ The application is implemented using standard web technologies without dependenc
 |-----------|------|
 | **HTML5 / CSS3 / JavaScript (ES6+)** | Core application architecture |
 | **[Chart.js](https://www.chartjs.org/) 4.4.9** | Rendering of 2D internal force diagrams |
-| **[D3.js](https://d3js.org/) 7.9.0** | SVG-based structural diagram drawing |
 | **[Three.js](https://threejs.org/) 0.145.0** | WebGL-based 3D elastic curve visualisation |
 | **Service Worker API** | Offline caching and PWA functionality |
 | **Web App Manifest** | Home screen installation support |
@@ -160,22 +178,32 @@ beam/
 ├── manifest.json           # PWA manifest descriptor
 ├── sw.js                   # Service Worker (offline caching)
 │
-├── app.js                  # Application state management
 ├── main.js                 # Initialisation sequence
-├── setup.js                # Canvas and grid configuration
-├── calculations.js         # Internal force and reaction computations
-├── ui-handler.js           # User interface state and event dispatch
+├── setup.js                # Global state, colours, Chart.js helpers
+├── model.js                # Model file format (metres, v2) ↔ runtime state (pixels)
+├── actions.js              # Shared user actions (desktop + mobile): buttons, load/save, reset
+├── app.js                  # Canvas redraw, coordinate conversion, updateAll()
+├── solver.js               # Pure, metre-based solver (BeamSolver): determinacy, reactions, N/V/M/T, critical points, region polynomials, equations, elastic curve
+├── calculations.js         # Bridge between the pixel model and the solver — analyzeBeam() returns results, draws nothing
+├── learning-panel.js       # Critical-value labels, point names, status bar, results tables, sign convention window
+├── solution-steps.js       # Step-by-step solution, region equations, printable solution report
+├── practice.js             # Practice mode, seeded problem generator, share links, Moodle XML
+├── load-dialog.js          # Numeric editing dialog for the beam, supports, hinges and loads
+├── ui-handler.js           # Rendering of results (FBD, diagrams), tables, theme, modals
+├── cut-method.js           # Interactive method of sections
+├── fullscreen-panels.js    # Drawings shown below the model in fullscreen
 │
 ├── draw-structure.js       # Beam and support element rendering
 ├── draw-loads.js           # Load visualisation
 ├── draw-utilities.js       # Shared drawing utilities
 ├── elastic-3d.js           # Three.js-based 3D elastic curve renderer
 │
-├── desktop-events.js       # Mouse and keyboard event handling
-├── mobile-events.js        # Touch event handling
-├── download.js             # PNG and JSON export logic
+├── desktop-events.js       # Mouse pointer interaction (drawing, dragging, drag & drop)
+├── mobile-events.js        # Touch pointer interaction
+├── download.js             # SVG, PNG, JSON and CSV export logic
 │
 ├── translations.js         # Localisation string repository
+├── translations-learning.js # Texts of the learning features; fills missing keys from English
 ├── localization.js         # Language switching and i18n engine
 ├── models-gallery.js       # Ready-made example model gallery
 │
@@ -186,14 +214,17 @@ beam/
 │
 ├── vendor/                 # Locally bundled third-party libraries
 │   ├── chart.umd.min.js    #   Chart.js 4.4.9
-│   ├── d3.v7.min.js        #   D3.js 7.9.0
 │   ├── three.min.js        #   Three.js 0.145.0
 │   └── OrbitControls.js    #   Three.js orbit camera controls
 │
 ├── tests/
-│   └── run-tests.js        # Unit tests for the statics solver (Node.js)
+│   └── run-tests.js        # Unit tests (Node.js): solver, determinacy, practice generator, models, file format, deploy integrity
 │
-├── models/                 # Example model files (.json)
+├── tools/
+│   ├── build-models-data.js  # Generates models/models-data.js from models/*.json
+│   └── check-deploy.js       # Pre-deploy check and list of files to upload
+│
+├── models/                 # Example models (.json, format v2) and embedded copy (models-data.js)
 │
 ├── logo.svg                # Application logotype
 ├── icon-192.png            # PWA icon (192 × 192 px)
@@ -227,6 +258,16 @@ npx serve .
 
 Navigate to `http://localhost:8000` in a web browser to launch the application.
 
+### Deploying to a Server
+
+Before uploading, run the deploy check. It verifies that every file loaded by `index.html` is listed in the Service Worker cache (`sw.js`) and exists on disk — a single missing file prevents the Service Worker from installing — and prints the complete list of files to upload:
+
+```bash
+node tools/check-deploy.js --list
+```
+
+Upload the listed files preserving the folder structure (including `vendor/` and `models/`). After changing any file, increase `CACHE_NAME` in `sw.js` so that installed clients receive the update. After editing or adding an example model in `models/`, regenerate the embedded copy with `node tools/build-models-data.js`.
+
 ### Installation as a Progressive Web App
 
 On browsers supporting the PWA specification (Chromium-based browsers, Firefox, Safari on iOS), the application may be installed to the device home screen or desktop via the browser's **"Install"** or **"Add to Home Screen"** functionality, enabling offline access.
@@ -252,7 +293,8 @@ On browsers supporting the PWA specification (Chromium-based browsers, Firefox, 
 - **Internal force distributions** (axial force *N*, shear force *V*, bending moment *M*, torsional moment *T*) are obtained through numerical integration of the applied loading along the beam axis.
 - **Elastic deformation** is computed by double integration of the bending moment diagram in accordance with the Euler–Bernoulli beam theory, utilising the specified values of *E* (modulus of elasticity) and *I* (second moment of area).
 - The **three-dimensional elastic curve** provides a simultaneous representation of flexural (vertical) and torsional (lateral) deformations.
-- **Sign convention:** positive distributed-load magnitudes act downward; negative magnitudes represent upward (uplift) loading and are fully accounted for in reactions, shear, moment, and deflection computations.
+- **Sign convention (user interface):** distributed-load intensity *q* is entered and displayed as positive **downward**; point loads are entered with a positive magnitude and an angle measured clockwise from the horizontal (90° = downward); concentrated moments (couples) are positive **clockwise**. Internal forces: *N* > 0 tension, *V* > 0 downward on the right face of the left segment, *M* > 0 sagging (bottom fibres in tension; drawn below the axis in the BMD), *T* > 0 torque vector pointing out of the cut face.
+- **Data file convention:** in the JSON file, distributed-load magnitudes are stored with the opposite sign (negative = downward), as in earlier versions, so existing files open unchanged.
 
 ---
 
@@ -264,7 +306,7 @@ The statics solver (support reactions, shear/moment functions, elastic curve, st
 node tests/run-tests.js
 ```
 
-The suite validates classical closed-form solutions (e.g. *R = P/2*, *M = wL²/2*, *δ = 5wL⁴/384EI*) including upward-load sign handling and Gerber (hinged) system stability rules.
+The suite validates classical closed-form solutions (e.g. *R = Pb/L*, *M = wL²/2*, *M*max *= w₀L²/9√3*, *δ = PL³/3EI*) for simple, cantilever, overhanging and single- and multi-hinge Gerber beams, axial-force and torsion signs, the statical-determinacy classification, the method-of-sections equilibrium, the practice problem generator (always solvable, reproducible by seed), and each example model against its stored expected reactions and extreme moments. It also checks that the solver performs no drawing, that the model file format round-trips without loss (and still reads version 1 files), that the example models are valid, and that the deploy file lists are consistent.
 
 ---
 

@@ -1,60 +1,60 @@
 // common/draw-loads.js
 
+const CONCENTRATED_LOAD_LENGTH = 50;
+
+/**
+ * Tekil yük okunun uç noktalarını verir. Ok her zaman kirişe dışarıdan "iter":
+ * ucu kiriş yüzeyine değer, gövdesi kuvvetin geldiği tarafta kalır; böylece
+ * hiçbir açıda kiriş gövdesini kesmez. Aşağı bileşenli kuvvet üst yüzeye,
+ * yukarı bileşenli kuvvet alt yüzeye oturur.
+ * @param {object} load - { x, y (kiriş üst yüzeyi), magnitude, angle (tuval açısı, rad) }
+ * @param {number} beamHeight - Kiriş yüksekliği (px)
+ */
+function getConcentratedLoadArrow(load, beamHeight) {
+    const { x, y, magnitude, angle = Math.PI / 2 } = load;
+    const sign = (magnitude === undefined || magnitude === null || magnitude >= 0) ? 1 : -1;
+    // Kuvvetin tuvaldeki yön birim vektörü (y aşağı pozitif)
+    const fx = sign * Math.cos(angle);
+    const fy = sign * Math.sin(angle);
+    const endX = x;
+    const endY = (fy < -1e-9) ? y + beamHeight : y;
+    return {
+        startX: endX - CONCENTRATED_LOAD_LENGTH * fx,
+        startY: endY - CONCENTRATED_LOAD_LENGTH * fy,
+        endX, endY,
+        below: endY !== y
+    };
+}
+
 function drawConcentratedLoad(context, load, isPreview = false) {
     if (isPreview && load.magnitude === undefined) {
         return;
     }
-    
-    const { x, y, magnitude, angle = Math.PI / 2 } = load;
-    
+
     context.save();
     context.strokeStyle = isPreview ? COLORS.PREVIEW : COLORS.LOAD;
     context.fillStyle = isPreview ? COLORS.PREVIEW : COLORS.LOAD;
     context.lineWidth = 2;
 
-    const lineLength = 50;
-    let startX, startY, endX, endY, effectiveAngle;
+    const { startX, startY, endX, endY, below } = getConcentratedLoadArrow(load, getGridSize());
 
-    const mag = (magnitude === undefined || magnitude === null || magnitude >= 0) ? 1 : -1;
+    // SCD tepkileriyle aynı stil: kalın gövde + dolu üçgen uç
+    drawFilledArrow(context, startX, startY, endX, endY, isPreview ? COLORS.PREVIEW : COLORS.LOAD);
 
-    if (mag >= 0) {
-        startX = x;
-        startY = y;
-        endX = x + lineLength * Math.cos(angle);
-        endY = y + lineLength * Math.sin(angle);
-        effectiveAngle = angle;
-    } else {
-        startX = x + lineLength * Math.cos(angle);
-        startY = y + lineLength * Math.sin(angle);
-        endX = x;
-        endY = y;
-        effectiveAngle = angle + Math.PI;
-    }
-    
-    context.beginPath();
-    context.moveTo(startX, startY);
-    context.lineTo(endX, endY);
-    context.stroke();
-
-    context.save();
-    context.translate(endX, endY);
-    context.rotate(effectiveAngle);
-    context.beginPath();
-    context.moveTo(0, 0);
-    context.lineTo(-10, -5);
-    context.moveTo(0, 0);
-    context.lineTo(-10, 5);
-    context.stroke();
-    context.restore();
-    
     if (!isPreview) {
         context.font = '12px Arial';
-        context.textAlign = 'center';
-        context.textBaseline = 'bottom';
-        const textX = (startX + endX) / 2;
-        const topY = Math.min(startY, endY);
-        const textY = topY - 5;
-        context.fillText(Math.abs(magnitude).toFixed(1) + " kN", textX, textY);
+        const text = Math.abs(load.magnitude).toFixed(1) + " kN";
+        if (below) {
+            // Kirişin altındaki ok: etiket kuyruğun dış yanında; ölçü çizgisiyle ve okun gövdesiyle çakışmaz
+            const leansLeft = startX < endX - 1;
+            context.textAlign = leansLeft ? 'right' : 'left';
+            context.textBaseline = 'middle';
+            context.fillText(text, startX + (leansLeft ? -8 : 8), startY - 6);
+        } else {
+            context.textAlign = 'center';
+            context.textBaseline = 'bottom';
+            context.fillText(text, startX, startY - 5);
+        }
     }
     
     context.restore();
@@ -174,7 +174,7 @@ function drawTrapezoidalLoad(context, x1, x2, y, mag1, mag2, isPreview = false) 
 
 function drawConcentratedMoment(context, moment, color = COLORS.LOAD, isPreview = false) {
     const { x, y, magnitude } = moment;
-    const radius = 20;
+    const radius = 22;
     const isClockwise = magnitude < 0;
 
     context.save();
@@ -184,33 +184,13 @@ function drawConcentratedMoment(context, moment, color = COLORS.LOAD, isPreview 
     context.font = '12px Arial';
     context.textAlign = 'center';
 
-    context.beginPath();
+    // SCD tepkileriyle aynı stil: kalın yay + dolu üçgen uç (yay geometrisi ve yön değişmedi)
+    const arcColor = isPreview ? COLORS.PREVIEW : color;
     if (isClockwise) {
-        context.arc(x, y, radius, Math.PI * -0.4, Math.PI * 0.6, true);
+        drawFilledArcArrow(context, x, y, radius, Math.PI * -0.4, Math.PI * -1.4, true, arcColor);
     } else {
-        context.arc(x, y, radius, Math.PI * 0.4, Math.PI * -0.6, false);
+        drawFilledArcArrow(context, x, y, radius, Math.PI * 0.4, Math.PI * 1.4, false, arcColor);
     }
-    context.stroke();
-
-    context.beginPath();
-    if (isClockwise) {
-        const angle = Math.PI * 0.6;
-        const arrowX = x + radius * Math.cos(angle);
-        const arrowY = y + radius * Math.sin(angle);
-        context.moveTo(arrowX, arrowY);
-        context.lineTo(arrowX - 8, arrowY + 5);
-        context.moveTo(arrowX, arrowY);
-        context.lineTo(arrowX - 2, arrowY - 8);
-    } else {
-        const angle = Math.PI * -0.6;
-        const arrowX = x + radius * Math.cos(angle);
-        const arrowY = y + radius * Math.sin(angle);
-        context.moveTo(arrowX, arrowY);
-        context.lineTo(arrowX - 8, arrowY - 5);
-        context.moveTo(arrowX, arrowY);
-        context.lineTo(arrowX - 2, arrowY + 8);
-    }
-    context.stroke();
     
     context.fillText(Math.abs(magnitude).toFixed(2) + " kNm", x, y - radius - 5);
     context.beginPath();

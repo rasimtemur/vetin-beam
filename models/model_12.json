@@ -1,0 +1,70 @@
+{
+  "format": "vetin-beam",
+  "version": 2,
+  "meta": {
+    "title": {
+      "tr": "Eğik tekil yük",
+      "en": "Inclined point load"
+    },
+    "objective": {
+      "tr": "Yükü bileşenlerine ayırın: düşey bileşen V ve M'yi, yatay bileşen N'yi oluşturur.",
+      "en": "Resolve the load into components: the vertical part creates V and M, the horizontal part creates N."
+    },
+    "level": "intermediate",
+    "order": 8
+  },
+  "units": {
+    "length": "m",
+    "force": "kN",
+    "moment": "kNm",
+    "distributedLoad": "kN/m",
+    "angle": "rad"
+  },
+  "beam": {
+    "length": 5
+  },
+  "supports": [
+    {
+      "type": "pin-support",
+      "x": 0
+    },
+    {
+      "type": "roller-support",
+      "x": 5
+    }
+  ],
+  "hinges": [],
+  "concentratedLoads": [
+    {
+      "x": 2,
+      "magnitude": 10,
+      "angle": 1.0471975511965976
+    }
+  ],
+  "distributedLoads": [],
+  "trapezoidalLoads": [],
+  "concentratedMoments": [],
+  "torsionMoments": [],
+  "gridSettings": {
+    "metersPerGrid": 0.1,
+    "kNPerGrid": 1,
+    "gridSize": 20
+  },
+  "expected": {
+    "reactions": [
+      {
+        "x": 0,
+        "Fy": 5.196152,
+        "Fx": -5
+      },
+      {
+        "x": 5,
+        "Fy": 3.464102
+      }
+    ],
+    "Mmax": 10.392305,
+    "Mmin": 0,
+    "Vmax": 5.196152,
+    "Vmin": -3.464102
+  }
+}

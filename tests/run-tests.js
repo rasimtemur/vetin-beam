@@ -42,28 +42,27 @@ const sandbox = {
     getMetersPerGrid: () => 0.1,
     getKNPerGrid: () => 2,
     getConversionFunctions: () => ({ toMeters: (px) => px / 10, toPixels: (m) => m * 10 }),
-    // DOM / çizim stub'ları (testlerde çağrılmazlar)
-    document: { documentElement: { lang: 'en' }, getElementById: () => null },
-    translations: { en: { diagramAxes: {} } },
-    Chart: function () { this.destroy = () => {}; },
-    chartAlignmentPlugin: {},
-    upsertLineChart: () => null,
-    drawFreeBodyDiagram: () => {},
-    drawDiagrams: () => {},
+    // Hesap katmanı çizim yapmamalı: çizim fonksiyonları çağrılırsa test düşer.
+    // document, Chart, translations bilerek tanımlı değil (erişim ReferenceError verir).
+    drawFreeBodyDiagram: () => { throw new Error('calculations.js çizim yaptı (drawFreeBodyDiagram)'); },
+    drawDiagrams: () => { throw new Error('calculations.js çizim yaptı (drawDiagrams)'); },
+    upsertLineChart: () => { throw new Error('calculations.js çizim yaptı (upsertLineChart)'); },
     showCalcWarning: () => {},
 };
 sandbox.globalThis = sandbox;
 const context = vm.createContext(sandbox);
 
-const source = fs.readFileSync(path.join(__dirname, '..', 'calculations.js'), 'utf8');
-vm.runInContext(source, context, { filename: 'calculations.js' });
-// Üst düzey const ile tanımlı fonksiyonları dışarı al
+const load = (f) => vm.runInContext(fs.readFileSync(path.join(__dirname, '..', f), 'utf8'), context, { filename: f });
+load('solver.js');
+load('calculations.js');
+// model.js'in saf dönüştürücüleri (serializeModel / deserializeModel) de aynı bağlamda test edilir
+load('model.js');
 vm.runInContext(
-    'globalThis.__fns = { solveIsostaticPart, getShearAt, getMomentAt, getDistributedLoadAt, getElasticCurvePoints, isSystemStable, calculateAxialReaction };',
+    'globalThis.__fns = { BeamSolver, isSystemStable, getSystemStatus, calculateAxialReaction, analyzeBeam, getCurrentModelMeters, serializeModel, deserializeModel };',
     context
 );
 const fns = sandbox.__fns;
-const toMeters = (px) => px / 10;
+const S = fns.BeamSolver;
 
 // --- Mini test çerçevesi ---
 let passed = 0, failed = 0;
@@ -86,150 +85,417 @@ function resetState() {
     sandbox.concentratedMoments = [];
     sandbox.torsionMoments = [];
 }
-const emptyLoads = () => ({ concentrated: [], distributed: [], trapezoidal: [], moments: [] });
+
+// Metre cinsinden model kurucu: sup = [['pin-support', 0], ...]
+const model = (L, sup, extra = {}) => Object.assign({
+    beam: { length: L }, supports: sup.map(([type, x]) => ({ type, x })), hinges: [],
+    concentratedLoads: [], distributedLoads: [], trapezoidalLoads: [], concentratedMoments: [], torsionMoments: []
+}, extra);
+const P = (x, F, deg = 90) => ({ x, magnitude: F, angle: deg * Math.PI / 180 });   // 90° = aşağı
+const R = (res, x) => res.reactions.find(r => Math.abs(r.x - x) < 1e-9);
+const EI = 200 * 100000 * 0.01; // varsayılan E=200 GPa, I=100000 cm⁴ → kNm²
 
 // =====================================================================
-console.log('\n1) Basit kiriş, açıklık ortasında tekil yük (L=10 m, P=10 kN)');
+console.log('\n1) Basit kiriş, tekil yük (L=10, P=10 kN @3 m)');
 {
-    resetState();
-    const partBeam = { startX: 0, endX: 100 };
-    const partSupports = [{ type: 'pin-support', x: 0 }, { type: 'roller-support', x: 100 }];
-    const loads = emptyLoads();
-    loads.concentrated.push({ x: 50, magnitude: 10, angle: Math.PI / 2 });
-    const r = fns.solveIsostaticPart(partBeam, partSupports, loads);
-    approx(r.allReactions.find(x => x.x === 0).magnitude, 5, 1e-9, 'Sol mesnet R = P/2 = 5 kN');
-    approx(r.allReactions.find(x => x.x === 100).magnitude, 5, 1e-9, 'Sağ mesnet R = P/2 = 5 kN');
+    const r = S.analyze(model(10, [['pin-support', 0], ['roller-support', 10]], { concentratedLoads: [P(3, 10)] }));
+    check(r.status.kind === 'isostatic' && r.solved, 'İzostatik ve çözüldü');
+    approx(R(r, 0).Fy, 7, 1e-9, 'A_y = 7 kN');
+    approx(R(r, 10).Fy, 3, 1e-9, 'B_y = 3 kN');
+    approx(r.V(3, -1), 7, 1e-9, 'V(3⁻) = 7');
+    approx(r.V(3, 1), -3, 1e-9, 'V(3⁺) = −3 (tekil yükte sıçrama)');
+    approx(r.extremes.Mmax.value, 21, 1e-9, 'M_max = Pab/L = 21 kNm');
+    approx(r.deflectionAt(3), -10 * 3 * 3 * 7 * 7 / (3 * EI * 10) * 1000, 1e-6, 'δ(3) = −Pa²b²/(3EIL)');
 }
 
 // =====================================================================
-console.log('\n2) Konsol kiriş, düzgün yayılı yük (L=10 m, w=2 kN/m aşağı)');
+console.log('\n2) Konsol, düzgün yayılı yük (w=2 kN/m aşağı → magnitude −2, L=10)');
 {
-    resetState();
-    const partBeam = { startX: 0, endX: 100 };
-    const partSupports = [{ type: 'fixed-support', x: 0 }];
-    const loads = emptyLoads();
-    loads.distributed.push({ startX: 0, endX: 100, magnitude: 2 });
-    const r = fns.solveIsostaticPart(partBeam, partSupports, loads);
-    approx(r.allReactions[0].magnitude, 20, 1e-9, 'Düşey reaksiyon R = wL = 20 kN (yukarı)');
-    approx(r.M_fixed, 100, 1e-9, 'Ankastre moment M = wL²/2 = 100 kNm');
+    const r = S.analyze(model(10, [['fixed-support', 0]], { distributedLoads: [{ startX: 0, endX: 10, magnitude: -2 }] }));
+    approx(R(r, 0).Fy, 20, 1e-9, 'A_y = wL = 20 kN');
+    approx(R(r, 0).Mz, 100, 1e-9, 'M_A = +100 kNm (saat yönünün tersi)');
+    approx(r.M(0, 1), -100, 1e-9, 'M(0⁺) = −wL²/2');
+    approx(r.deflectionAt(10), -2 * 1e4 / (8 * EI) * 1000, 1e-3, 'δ(L) = −wL⁴/8EI');
+    const up = S.analyze(model(10, [['fixed-support', 0]], { distributedLoads: [{ startX: 0, endX: 10, magnitude: 2 }] }));
+    approx(R(up, 0).Fy, -20, 1e-9, 'Yukarı yük (+2): A_y = −20 kN');
 }
 
 // =====================================================================
-console.log('\n3) Konsol kiriş, YUKARI yönlü yayılı yük (w=-2 kN/m) — işaret düzeltmesi');
+console.log('\n3) Sağdan ankastre konsol, uçta P=10 kN (L=4)');
 {
-    resetState();
-    const partBeam = { startX: 0, endX: 100 };
-    const partSupports = [{ type: 'fixed-support', x: 0 }];
-    const loads = emptyLoads();
-    loads.distributed.push({ startX: 0, endX: 100, magnitude: -2 });
-    const r = fns.solveIsostaticPart(partBeam, partSupports, loads);
-    approx(r.allReactions[0].magnitude, -20, 1e-9, 'Reaksiyon R = -20 kN (aşağı) — yukarı yük doğru işlendi');
-    approx(r.M_fixed, -100, 1e-9, 'Ankastre moment M = -100 kNm');
+    const r = S.analyze(model(4, [['fixed-support', 4]], { concentratedLoads: [P(0, 10)] }));
+    approx(R(r, 4).Fy, 10, 1e-9, 'B_y = 10');
+    approx(R(r, 4).Mz, -40, 1e-9, 'M_B = −40 (saat yönü)');
+    approx(r.M(4, -1), -40, 1e-9, 'M(L⁻) = −PL');
+    approx(r.deflectionAt(0), -10 * 64 / (3 * EI) * 1000, 1e-6, 'δ(0) = −PL³/3EI');
 }
 
 // =====================================================================
-console.log('\n4) Basit kiriş, üçgen yük (0→3 kN/m, L=6 m)');
+console.log('\n4) Üçgen yük (0→6 kN/m, L=10): V=0 noktasında M_max');
 {
-    resetState();
-    const partBeam = { startX: 0, endX: 60 };
-    const partSupports = [{ type: 'pin-support', x: 0 }, { type: 'roller-support', x: 60 }];
-    const loads = emptyLoads();
-    loads.trapezoidal.push({ startX: 0, endX: 60, startMagnitude: 0, endMagnitude: 3 });
-    const r = fns.solveIsostaticPart(partBeam, partSupports, loads);
-    // W = 9 kN, ağırlık merkezi x = 4 m → R_sağ = 9·4/6 = 6, R_sol = 3
-    approx(r.allReactions.find(x => x.x === 0).magnitude, 3, 1e-9, 'Sol mesnet R = 3 kN');
-    approx(r.allReactions.find(x => x.x === 60).magnitude, 6, 1e-9, 'Sağ mesnet R = 6 kN');
+    const r = S.analyze(model(10, [['pin-support', 0], ['roller-support', 10]], { trapezoidalLoads: [{ startX: 0, endX: 10, startMagnitude: 0, endMagnitude: -6 }] }));
+    approx(R(r, 0).Fy, 10, 1e-9, 'A_y = 10');
+    approx(R(r, 10).Fy, 20, 1e-9, 'B_y = 20');
+    const z = r.critical.find(c => c.kind === 'zeroShear');
+    check(!!z, 'V = 0 noktası kritik noktalarda');
+    approx(z.x, 10 / Math.sqrt(3), 1e-9, 'x(V=0) = L/√3');
+    approx(r.extremes.Mmax.value, 6 * 100 / (9 * Math.sqrt(3)), 1e-9, 'M_max = w₀L²/(9√3)');
+    check(r.segments[0].V.global.length === 3 && Math.abs(r.segments[0].V.global[2] + 0.3) < 1e-9, 'V(x) = 10 − 0.3x² (bölge ifadesi)');
 }
 
 // =====================================================================
-console.log('\n5) Kesme ve moment fonksiyonları (basit kiriş + UDL, w=2, L=10)');
+console.log('\n5) Tekil moment (M=10 kNm saat yönü @5, L=10)');
 {
-    resetState();
-    sandbox.supports = [{ type: 'pin-support', x: 0 }, { type: 'roller-support', x: 100 }];
-    sandbox.distributedLoads = [{ startX: 0, endX: 100, magnitude: 2 }];
-    const reactions = [{ x: 0, magnitude: 10 }, { x: 100, magnitude: 10 }];
-    approx(fns.getShearAt(0.001, reactions, toMeters), 10, 0.01, 'V(0⁺) = +10 kN');
-    approx(fns.getShearAt(5, reactions, toMeters), 0, 1e-9, 'V(L/2) = 0');
-    approx(fns.getShearAt(9.999, reactions, toMeters), -10, 0.01, 'V(L⁻) = -10 kN');
-    approx(fns.getMomentAt(5, reactions, 0, toMeters), 25, 1e-9, 'M(L/2) = wL²/8 = 25 kNm');
-    approx(fns.getMomentAt(10, reactions, 0, toMeters), 0, 1e-9, 'M(L) = 0');
+    const r = S.analyze(model(10, [['pin-support', 0], ['roller-support', 10]], { concentratedMoments: [{ x: 5, magnitude: 10 }] }));
+    approx(R(r, 0).Fy, -1, 1e-9, 'A_y = −M/L');
+    approx(r.M(5, -1), -5, 1e-9, 'M(5⁻) = −5');
+    approx(r.M(5, 1), 5, 1e-9, 'M(5⁺) = +5 (sıçrama)');
 }
 
 // =====================================================================
-console.log('\n6) Yukarı yönlü UDL ile kesme/moment işaretleri (w=-2, L=10)');
+console.log('\n6) Çıkmalı kiriş (A=0, B=6, uç P=10 @8)');
 {
-    resetState();
-    sandbox.supports = [{ type: 'pin-support', x: 0 }, { type: 'roller-support', x: 100 }];
-    sandbox.distributedLoads = [{ startX: 0, endX: 100, magnitude: -2 }];
-    const reactions = [{ x: 0, magnitude: -10 }, { x: 100, magnitude: -10 }];
-    approx(fns.getShearAt(0.001, reactions, toMeters), -10, 0.01, 'V(0⁺) = -10 kN (ters işaret)');
-    approx(fns.getMomentAt(5, reactions, 0, toMeters), -25, 1e-9, 'M(L/2) = -25 kNm (ters işaret)');
+    const r = S.analyze(model(8, [['pin-support', 0], ['roller-support', 6]], { concentratedLoads: [P(8, 10)] }));
+    approx(R(r, 0).Fy, -10 / 3, 1e-9, 'A_y = −3.333');
+    approx(R(r, 6).Fy, 40 / 3, 1e-9, 'B_y = 13.333');
+    approx(r.M(6), -20, 1e-9, 'M_B = −20');
+    approx(r.deflectionAt(8), -10 * 4 * 8 / (3 * EI) * 1000, 1e-6, 'Uç sehimi −Pa²(L+a)/3EI');
 }
 
 // =====================================================================
-console.log('\n7) Tekil moment yükü (M=10 kNm @ L/2, basit kiriş L=10)');
+console.log('\n7) Eksenel kuvvet işareti: çekme +');
 {
-    resetState();
-    const partBeam = { startX: 0, endX: 100 };
-    const partSupports = [{ type: 'pin-support', x: 0 }, { type: 'roller-support', x: 100 }];
-    const loads = emptyLoads();
-    loads.moments.push({ x: 50, magnitude: 10 });
-    const r = fns.solveIsostaticPart(partBeam, partSupports, loads);
-    const rl = r.allReactions.find(x => x.x === 0).magnitude;
-    const rr = r.allReactions.find(x => x.x === 100).magnitude;
-    approx(rl, -1, 1e-9, 'Sol mesnet R = -M/L = -1 kN');
-    approx(rr, 1, 1e-9, 'Sağ mesnet R = +M/L = +1 kN');
-    approx(rl + rr, 0, 1e-9, 'ΣF = 0 (denge)');
-    sandbox.concentratedMoments = [{ x: 50, magnitude: 10 }];
-    sandbox.supports = partSupports;
-    approx(fns.getMomentAt(4.999, r.allReactions, 0, toMeters), -5, 0.01, 'M(L/2⁻) ≈ -5 kNm');
-    approx(fns.getMomentAt(5.001, r.allReactions, 0, toMeters), 5, 0.01, 'M(L/2⁺) ≈ +5 kNm (10 kNm sıçrama)');
+    const r = S.analyze(model(10, [['pin-support', 0], ['roller-support', 10]], { concentratedLoads: [P(5, 10, 0)] }));
+    approx(r.N(2.5), 10, 1e-9, 'Sabit mesnet solda, sağa 10 kN → N(0..5) = +10 (çekme)');
+    approx(R(r, 0).Fx, -10, 1e-9, 'A_x = −10 kN');
+    const r2 = S.analyze(model(10, [['roller-support', 0], ['pin-support', 10]], { concentratedLoads: [P(5, 10, 0)] }));
+    approx(r2.N(7.5), -10, 1e-9, 'Sabit mesnet sağda → N(5..10) = −10 (basınç)');
+    check(r.axial.points.some(p => p.x > 0 && p.x < 5 && Math.abs(p.y - 10) < 1e-9), 'EKD noktaları +10');
+    approx(S.section(r, 2.5, 'left').N, 10, 1e-9, 'Kesim yöntemi N = diyagram N');
 }
 
 // =====================================================================
-console.log('\n8) Elastik eğri: basit kiriş + UDL orta nokta sehimi (5wL⁴/384EI)');
+console.log('\n8) Burulma işareti');
 {
-    resetState();
-    sandbox.supports = [{ type: 'pin-support', x: 0 }, { type: 'roller-support', x: 100 }];
-    sandbox.distributedLoads = [{ startX: 0, endX: 100, magnitude: 2 }];
-    const reactions = [{ x: 0, magnitude: 10 }, { x: 100, magnitude: 10 }];
-    const points = [];
-    for (let i = 0; i <= 200; i++) points.push(i * 0.05); // 0..10 m, 5 cm adım
-    const curve = fns.getElasticCurvePoints(points, reactions, 0, toMeters, 200, 100000);
-    const mid = curve.find(p => Math.abs(p.x - 5) < 1e-9);
-    // EI = 200e6 kN/m² · 1e-3 m⁴ = 2e5 kNm² → δ = 5·2·10⁴/(384·2e5) m = 1.3021 mm
-    // Uygulama kuralı: aşağı yönlü sehim negatif y (grafikte aşağı çizilir)
-    const expected = -(5 * 2 * Math.pow(10, 4)) / (384 * 200000) * 1000;
-    approx(mid.y, expected, Math.abs(expected) * 0.01, `Orta nokta sehimi ≈ ${expected.toFixed(4)} mm (%1 tolerans)`);
-    const end = curve.find(p => Math.abs(p.x - 10) < 1e-9);
-    approx(end.y, 0, 0.01, 'Mesnette sehim ≈ 0');
+    const r = S.analyze(model(3, [['fixed-support', 0]], { torsionMoments: [{ x: 2, magnitude: 5 }], concentratedLoads: [P(1, 1)] }));
+    approx(r.T(1), 5, 1e-9, 'Ankastre solda, +5 @2 → T(0..2) = +5');
+    approx(r.torsionReaction.Mx, -5, 1e-9, 'Burulma tepkisi −5');
+    const r2 = S.analyze(model(3, [['fixed-support', 3]], { torsionMoments: [{ x: 1, magnitude: 5 }], concentratedLoads: [P(1, 1)] }));
+    approx(r2.T(2), -5, 1e-9, 'Ankastre sağda → T(1..3) = −5');
 }
 
 // =====================================================================
-console.log('\n9) Stabilite kontrolleri');
+console.log('\n9) Gerber: ankastre solda (elastik eğri)');
+{
+    const r = S.analyze(model(8, [['fixed-support', 0], ['roller-support', 8]], { hinges: [{ x: 4 }], distributedLoads: [{ startX: 0, endX: 8, magnitude: -2 }] }));
+    approx(R(r, 8).Fy, 4, 1e-9, 'C_y = 4');
+    approx(R(r, 0).Fy, 12, 1e-9, 'A_y = 12');
+    approx(R(r, 0).Mz, 32, 1e-9, 'M_A = 32');
+    approx(r.M(4, -1), 0, 1e-9, 'Mafsalda M = 0');
+    approx(r.deflectionAt(8), 0, 1e-9, 'Kayıcı mesnette sehim 0');
+    approx(r.deflectionAt(4), -0.74667, 1e-4, 'δ(mafsal) = −0.7467 mm');
+    approx(r.deflectionAt(6), -0.40667, 1e-4, 'δ(6) = −0.4067 mm');
+    const m = S.analyze(model(8, [['roller-support', 0], ['fixed-support', 8]], { hinges: [{ x: 4 }], distributedLoads: [{ startX: 0, endX: 8, magnitude: -2 }] }));
+    approx(m.deflectionAt(0), 0, 1e-9, 'Ayna sistem: kayıcıda sehim 0');
+    approx(m.deflectionAt(4), -0.74667, 1e-4, 'Ayna sistem: δ(mafsal) aynı');
+}
+
+// =====================================================================
+console.log('\n10) Çok mafsallı Gerber');
+{
+    const r = S.analyze(model(4, [['fixed-support', 0], ['fixed-support', 4]], { hinges: [{ x: 1 }, { x: 3 }], concentratedLoads: [P(2, 10)] }));
+    check(r.solved && r.status.kind === 'isostatic', 'İki ankastre + iki mafsal, yatay yük yok → izostatik (düşey sayım r = 4 = 2 + 2)');
+    approx(R(r, 0).Fy, 5, 1e-9, 'A_y = 5');
+    approx(r.M(1, -1), 0, 1e-9, 'Mafsal 1: M = 0');
+    approx(r.M(3, -1), 0, 1e-9, 'Mafsal 2: M = 0');
+    approx(r.deflectionAt(0), 0, 1e-9, 'Ankastrede sehim 0');
+    const r3 = S.analyze(model(10, [['fixed-support', 0], ['roller-support', 5], ['roller-support', 10]], { hinges: [{ x: 3 }, { x: 7 }], distributedLoads: [{ startX: 0, endX: 10, magnitude: -1 }] }));
+    check(r3.solved, 'Ankastre + 2 kayıcı + 2 mafsal çözüldü');
+    approx(r3.V(10, 1), 0, 1e-9, 'Denge: V(L⁺) = 0');
+    approx(r3.M(3, -1), 0, 1e-9, 'M(mafsal 1) = 0');
+    approx(r3.M(7, -1), 0, 1e-9, 'M(mafsal 2) = 0');
+    approx(r3.deflectionAt(5), 0, 1e-9, 'Ara mesnette sehim 0');
+    approx(r3.deflectionAt(10), 0, 1e-9, 'Uç mesnette sehim 0');
+}
+
+// =====================================================================
+console.log('\n10b) Asılı orta parçalı Gerber: elle çözüm (basit kiriş + mafsal kuvvetleri konsollara)');
+{
+    // Orta parça B–F (mafsallar) basit kiriş gibi çözülür; mafsal kuvvetleri ankastre konsollara aktarılır.
+    const cases = [
+        { name: 'model_10 (2 tekil yük + saat yönünde 4 kNm)', L: 4, h1: 1, h2: 3, P: [[1.5, 2], [2.5, 2]], C: [[2, 4]], q: [] },
+        { name: 'yayılı yük tüm boyda', L: 6, h1: 1.5, h2: 4.5, P: [], C: [], q: [[0, 6, 3]] },
+        { name: 'konsollarda da yük', L: 8, h1: 2, h2: 5, P: [[1, 4], [3, 6], [7, 5]], C: [[4, -3]], q: [[5, 8, 2]] }
+    ];
+    cases.forEach(cs => {
+        const r = S.analyze(model(cs.L, [['fixed-support', 0], ['fixed-support', cs.L]], {
+            hinges: [{ x: cs.h1 }, { x: cs.h2 }],
+            concentratedLoads: cs.P.map(([x, F]) => P(x, F)),
+            concentratedMoments: cs.C.map(([x, m]) => ({ x, magnitude: m })),
+            distributedLoads: cs.q.map(([s, e, w]) => ({ startX: s, endX: e, magnitude: -w }))
+        }));
+        // Elle: orta parça (h1–h2) — ΣM_h1 = 0 (↺ +, aşağı yük +F) → R2, ΣFy → R1
+        const a = cs.h1, b = cs.h2, l = b - a;
+        let F = 0, Mh1 = 0;   // orta parçadaki aşağı yükler ve h1'e göre saat yönü momentleri
+        cs.P.forEach(([x, f]) => { if (x > a && x < b) { F += f; Mh1 += f * (x - a); } });
+        cs.C.forEach(([x, m]) => { if (x > a && x < b) Mh1 += m; });
+        cs.q.forEach(([s, e, w]) => { const s2 = Math.max(s, a), e2 = Math.min(e, b); if (e2 > s2) { F += w * (e2 - s2); Mh1 += w * (e2 - s2) * ((s2 + e2) / 2 - a); } });
+        const R2 = Mh1 / l, R1 = F - R2;
+        // Sol konsol (0–h1): mafsalda aşağı R1 + kendi yükleri
+        let FA = R1, MA = R1 * a;
+        cs.P.forEach(([x, f]) => { if (x < a) { FA += f; MA += f * x; } });
+        cs.C.forEach(([x, m]) => { if (x < a) MA += m; });
+        cs.q.forEach(([s, e, w]) => { const e2 = Math.min(e, a); if (e2 > s) { FA += w * (e2 - s); MA += w * (e2 - s) * (s + e2) / 2; } });
+        // Sağ konsol (h2–L)
+        let FG = R2;
+        cs.P.forEach(([x, f]) => { if (x > b) FG += f; });
+        cs.q.forEach(([s, e, w]) => { const s2 = Math.max(s, b); if (e > s2) FG += w * (e - s2); });
+        check(r.solved && r.status.kind === 'isostatic', `${cs.name}: izostatik ve çözüldü`);
+        approx(r.hingeForces[0].V, R1, 1e-9, `${cs.name}: sol mafsaldaki kesme = orta parça sol tepkisi (${R1.toFixed(3)} kN)`);
+        approx(R(r, 0).Fy, FA, 1e-9, `${cs.name}: A_y (sol konsol)`);
+        approx(R(r, 0).Mz, MA, 1e-9, `${cs.name}: M_A (sol konsol, ↺ +)`);
+        approx(R(r, cs.L).Fy, FG, 1e-9, `${cs.name}: G_y (sağ konsol)`);
+        approx(r.M(a, -1), 0, 1e-9, `${cs.name}: M(mafsal 1) = 0`);
+        approx(r.M(b, -1), 0, 1e-9, `${cs.name}: M(mafsal 2) = 0`);
+    });
+}
+
+// =====================================================================
+console.log('\n10c) Gerber parça parça çözüm (gerberParts): önce asılı parça, sonuçlar tüm sistemle aynı');
+{
+    const { readModels } = require(path.join(__dirname, '..', 'tools', 'build-models-data.js'));
+    const models = readModels();
+    const extra = {
+        'ankastre–mafsal–kayıcı (yayılı)': model(8, [['fixed-support', 0], ['roller-support', 8]], { hinges: [{ x: 4 }], distributedLoads: [{ startX: 0, endX: 8, magnitude: -2 }] }),
+        'ankastre + 2 kayıcı + 2 mafsal': model(10, [['fixed-support', 0], ['roller-support', 5], ['roller-support', 10]], { hinges: [{ x: 3 }, { x: 7 }], distributedLoads: [{ startX: 0, endX: 10, magnitude: -1 }], concentratedLoads: [P(8.5, 4)] }),
+        'iki ankastre + 2 mafsal, konsollarda yük': model(8, [['fixed-support', 0], ['fixed-support', 8]], { hinges: [{ x: 2 }, { x: 5 }], concentratedLoads: [P(1, 4), P(3, 6), P(7, 5)], concentratedMoments: [{ x: 4, magnitude: -3 }], distributedLoads: [{ startX: 5, endX: 8, magnitude: -2 }] })
+    };
+    const cases = Object.entries(models).filter(([, m]) => (m.hinges || []).length).concat(Object.entries(extra));
+    cases.forEach(([name, m]) => {
+        const r = S.analyze(m);
+        if (!r.solved) return;
+        const g = S.gerberParts(r);
+        check(!!g && g.parts.length === r.normalized.hinges.length + 1, `${name}: kiriş ${r.normalized.hinges.length + 1} parçaya ayrıldı`);
+        if (!g) return;
+        check(g.parts[0].role === 'suspended', `${name}: ilk çözülen parça asılı parça (${g.parts[0].from}–${g.parts[0].to})`);
+        const sameReactions = g.parts.every(prt => prt.unknowns.every(u => {
+            if (u.hinge !== undefined) return true;
+            const rr = R(r, u.x);
+            return rr && Math.abs((u.comp === 'Mz' ? rr.Mz : rr.Fy) - u.value) < 1e-9;
+        }));
+        check(sameReactions, `${name}: parça parça bulunan tepkiler tüm sistemin çözümüyle aynı`);
+        check(g.hingeForces.every((f, i) => Math.abs(f + r.V(r.normalized.hinges[i].x, -1)) < 1e-9), `${name}: mafsal kuvvetleri = −V(mafsal⁻)`);
+        // Her parçanın denklemleri sayısal olarak sağlanıyor
+        const ok = g.parts.every(prt => prt.equations.every(eq => {
+            const sum = eq.unknownTerms.reduce((acc, t) => acc + t.coef * prt.unknowns.find(u => u.key === t.key).value, 0) + eq.loadTerms.reduce((acc, t) => acc + t.value, 0);
+            return Math.abs(sum) < 1e-9;
+        }));
+        check(ok, `${name}: her parçanın ΣM ve ΣFy denklemleri sağlanıyor`);
+    });
+    const m10 = S.gerberParts(S.analyze(models.model_10));
+    approx(m10.parts[0].unknowns.find(u => u.name === 'V_B').value, 0, 1e-9, 'model_10: orta parça B_y (mafsal B) = 0');
+    approx(m10.parts[0].unknowns.find(u => u.name === 'V_F').value, 4, 1e-9, 'model_10: orta parça F_y (mafsal F) = 4 kN');
+}
+
+// =====================================================================
+console.log('\n11) Statik belirlilik sınıflandırması');
+{
+    const st = (sup, extra) => S.analyze(model(10, sup, Object.assign({ concentratedLoads: [P(3, 10)] }, extra || {}))).status;
+    check(st([['roller-support', 0], ['roller-support', 10]]).reason === 'statusNoHorizontal', 'İki kayıcı mesnet → labil (yatayda tutulmamış)');
+    const pp = st([['pin-support', 0], ['pin-support', 10]]);
+    check(pp.kind === 'isostatic' && pp.solvable && pp.params.vertical, 'İki sabit mesnet, yalnız düşey yük → ΣFx özdeş sağlanır, izostatik');
+    const ppa = S.analyze(model(10, [['pin-support', 0], ['pin-support', 10]], { concentratedLoads: [P(3, 10, 45)] })).status;
+    check(ppa.kind === 'hyperstatic' && !ppa.solvable, 'İki sabit mesnet + eğik yük → çözülemez (N belirsiz)');
+    const fr = st([['fixed-support', 0], ['roller-support', 10]]);
+    check(fr.kind === 'hyperstatic' && fr.params.degree === 1 && !fr.solvable, 'Ankastre + kayıcı → 1. derece hiperstatik');
+    check(st([['pin-support', 5], ['roller-support', 5]]).reason === 'statusCoincidentSupports', 'Aynı noktada iki mesnet → labil');
+    check(st([['pin-support', 0], ['pin-support', 10]], { hinges: [{ x: 4 }] }).reason === 'statusMechanism', 'Sabit–mafsal–sabit → mekanizma');
+    check(st([['fixed-support', 0], ['roller-support', 3]], { hinges: [{ x: 5 }] }).reason === 'statusGeometric', 'Mafsalın sağında mesnet yok → geometrik labil');
+    check(st([['pin-support', 0], ['roller-support', 12]]).reason === 'statusSupportOutside', 'Kiriş dışındaki mesnet reddedilir');
+    check(st([]).reason === 'statusNoSupports', 'Mesnet yok');
+    const hs = S.analyze(model(10, [['pin-support', 0], ['roller-support', 5], ['roller-support', 10]], { hinges: [{ x: 5 }], distributedLoads: [{ startX: 0, endX: 10, magnitude: -2 }] }));
+    check(hs.solved && Math.abs(R(hs, 5).Fy - 10) < 1e-9, 'Mesnet üzerindeki mafsal doğru çözülüyor');
+}
+
+// =====================================================================
+console.log('\n12) Adım adım çözüm ve kesim yöntemi verisi');
+{
+    const r = S.analyze(model(10, [['pin-support', 0], ['roller-support', 10]], { distributedLoads: [{ startX: 2, endX: 6, magnitude: -4 }] }));
+    const eqM = r.equations.find(e => e.kind === 'sumM');
+    check(eqM && eqM.about.name === 'A', 'ΣM_A denklemi A noktasına göre');
+    const w = eqM.loadTerms[0];
+    approx(w.force, -16, 1e-9, 'Yayılı yük bileşkesi W = 16 kN (aşağı)');
+    approx(w.xc, 4, 1e-9, 'Bileşke x = 4 m');
+    approx(R(r, 0).Fy, 9.6, 1e-9, 'A_y = 9.6');
+    approx(r.extremes.Mmax.value, 30.72, 1e-9, 'M_max = 30.72 kNm');
+    approx(r.extremes.Mmax.x, 4.4, 1e-9, 'M_max konumu x = 4.4 m');
+    const left = S.section(r, 3, 'left'), right = S.section(r, 3, 'right');
+    approx(left.V, r.V(3), 1e-9, 'Kesim (sol parça) V = diyagram');
+    approx(left.sumFy, r.V(3), 1e-9, 'Sol parça ΣFy = V');
+    approx(left.sumM, -r.M(3), 1e-9, 'Sol parça ΣM_kesit (saat tersi +) = −M');
+    approx(right.M, left.M, 1e-9, 'Sağ ve sol parça aynı M');
+    approx(right.sumFy, -r.V(3), 1e-9, 'Sağ parça ΣFy = −V');
+}
+
+// =====================================================================
+console.log('\n13) Köprü katmanı (calculations.js): piksel model → çözücü, çizim yapılmadan');
 {
     resetState();
     sandbox.beam = { startX: 0, endX: 100, startY: 0, length: 100 };
     sandbox.supports = [{ type: 'pin-support', x: 0 }, { type: 'roller-support', x: 100 }];
-    check(fns.isSystemStable() === true, 'Sabit + hareketli mesnet → stabil');
-
-    sandbox.supports = [{ type: 'pin-support', x: 0 }, { type: 'pin-support', x: 100 }];
-    sandbox.concentratedLoads = [{ x: 50, magnitude: 10, angle: 0 }]; // yatay yük
-    check(fns.isSystemStable() === false, 'İki sabit mesnet + eksenel yük → hiperstatik (reddedilir)');
-    check(fns.calculateAxialReaction() === null, 'İki yatay tutucu → eksenel reaksiyon belirsiz (null)');
-
-    sandbox.concentratedLoads = [];
+    sandbox.concentratedLoads = [{ x: 50, magnitude: -10, angle: -Math.PI / 2 }];
+    const a = fns.analyzeBeam();   // çizim stub'ları çağrılsaydı burada hata fırlardı
+    check(a.stable === true && a.solution !== null, 'Stabil sistem çözüldü');
+    approx(a.solution.reactions.find(r => r.x === 0).magnitude, 5, 1e-9, 'Sol tepki 5 kN');
+    approx(Math.max(...a.diagrams.momentPoints.map(p => p.y)), 25, 1e-6, 'Maksimum moment PL/4 = 25 kNm');
+    check(a.axial === null && a.torsion === null, 'Eksenel ve burulma yükü yok → diyagram yok');
+    check(fns.isSystemStable() === true, 'isSystemStable: sabit + kayıcı');
+    sandbox.supports = [{ type: 'roller-support', x: 0 }];
+    const b = fns.analyzeBeam();
+    check(b.stable === false && b.solution === null && b.diagrams === null && b.status.kind === 'unstable', 'Labil sistemde çözüm yok, durum bildirilir');
     sandbox.supports = [{ type: 'fixed-support', x: 0 }];
-    check(fns.isSystemStable() === true, 'Konsol kiriş → stabil');
+    sandbox.concentratedLoads = [{ x: 50, magnitude: 10, angle: Math.PI / 2 }];
+    const c = fns.analyzeBeam();
+    approx(c.solution.momentReactions[0].magnitude, 50, 1e-9, 'Ankastre moment tepkisi (piksel konumlu) 50 kNm');
+}
 
-    // Mafsallı sistem: ankastre + mafsal + hareketli (Gerber) → stabil
-    sandbox.supports = [{ type: 'fixed-support', x: 0 }, { type: 'roller-support', x: 100 }];
-    sandbox.hinges = [{ x: 50 }];
-    check(fns.isSystemStable() === true, 'Ankastre + mafsal + hareketli → stabil (Gerber)');
+// =====================================================================
+console.log('\n14) Hazır modeller: denge ve çözülebilirlik');
+{
+    const { readModels } = require(path.join(__dirname, '..', 'tools', 'build-models-data.js'));
+    const models = readModels();
+    Object.entries(models).forEach(([name, data]) => {
+        const r = S.analyze(data);
+        const meta = data.meta || {};
+        check(!!(meta.title && meta.title.tr && meta.title.en && meta.objective && meta.level && meta.order), `${name}: başlık, öğrenme hedefi, seviye ve sıra tanımlı`);
+        if (meta.expectSolvable === false) {
+            check(!r.solved && r.status.kind === data.expected.status, `${name}: beklendiği gibi çözülemez (${r.status.kind}, ${r.status.reason})`);
+            return;
+        }
+        const ok = r.solved && Math.abs(r.V(r.L, 1)) < 1e-6 && Math.abs(r.M(r.L, 1)) < 1e-6 &&
+            r.normalized.hinges.every(h => Math.abs(r.M(h.x, -1)) < 1e-6) &&
+            r.normalized.supports.every(s => Math.abs(r.deflectionAt(s.x)) < 1e-6);
+        check(ok, `${name}: çözüldü, V(L)=M(L)=0, mafsalda M=0, mesnette δ=0`);
+        // Regresyon: dosyadaki beklenen değerler (expected) ile karşılaştırma
+        const e = data.expected;
+        const same = e && e.reactions.every(er => { const rr = R(r, er.x); return rr && Math.abs(rr.Fy - er.Fy) < 1e-5 && (er.Mz === undefined || Math.abs(rr.Mz - er.Mz) < 1e-5) && (er.Fx === undefined || Math.abs(rr.Fx - er.Fx) < 1e-5); }) &&
+            Math.abs(r.extremes.Mmax.value - e.Mmax) < 1e-5 && Math.abs(r.extremes.Mmin.value - e.Mmin) < 1e-5;
+        check(same, `${name}: tepkiler ve M_max/M_min beklenen değerlerle aynı`);
+    });
+}
 
-    // Mafsalın bir tarafında mesnet yok → mekanizma
-    sandbox.supports = [{ type: 'fixed-support', x: 0 }, { type: 'roller-support', x: 30 }];
-    check(fns.isSystemStable() === false, 'Mafsalın sağında mesnet yok → mekanizma (reddedilir)');
+// =====================================================================
+console.log('\n14b) Alıştırma üreteci: tohumlu, her zaman çözülebilir');
+{
+    const src = fs.readFileSync(path.join(__dirname, '..', 'practice.js'), 'utf8').split('// ---------- Alıştırma durumu')[0];
+    vm.runInContext(src + ';globalThis.__gen = generatePracticeModel;', context, { filename: 'practice.js' });
+    const gen = sandbox.__gen;
+    let unsolved = 0;
+    ['basic', 'intermediate', 'advanced'].forEach(l => { for (let i = 0; i < 200; i++) if (!S.analyze(gen(l, 's' + i)).solved) unsolved++; });
+    check(unsolved === 0, '600 rastgele problemin tamamı izostatik ve çözülebilir');
+    check(JSON.stringify(gen('basic', '2024001')) === JSON.stringify(gen('basic', '2024001')), 'Aynı tohum aynı problemi verir');
+    const distinct = new Set(Array.from({ length: 20 }, (_, i) => JSON.stringify(gen('intermediate', 'k' + i)))).size;
+    check(distinct > 5, `Farklı tohumlar farklı problemler verir (${distinct}/20 farklı)`);
+}
+
+// =====================================================================
+console.log('\n15) Hazır modeller: gömülü veri (models-data.js) JSON dosyalarıyla eşleşiyor');
+{
+    // Galeri, file:// ile açılışta da çalışsın diye modelleri models-data.js'ten okur.
+    // Bu dosya JSON'lardan üretilir; bir model değişip yeniden üretilmezse test düşer.
+    const { readModels, buildSource } = require(path.join(__dirname, '..', 'tools', 'build-models-data.js'));
+    const dataPath = path.join(__dirname, '..', 'models', 'models-data.js');
+    const win = {};
+    vm.runInNewContext(fs.readFileSync(dataPath, 'utf8'), { window: win });
+    const fromJson = readModels();
+    check(Object.keys(fromJson).length > 0 && JSON.stringify(win.VETIN_MODELS) === JSON.stringify(fromJson),
+        `models-data.js ${Object.keys(fromJson).length} modelin tamamını içeriyor ve JSON'larla aynı`);
+    check(fs.readFileSync(dataPath, 'utf8').replace(/\r\n/g, '\n') === buildSource(fromJson),
+        'models-data.js güncel (değilse: node tools/build-models-data.js)');
+}
+
+// =====================================================================
+console.log('\n16) Dosya biçimi (model.js): piksel ↔ metre dönüşümü');
+{
+    // Kiriş 100 px'ten başlıyor, ölçek 20 px / 0.1 m = 200 px/m, boy 1200 px = 6 m
+    const state = {
+        beam: { startX: 100, endX: 1300, startY: 190, gridSizeOnCreation: 20, metersPerGridOnCreation: 0.1, length: 1200 },
+        supports: [{ type: 'pin-support', x: 100 }, { type: 'roller-support', x: 900 }],
+        hinges: [{ x: 700 }],
+        concentratedLoads: [{ x: 1300, y: 180, magnitude: -20, angle: 0 }],
+        distributedLoads: [{ startX: 700, endX: 300, magnitude: -4 }],   // ters yönde çizilmiş yük korunmalı
+        trapezoidalLoads: [{ startX: 100, endX: 700, startMagnitude: 0, endMagnitude: -12 }],
+        concentratedMoments: [{ x: 1300, y: 190, magnitude: -10 }],
+        torsionMoments: []
+    };
+    const settings = { metersPerGrid: '0.1', kNPerGrid: '1', gridSize: '20' };
+    const file = fns.serializeModel(state, settings);
+    check(file.version === 2 && file.format === 'vetin-beam', 'Sürüm 2 dosya biçimi');
+    check(file.beam.length === 6 && file.supports[1].x === 4 && file.hinges[0].x === 3, 'Konumlar metre, kiriş başına göre (6 m, 4 m, 3 m)');
+    check(file.distributedLoads[0].startX === 3 && file.distributedLoads[0].endX === 1, 'Yük yönü (başlangıç/bitiş sırası) korunuyor');
+    check(file.gridSettings.gridSize === 20 && !('y' in file.concentratedLoads[0]), 'Izgara ayarları sayı; görünüme özgü y alanı dosyada yok');
+
+    // Farklı bir tuval konumuna yükleyip tekrar kaydetmek aynı dosyayı vermeli
+    const back = fns.deserializeModel(JSON.parse(JSON.stringify(file)), { startX: 300, gridSize: 20, metersPerGrid: 0.1 });
+    check(back.version === 2 && back.state.beam.startX === 300 && back.state.beam.endX === 1500, 'Yeni konumda kiriş 300 → 1500 px');
+    check(back.state.supports[1].x === 1100, 'Mesnet de aynı ölçekle kaydırıldı (4 m → 1100 px)');
+    check(JSON.stringify(fns.serializeModel(back.state, settings)) === JSON.stringify(file), 'Gidiş-dönüş kayıpsız (konumdan bağımsız)');
+
+    // Eski (sürüm 1, piksel) dosyalar okunmaya devam eder
+    const legacy = fns.deserializeModel({ beam: state.beam, supports: state.supports, gridSettings: settings }, { startX: 0, gridSize: 20, metersPerGrid: 0.1 });
+    check(legacy.version === 1 && legacy.state.beam.startX === 100 && legacy.state.hinges.length === 0, 'Sürüm 1 dosya olduğu gibi okunuyor, eksik diziler boş');
+    let threw = false;
+    try { fns.deserializeModel({ version: 2, beam: { length: 0 } }, { startX: 0, gridSize: 20, metersPerGrid: 0.1 }); } catch (e) { threw = true; }
+    check(threw, 'Geçersiz dosya (kiriş boyu 0) reddediliyor');
+}
+
+// =====================================================================
+console.log('\n17) Hazır modeller sürüm 2 (metre) biçiminde ve okunabiliyor');
+{
+    const { readModels } = require(path.join(__dirname, '..', 'tools', 'build-models-data.js'));
+    const models = readModels();
+    const bad = Object.entries(models).filter(([, data]) => {
+        try { return data.version !== 2 || !fns.deserializeModel(data, { startX: 100, gridSize: 20, metersPerGrid: 0.1 }).state.beam; }
+        catch (e) { return true; }
+    }).map(([name]) => name);
+    check(bad.length === 0, `${Object.keys(models).length} hazır model sürüm 2 ve geçerli${bad.length ? ' (sorunlu: ' + bad.join(', ') + ')' : ''}`);
+}
+
+// =====================================================================
+console.log('\n18) Yükleme bütünlüğü (index.html ↔ sw.js ↔ disk)');
+{
+    const { checkDeploy } = require(path.join(__dirname, '..', 'tools', 'check-deploy.js'));
+    const { errors } = checkDeploy();
+    errors.forEach(e => console.error('        ' + e));
+    check(errors.length === 0, 'index.html\'in yüklediği her dosya sw.js önbellek listesinde ve diskte mevcut');
+}
+
+// =====================================================================
+console.log('\n19) Çeviri kapsamı: tüm dillerde öğrenme metinleri çevrilmiş, yer tutucular korunmuş');
+{
+    const ctx = vm.createContext({ document: { documentElement: { lang: 'en' } } });
+    const src = (f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8').replace(/^﻿/, '');
+    vm.runInContext(src('translations.js').replace('const translations', 'var translations'), ctx);
+    vm.runInContext(src('translations-learning.js'), ctx);
+    vm.runInContext(src('translations-i18n.js'), ctx);
+    const T = ctx.translations;
+    const flat = (o, p = '', out = {}) => { for (const [k, v] of Object.entries(o)) { const kk = p ? `${p}.${k}` : k; if (v && typeof v === 'object') flat(v, kk, out); else out[kk] = v; } return out; };
+    const en = flat(T.en);
+    // Öğrenme özelliklerine ait anahtarlar (translations-learning.js ile eklenenler)
+    const learningKeys = ['statusIsostatic', 'statusHyperstatic', 'statusMechanism', 'learningPanelTitle', 'stepsTitle', 'regionsTitle', 'practiceTitle',
+        'cutLeftPart', 'cutRightPart', 'cutEquationsTitle', 'hintExplore', 'signConventionTitle', 'signM', 'stepEquilibriumTitle', 'regionsIntro',
+        'practiceIntro', 'fbSign', 'elasticCurveDiagram', 'elasticCurve3D', 'resultsTitle', 'reactionsHeading', 'cutMethodTitle'];
+    const tokens = (v) => ((v.match(/\{[a-z]+\}/gi) || []).sort().join(',')) + '|' + ((v.match(/<\/?[a-z]+>/gi) || []).sort().join(','));
+    const langs = Object.keys(T).filter(l => l !== 'en');
+    const untranslated = [], brokenTokens = [];
+    langs.forEach(l => {
+        const f = flat(T[l]);
+        learningKeys.forEach(k => { if (l !== 'tl' && f[k] === en[k]) untranslated.push(`${l}.${k}`); });
+        Object.keys(en).forEach(k => { if (typeof f[k] === 'string' && typeof en[k] === 'string' && tokens(f[k]) !== tokens(en[k])) brokenTokens.push(`${l}.${k}`); });
+    });
+    check(untranslated.length === 0, `${langs.length} dilde öğrenme metinleri çevrilmiş${untranslated.length ? ' (çevrilmemiş: ' + untranslated.slice(0, 10).join(', ') + ')' : ''}`);
+    check(brokenTokens.length === 0, `Tüm dillerde {yer tutucu} ve HTML etiketleri korunmuş${brokenTokens.length ? ' (sorunlu: ' + brokenTokens.slice(0, 10).join(', ') + ')' : ''}`);
+    check(langs.every(l => Object.keys(en).every(k => flat(T[l])[k] !== undefined)), 'Hiçbir dilde eksik anahtar yok');
 }
 
 // =====================================================================

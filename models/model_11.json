@@ -1,0 +1,75 @@
+{
+  "format": "vetin-beam",
+  "version": 2,
+  "meta": {
+    "title": {
+      "tr": "Çıkmalı (konsollu) kiriş",
+      "en": "Overhanging beam"
+    },
+    "objective": {
+      "tr": "Çıkma bölgesinde negatif moment oluşur; M'nin sıfır olduğu noktayı bulun.",
+      "en": "Negative moment develops over the overhang; locate the point where M = 0."
+    },
+    "level": "intermediate",
+    "order": 7
+  },
+  "units": {
+    "length": "m",
+    "force": "kN",
+    "moment": "kNm",
+    "distributedLoad": "kN/m",
+    "angle": "rad"
+  },
+  "beam": {
+    "length": 6
+  },
+  "supports": [
+    {
+      "type": "pin-support",
+      "x": 0
+    },
+    {
+      "type": "roller-support",
+      "x": 4
+    }
+  ],
+  "hinges": [],
+  "concentratedLoads": [
+    {
+      "x": 6,
+      "magnitude": 4,
+      "angle": 1.5707963267948966
+    }
+  ],
+  "distributedLoads": [
+    {
+      "startX": 0,
+      "endX": 6,
+      "magnitude": -2
+    }
+  ],
+  "trapezoidalLoads": [],
+  "concentratedMoments": [],
+  "torsionMoments": [],
+  "gridSettings": {
+    "metersPerGrid": 0.1,
+    "kNPerGrid": 1,
+    "gridSize": 20
+  },
+  "expected": {
+    "reactions": [
+      {
+        "x": 0,
+        "Fy": 1
+      },
+      {
+        "x": 4,
+        "Fy": 15
+      }
+    ],
+    "Mmax": 0.25,
+    "Mmin": -12,
+    "Vmax": 8,
+    "Vmin": -7
+  }
+}

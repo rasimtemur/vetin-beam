@@ -1,50 +1,65 @@
 {
+  "format": "vetin-beam",
+  "version": 2,
+  "meta": {
+    "title": {
+      "tr": "Gerber kirişi – üç mesnet",
+      "en": "Gerber beam – three supports"
+    },
+    "objective": {
+      "tr": "Mafsal kuvveti asılı parçadan taşıyıcı parçaya aktarılır.",
+      "en": "The hinge force is transferred from the suspended part to the supporting part."
+    },
+    "level": "advanced",
+    "order": 11
+  },
+  "units": {
+    "length": "m",
+    "force": "kN",
+    "moment": "kNm",
+    "distributedLoad": "kN/m",
+    "angle": "rad"
+  },
   "beam": {
-    "startX": 200,
-    "startY": 190,
-    "endX": 1200,
-    "gridSizeOnCreation": 20,
-    "metersPerGridOnCreation": 0.1,
-    "length": 1000
+    "length": 5
   },
   "supports": [
     {
       "type": "pin-support",
-      "x": 200
+      "x": 0
     },
     {
       "type": "roller-support",
-      "x": 1200
+      "x": 5
     },
     {
       "type": "roller-support",
-      "x": 800
+      "x": 3
     }
   ],
   "hinges": [
     {
-      "x": 1000
+      "x": 4
     }
   ],
   "concentratedLoads": [
     {
-      "x": 1100,
-      "y": 180,
-      "magnitude": -5,
-      "angle": -1.5707963267948966
+      "x": 4.5,
+      "magnitude": 5,
+      "angle": 1.5707963267948966
     }
   ],
   "distributedLoads": [
     {
-      "startX": 600,
-      "endX": 800,
+      "startX": 2,
+      "endX": 3,
       "magnitude": -4
     }
   ],
   "trapezoidalLoads": [
     {
-      "startX": 200,
-      "endX": 600,
+      "startX": 0,
+      "endX": 2,
       "startMagnitude": -12,
       "endMagnitude": -4
     }
@@ -52,8 +67,28 @@
   "concentratedMoments": [],
   "torsionMoments": [],
   "gridSettings": {
-    "metersPerGrid": "0.1",
-    "kNPerGrid": "2",
-    "gridSize": "20"
+    "metersPerGrid": 0.1,
+    "kNPerGrid": 2,
+    "gridSize": 20
+  },
+  "expected": {
+    "reactions": [
+      {
+        "x": 0,
+        "Fy": 11.388889
+      },
+      {
+        "x": 3,
+        "Fy": 11.111111
+      },
+      {
+        "x": 5,
+        "Fy": 2.5
+      }
+    ],
+    "Mmax": 6.179856,
+    "Mmin": -2.5,
+    "Vmax": 11.388889,
+    "Vmin": -8.611111
   }
 }

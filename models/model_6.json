@@ -1,20 +1,36 @@
 {
+  "format": "vetin-beam",
+  "version": 2,
+  "meta": {
+    "title": {
+      "tr": "Basit kiriş – trapez yük",
+      "en": "Simple beam – trapezoidal load"
+    },
+    "objective": {
+      "tr": "Trapez yükü dikdörtgen + üçgen olarak ayırıp bileşkeleri bulun.",
+      "en": "Split the trapezoid into a rectangle and a triangle to find the resultants."
+    },
+    "level": "intermediate",
+    "order": 6
+  },
+  "units": {
+    "length": "m",
+    "force": "kN",
+    "moment": "kNm",
+    "distributedLoad": "kN/m",
+    "angle": "rad"
+  },
   "beam": {
-    "startX": 400,
-    "startY": 190,
-    "endX": 1000,
-    "gridSizeOnCreation": 20,
-    "metersPerGridOnCreation": 0.1,
-    "length": 600
+    "length": 3
   },
   "supports": [
     {
       "type": "pin-support",
-      "x": 400
+      "x": 0
     },
     {
       "type": "roller-support",
-      "x": 1000
+      "x": 3
     }
   ],
   "hinges": [],
@@ -22,8 +38,8 @@
   "distributedLoads": [],
   "trapezoidalLoads": [
     {
-      "startX": 400,
-      "endX": 1000,
+      "startX": 0,
+      "endX": 3,
       "startMagnitude": -3,
       "endMagnitude": -1
     }
@@ -31,8 +47,24 @@
   "concentratedMoments": [],
   "torsionMoments": [],
   "gridSettings": {
-    "metersPerGrid": "0.1",
-    "kNPerGrid": "1",
-    "gridSize": "20"
+    "metersPerGrid": 0.1,
+    "kNPerGrid": 1,
+    "gridSize": 20
+  },
+  "expected": {
+    "reactions": [
+      {
+        "x": 0,
+        "Fy": 3.5
+      },
+      {
+        "x": 3,
+        "Fy": 2.5
+      }
+    ],
+    "Mmax": 2.265414,
+    "Mmin": 0,
+    "Vmax": 3.5,
+    "Vmin": -2.5
   }
 }

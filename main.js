@@ -9,9 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add(platform);
 
     // 2. Dil ayarlarını yap ve HTML'i oluştur
-    const savedLang = localStorage.getItem('selectedLanguage');
-    const browserLang = navigator.language.split('-')[0];
-    const initialLang = savedLang || (translations[browserLang] ? browserLang : 'tr');
+    let savedLang = null;
+    try { savedLang = localStorage.getItem('selectedLanguage'); } catch (e) { /* depolama kapalı */ }
+    const browserLang = (navigator.language || 'en').split('-')[0];
+    const browserKey = browserLang === 'zh' ? 'cn' : browserLang;
+    // Desteklenmeyen tarayıcı dillerinde uluslararası varsayılan İngilizcedir
+    const initialLang = savedLang || (translations[browserKey] ? browserKey : 'en');
     
     buildInitialHTML(initialLang);
     
@@ -19,18 +22,38 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeDOMVariables(); 
     
     // 3.1 Temayı Başlat
-    initializeTheme(); 
+    initializeTheme();
 
-    // 3.2 3B Elastik Eğri Başlat
+    // 3.1.1 vetin uygulamaları menüsü (logonun yanı)
+    initAppSwitcher();
+
+    // 3.2 3B Elastik Eğri Başlat — Three.js yüklenemezse (ör. vendor/ eksik) yalnızca
+    // 3B görünüm devre dışı kalır; olay dinleyicileri ve diğer kurulumlar yine yapılır.
     if (typeof initElasticCurve3D === 'function') {
-        initElasticCurve3D();
+        try {
+            initElasticCurve3D();
+        } catch (err) {
+            console.error('3B elastik eğri başlatılamadı (Three.js yüklü mü?):', err);
+        }
     }
 
-    // 4. Sadece mevcut platforma ait olay dinleyicilerini kur
+    // 4. Ortak eylemler (butonlar, model yükleme, ayar girdileri: actions.js),
+    //    ardından yalnızca mevcut platforma ait işaretçi dinleyicileri
+    initializeSharedActions();
     if (platform === 'desktop') {
         initializeDesktopEventListeners(); // desktop-events.js'deki fonksiyon
     } else {
         initializeMobileEventListeners(); // mobile-events.js'deki fonksiyon
+    }
+
+    // 4.1 Kesim Yöntemi (cut-method.js) — platform dinleyicilerinden sonra kurulur
+    if (typeof initializeCutMethod === 'function') {
+        initializeCutMethod();
+    }
+
+    // 4.2 Tam ekranda modelin altındaki çizimlerin seçimi (fullscreen-panels.js)
+    if (typeof initializeFullscreenPanels === 'function') {
+        initializeFullscreenPanels();
     }
 
     // 5. Dili ayarla
@@ -47,6 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     scaleCanvasForHiDPI(canvas, ctx);
     redrawCanvas();
+
+    // 5.1 Bağlantıyla paylaşılan model (#m=…) ya da alıştırma (#p=düzey:tohum)
+    if (typeof applyLocationHash === 'function') applyLocationHash();
 
     // 6. Telif hakkı yılını ayarla
     const copyrightYear = document.getElementById('copyright-year');

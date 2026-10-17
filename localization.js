@@ -19,7 +19,21 @@ function buildInitialHTML(lang) {
         <div class="toolbar-scroll-wrapper">
             <button class="toolbar-scroll-btn toolbar-scroll-btn--left" id="toolbar-scroll-left"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
             <div class="toolbar-left">
-            <div class="tool-group">
+            <div class="tool-group tool-group--actions">
+                <p class="tool-group-title" data-i18n="actions">${t.actions}</p>
+                <div class="tool-group-actions">
+                    <button class="tool-button tool-button-large" id="tool-cursor" data-i18n-title="cursorTitle" title="${t.cursorTitle}" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M 6 3 L 18 13 L 12.5 13.8 L 15.5 20 L 13 21 L 10 14.8 L 6 18.5 Z"></path></svg><span data-i18n="cursorTool">${t.cursorTool}</span></button>
+                    <button class="tool-button tool-button-large" id="undo-btn" data-i18n-title="undoTitle" title="${t.undoTitle}" disabled><svg viewBox="0 0 24 24"><path d="M 9 14 L 4 9 L 9 4"></path><path d="M 4 9 H 14 a 5 5 0 0 1 0 10 H 11"></path></svg><span data-i18n="undo">${t.undo}</span></button>
+                    <button class="tool-button tool-button-large" id="redo-btn" data-i18n-title="redoTitle" title="${t.redoTitle}" disabled><svg viewBox="0 0 24 24"><path d="M 15 14 L 20 9 L 15 4"></path><path d="M 20 9 H 10 a 5 5 0 0 0 0 10 H 13"></path></svg><span data-i18n="redo">${t.redo}</span></button>
+                    <button class="tool-button tool-button-large" id="save-btn" data-i18n-title="saveTitle" title="${t.saveTitle}"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></svg><span data-i18n="save">${t.save}</span></button>
+                    <div class="actions-stack">
+                        <button class="tool-button" id="reset-btn" data-i18n-title="newConfirmTitle" title="${t.newConfirmTitle}"><svg viewBox="0 0 24 24"><path d="M 14 2 H 6 a 2 2 0 0 0 -2 2 v 16 a 2 2 0 0 0 2 2 h 12 a 2 2 0 0 0 2 -2 V 8 z"></path><path d="M 14 2 v 6 h 6 M 12 12 v 6 M 9 15 h 6"></path></svg><span data-i18n="appMenuNew">${t.appMenuNew}</span></button>
+                        <button class="tool-button" id="open-btn" data-i18n-title="openTitle" title="${t.openTitle}"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg><span data-i18n="open">${t.open}</span></button>
+                        <input type="file" id="file-input" accept=".json" style="display: none;" />
+                    </div>
+                </div>
+            </div>
+            <div class="tool-group tool-group--element">
                 <p class="tool-group-title" data-i18n="elementGroup">${t.elementGroup}</p>
                 <div class="tool-group-buttons">
                     <button class="tool-button active" id="tool-beam" data-i18n-title="beamTitle" title="${t.beamTitle}">
@@ -28,7 +42,7 @@ function buildInitialHTML(lang) {
                     </button>
                 </div>
             </div>
-            <div class="tool-group">
+            <div class="tool-group tool-group--supports">
                 <p class="tool-group-title" data-i18n="supports">${t.supports}</p>
                 <div class="tool-group-buttons">
                     <button class="tool-button" id="tool-pin-support" data-i18n-title="pinSupportTitle" title="${t.pinSupportTitle}"><svg viewBox="0 0 24 24"><path d="m 12 8 L 5 17 L 19 17 Z M 2 19 l 19 0"></path></svg><span data-i18n="pinSupport">${t.pinSupport}</span></button>
@@ -37,9 +51,7 @@ function buildInitialHTML(lang) {
                     <button class="tool-button" id="tool-hinge" data-i18n-title="hingeTitle" title="${t.hingeTitle}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle></svg><span data-i18n="hinge">${t.hinge}</span></button>
                 </div>
             </div>
-            
-            <!-- === DEĞİŞİKLİK BURADA BAŞLIYOR === -->
-            <div class="tool-group">
+            <div class="tool-group tool-group--loads">
                 <p class="tool-group-title" data-i18n="loads">${t.loads}</p>
                 <div class="tool-group-buttons tool-group-buttons--loads">
                     <button class="tool-button" id="tool-concentrated-load" data-i18n-title="pointLoadTitle" title="${t.pointLoadTitle}"><svg viewBox="0 0 24 24"><path d="M12 4v14m-4-4l4 4 4-4"></path></svg><span data-i18n="pointLoad">${t.pointLoad}</span></button>
@@ -51,38 +63,26 @@ function buildInitialHTML(lang) {
                     </div>
                 </div>
             </div>
-            <!-- === DEĞİŞİKLİK BURADA BİTİYOR === -->
-
-            <div class="tool-group">
-                <p class="tool-group-title" data-i18n="actions">${t.actions}</p>
-                <div class="tool-group-actions">
+            <div class="tool-group tool-group--settings">
+                <p class="tool-group-title" data-i18n="settingsGroup">${t.settingsGroup || 'Settings'}</p>
+                <div class="tool-group-actions tool-group-settings">
                     <button class="tool-button tool-button-large" id="tool-edit" data-i18n-title="editMoveTitle" title="${t.editMoveTitle}"><svg viewBox="0 0 24 24"><path d="M 18 2 l -9 9 l -2 5 l 5 -2 l 9 -9 l -3 -3 z M 10 10 l 3 3"></path></svg><span data-i18n="editMove">${t.editMove}</span></button>
-                    <div class="actions-stack" style="display: none;">
-                        <button class="tool-button" id="save-btn" data-i18n-title="saveTitle" title="${t.saveTitle}"><svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"></path></svg><span data-i18n="save">${t.save}</span></button>
-                        <button class="tool-button" id="open-btn" data-i18n-title="openTitle" title="${t.openTitle}"><svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"></path></svg><span data-i18n="open">${t.open}</span></button>
-                        <input type="file" id="file-input" accept=".json" style="display: none;" />
-                    </div>
-                    <button class="tool-button tool-button-large" id="reset-btn" data-i18n-title="resetTitle" title="${t.resetTitle}">
-                        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg>
-                        <span data-i18n="reset">${t.reset}</span>
-                    </button>
+                    <button class="tool-button tool-button-large settings-toggle" id="grid-settings-btn" type="button" aria-expanded="false" aria-controls="grid-popover" data-i18n-title="gridSettings" title="${t.gridSettings}"><svg viewBox="0 0 24 24"><path d="M 3 3 H 21 V 21 H 3 Z M 9 3 V 21 M 15 3 V 21 M 3 9 H 21 M 3 15 H 21"></path></svg><span data-i18n="gridSettings">${t.gridSettings}</span></button>
+                    <button class="tool-button tool-button-large settings-toggle" id="material-settings-btn" type="button" aria-expanded="false" aria-controls="material-popover" data-i18n-title="materialProperties" title="${t.materialProperties}"><svg viewBox="0 0 24 24"><path d="M 4 5 H 20 M 4 19 H 20 M 12 5 V 19 M 8 5 V 7 M 16 5 V 7 M 8 17 V 19 M 16 17 V 19"></path></svg><span data-i18n="materialProperties">${t.materialProperties}</span></button>
                 </div>
-            </div>
-            
-            <div class="tool-group">
-                <p class="tool-group-title" data-i18n="gridSettings">${t.gridSettings}</p>
-                <div class="grid-settings">
+                <!-- Açılır ayar panelleri (actions.js/toggleSettingsPopover); giriş kimlikleri değişmedi -->
+                <div class="settings-popover" id="grid-popover" role="dialog" aria-labelledby="grid-settings-btn" hidden>
+                    <div class="grid-settings">
                     <div><label for="metersPerGrid" data-i18n="horizontal">${t.horizontal}</label><input type="number" id="metersPerGrid" value="0.2" min="0.1" step="0.1"><span>m</span></div>
                     <div><label for="kNPerGrid" data-i18n="vertical">${t.vertical}</label><input type="number" id="kNPerGrid" value="2" min="0.1" step="0.1"><span>kN</span></div>
                     <div><label for="gridSize" data-i18n="grid">${t.grid}</label><input type="number" id="gridSize" value="20" min="10"><span>px</span></div>
                 </div>
-            </div>
-            
-            <div class="tool-group">
-                <p class="tool-group-title" data-i18n="materialProperties">${t.materialProperties}</p>
-                <div class="grid-settings">
+                </div>
+                <div class="settings-popover" id="material-popover" role="dialog" aria-labelledby="material-settings-btn" hidden>
+                    <div class="grid-settings">
                     <div><label for="elasticityModulus" data-i18n="elasticityModulus">${t.elasticityModulus}</label><input type="number" id="elasticityModulus" value="200" min="1"><span>${t.unitGPA}</span></div>
                     <div><label for="momentOfInertia" data-i18n="momentOfInertia">${t.momentOfInertia}</label><input type="number" id="momentOfInertia" value="100000" min="1"><span>${t.unitCM4}</span></div>
+                </div>
                 </div>
             </div>
             </div>
@@ -109,9 +109,20 @@ function buildInitialHTML(lang) {
     document.getElementById('fullscreen-btn').innerHTML = `<svg class="icon-expand" viewBox="0 0 24 24"><path d="M15 3h6v6l-2-2-4 4-2-2 4-4-2-2zM9 21H3v-6l2 2 4-4 2 2-4 4 2 2z"></path></svg><svg class="icon-shrink" viewBox="0 0 24 24" style="display: none;"><path d="m 20 2 M 10 14 L 4 14 L 6 16 L 2 20 L 4 22 L 8 18 L 10 20 L 10 14 M 14 10 L 20 10 L 18 8 L 22 4 L 20 2 L 16 6 L 14 4 L 14 10"></path></svg>`;
     document.getElementById('fullscreen-btn').setAttribute('title', t.fullscreenTitle);
 
+    document.getElementById('cut-btn').setAttribute('title', t.cutMethodTitle);
+
+    // SCD çizim seçenekleri: sağ üst köşede aç/kapa butonları
+    const fbdLabel = (key) => t[key] || escapeHtml(translations.en[key]);
+    const fbdOptionBtn = (option, key, icon) =>
+        `<button type="button" class="canvas-overlay-btn fbd-option-btn" data-fbd-option="${option}" aria-pressed="${fbdDisplayOptions[option]}">${icon}<span data-i18n="${key}">${fbdLabel(key)}</span></button>`;
+    const fbdOptionsHTML = `<div class="fbd-options" role="group" data-i18n-title="fbdOptionsTitle" title="${fbdLabel('fbdOptionsTitle')}">` +
+        fbdOptionBtn('loads', 'fbdShowLoads', '<svg viewBox="0 0 24 24"><path d="M12 3v14M6.5 12 12 17.5 17.5 12"/><path d="M4 21h16"/></svg>') +
+        fbdOptionBtn('reactions', 'fbdShowReactions', '<svg viewBox="0 0 24 24"><path d="M12 21V9M6.5 14 12 8.5 17.5 14"/><path d="M8 3h8"/></svg>') +
+        `</div>`;
+
     const diagramsHTML = `
         <div id="diagram-grid">
-            <div id="free-body-diagram-wrapper" class="diagram-container"><h4 data-i18n="freeBodyDiagram">${t.freeBodyDiagram}</h4><button id="download-fbd-btn" class="download-btn" data-i18n-title="downloadDiagram"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></button><button class="toggle-button" data-i18n-title="show"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 13c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"></path></svg></button><div class="content-wrapper hidden"><canvas id="freeBodyDiagramCanvas"></canvas><p id="reactions-output"></p></div></div>
+            <div id="free-body-diagram-wrapper" class="diagram-container"><h4 data-i18n="freeBodyDiagram">${t.freeBodyDiagram}</h4><button id="download-fbd-btn" class="download-btn" data-i18n-title="downloadDiagram"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></button><button class="toggle-button" data-i18n-title="show"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 13c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"></path></svg></button><div class="content-wrapper hidden">${fbdOptionsHTML}<section id="gerber-parts-section" class="fbd-section" hidden><h5 class="fbd-section-title" data-i18n="gerberPartsCaption">${t.gerberPartsCaption}</h5><canvas id="gerberPartsCanvas"></canvas></section><section id="fbd-whole-section" class="fbd-section"><h5 class="fbd-section-title" id="fbd-whole-title" data-i18n="fbdWholeCaption" hidden>${t.fbdWholeCaption}</h5><canvas id="freeBodyDiagramCanvas"></canvas></section><p id="reactions-output"></p></div></div>
             <div id="normal-force-diagram-wrapper" class="diagram-container"><h4 data-i18n="normalForceDiagram">${t.normalForceDiagram}</h4><button id="download-nfd-btn" class="download-btn" data-i18n-title="downloadDiagram"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></button><button class="toggle-button" data-i18n-title="show"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 13c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"></path></svg></button><div class="content-wrapper hidden"><div class="diagram-wrapper"><canvas id="normalForceDiagram"></canvas></div></div></div>
             <div id="shear-force-diagram-wrapper" class="diagram-container"><h4 data-i18n="shearForceDiagram">${t.shearForceDiagram}</h4><button id="download-sfd-btn" class="download-btn" data-i18n-title="downloadDiagram"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></button><button class="toggle-button" data-i18n-title="show"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 13c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"></path></svg></button><div class="content-wrapper hidden"><div class="diagram-wrapper"><canvas id="shearForceDiagram"></canvas></div></div></div>
             <div id="bending-moment-diagram-wrapper" class="diagram-container"><h4 data-i18n="bendingMomentDiagram">${t.bendingMomentDiagram}</h4><button id="download-bmd-btn" class="download-btn" data-i18n-title="downloadDiagram"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></button><button class="toggle-button" data-i18n-title="show"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 13c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"></path></svg></button><div class="content-wrapper hidden"><div class="diagram-wrapper"><canvas id="bendingMomentDiagram"></canvas></div></div></div>
@@ -130,7 +141,7 @@ function buildInitialHTML(lang) {
                 <div class="table-wrapper"><h3 data-i18n="trapezoidalLoadsTable">${t.trapezoidalLoadsTable}</h3><table id="trapezoidal-loads-table"><thead><tr><th data-i18n="number">${t.number}</th><th data-i18n="startM">${t.startM}</th><th data-i18n="endM">${t.endM}</th><th data-i18n="magnitude1KNM">${t.magnitude1KNM}</th><th data-i18n="magnitude2KNM">${t.magnitude2KNM}</th><th data-i18n="tableColDelete">${t.tableColDelete}</th></tr></thead><tbody></tbody></table></div>
                 <div class="table-wrapper"><h3 data-i18n="concentratedLoadsTable">${t.concentratedLoadsTable}</h3><table id="concentrated-loads-table"><thead><tr><th data-i18n="number">${t.number}</th><th data-i18n="positionM">${t.positionM}</th><th data-i18n="magnitudeKN">${t.magnitudeKN}</th><th data-i18n="angleDeg">${t.angleDeg}</th><th data-i18n="tableColDelete">${t.tableColDelete}</th></tr></thead><tbody></tbody></table></div>
                 <div class="table-wrapper"><h3 data-i18n="concentratedMomentsTable">${t.concentratedMomentsTable}</h3><table id="concentrated-moments-table"><thead><tr><th data-i18n="number">${t.number}</th><th data-i18n="positionM">${t.positionM}</th><th data-i18n="magnitudeKNM2">${t.magnitudeKNM2}</th><th data-i18n="tableColDelete">${t.tableColDelete}</th></tr></thead><tbody></tbody></table></div>
-                <div class="table-wrapper"><h3 data-i18n="torsionMomentsTable">${t.torsionMomentsTable}</h3><table id="torsion-moments-table"><thead><tr><th data-i18n="number">${t.number}</th><th data-i18n="positionM">${t.positionM}</th><th data-i18n="magnitudeKNM2">${t.magnitudeKNM2}</th><th data-i18n="tableColDelete">${t.tableColDelete}</th></tr></thead><tbody></tbody></table></div>
+                <div class="table-wrapper"><h3 data-i18n="torsionMomentsTable">${t.torsionMomentsTable}</h3><table id="torsion-moments-table"><thead><tr><th data-i18n="number">${t.number}</th><th data-i18n="positionM">${t.positionM}</th><th data-i18n="magnitudeTorsion">${t.magnitudeTorsion}</th><th data-i18n="tableColDelete">${t.tableColDelete}</th></tr></thead><tbody></tbody></table></div>
             </div>
         </div>
     `;
@@ -143,7 +154,7 @@ function buildInitialHTML(lang) {
                 <p>&copy; <span id="copyright-year"></span> · <a href="https://www.rasimtemur.com" target="_blank" rel="noopener noreferrer">Rasim Temür</a><span data-i18n="footerText2">${t.footerText2}</span> · <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer" style="color: inherit;" data-i18n="mitLicense">${t.mitLicense || 'MIT License'}</a> · <a href="https://github.com/rasimtemur/vetin-beam" target="_blank" rel="noopener noreferrer" style="color: inherit; display: inline-flex; align-items: center; gap: 4px; vertical-align: -2px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="display: block;"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>GitHub</a></p>
             </div>
             <div class="language-switcher">
-                <button id="app-menu-toggle" title="Menu">
+                <button id="app-menu-toggle" data-i18n-title="menuTitle" title="${t.menuTitle || 'Menu'}" aria-haspopup="true" aria-controls="appMenu">
                     <svg viewBox="0 0 24 24" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                         <line x1="4" y1="7" x2="20" y2="7"></line>
                         <line x1="4" y1="12" x2="20" y2="12"></line>
@@ -173,6 +184,20 @@ function buildInitialHTML(lang) {
                             <polyline points="7 3 7 8 15 8"></polyline>
                         </svg>
                         <span data-i18n="save">${t.save || 'Save'}</span>
+                    </button>
+                    <div class="app-menu-separator"></div>
+                    <button id="menu-examples" class="app-menu-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                            <rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                        </svg>
+                        <span data-i18n="examplesTitle">${t.examplesTitle || 'Examples'}</span>
+                    </button>
+                    <button id="menu-sign" class="app-menu-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <line x1="12" y1="4" x2="12" y2="12"></line><line x1="8" y1="8" x2="16" y2="8"></line><line x1="8" y1="18" x2="16" y2="18"></line>
+                        </svg>
+                        <span data-i18n="signConventionTitle">${t.signConventionTitle || 'Sign convention'}</span>
                     </button>
                     <div class="app-menu-separator"></div>
                     <button id="dark-mode-toggle" class="app-menu-item">
@@ -227,12 +252,14 @@ function setLanguage(lang) {
     lang = 'en';
   }
 
-  localStorage.setItem('selectedLanguage', lang);
+  try { localStorage.setItem('selectedLanguage', lang); } catch (e) { /* depolama kapalı */ }
   document.documentElement.lang = lang;
+  // Sağdan sola yazılan diller: metin akışı RTL, çizimler ve diyagramlar LTR kalır (bkz. common.css)
+  document.documentElement.dir = ['ar', 'he', 'fa', 'ur'].includes(lang) ? 'rtl' : 'ltr';
 
   document.querySelectorAll('[data-i18n]').forEach(element => {
     const key = element.dataset.i18n;
-    const translation = translations[lang][key];
+    const translation = translations[lang][key] || translations.en[key];
     if (translation) {
       element.innerText = translation;
     } else {
@@ -242,7 +269,7 @@ function setLanguage(lang) {
 
   document.querySelectorAll('[data-i18n-title]').forEach(element => {
     const key = element.dataset.i18nTitle;
-    const translation = translations[lang][key];
+    const translation = translations[lang][key] || translations.en[key];
     if (translation) {
       element.setAttribute('title', translation);
     } else {

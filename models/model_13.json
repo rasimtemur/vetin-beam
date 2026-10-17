@@ -1,0 +1,67 @@
+{
+  "format": "vetin-beam",
+  "version": 2,
+  "meta": {
+    "title": {
+      "tr": "Konsol – yayılı yük ve burulma",
+      "en": "Cantilever – distributed load and torque"
+    },
+    "objective": {
+      "tr": "Ankastre mesnette düşey kuvvet, eğilme ve burulma tepkileri birlikte oluşur.",
+      "en": "The fixed support develops vertical, bending and torsional reactions together."
+    },
+    "level": "intermediate",
+    "order": 9
+  },
+  "units": {
+    "length": "m",
+    "force": "kN",
+    "moment": "kNm",
+    "distributedLoad": "kN/m",
+    "angle": "rad"
+  },
+  "beam": {
+    "length": 3
+  },
+  "supports": [
+    {
+      "type": "fixed-support",
+      "x": 0
+    }
+  ],
+  "hinges": [],
+  "concentratedLoads": [],
+  "distributedLoads": [
+    {
+      "startX": 0,
+      "endX": 3,
+      "magnitude": -3
+    }
+  ],
+  "trapezoidalLoads": [],
+  "concentratedMoments": [],
+  "torsionMoments": [
+    {
+      "x": 3,
+      "magnitude": 4
+    }
+  ],
+  "gridSettings": {
+    "metersPerGrid": 0.1,
+    "kNPerGrid": 1,
+    "gridSize": 20
+  },
+  "expected": {
+    "reactions": [
+      {
+        "x": 0,
+        "Fy": 9,
+        "Mz": 13.5
+      }
+    ],
+    "Mmax": 0,
+    "Mmin": -13.5,
+    "Vmax": 9,
+    "Vmin": 0
+  }
+}

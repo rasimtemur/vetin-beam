@@ -1,20 +1,36 @@
 {
+  "format": "vetin-beam",
+  "version": 2,
+  "meta": {
+    "title": {
+      "tr": "Basit kiriş – tekil moment",
+      "en": "Simple beam – concentrated moment"
+    },
+    "objective": {
+      "tr": "Kuvvet çifti V'yi değiştirmez ama M'de sıçrama yapar.",
+      "en": "A couple does not change V but causes a jump in M."
+    },
+    "level": "basic",
+    "order": 4
+  },
+  "units": {
+    "length": "m",
+    "force": "kN",
+    "moment": "kNm",
+    "distributedLoad": "kN/m",
+    "angle": "rad"
+  },
   "beam": {
-    "startX": 400,
-    "startY": 190,
-    "endX": 1000,
-    "gridSizeOnCreation": 20,
-    "metersPerGridOnCreation": 0.1,
-    "length": 600
+    "length": 3
   },
   "supports": [
     {
       "type": "pin-support",
-      "x": 400
+      "x": 0
     },
     {
       "type": "roller-support",
-      "x": 1000
+      "x": 3
     }
   ],
   "hinges": [],
@@ -23,15 +39,30 @@
   "trapezoidalLoads": [],
   "concentratedMoments": [
     {
-      "x": 600,
-      "y": 190,
+      "x": 1,
       "magnitude": 3
     }
   ],
   "torsionMoments": [],
   "gridSettings": {
-    "metersPerGrid": "0.1",
-    "kNPerGrid": "1",
-    "gridSize": "20"
+    "metersPerGrid": 0.1,
+    "kNPerGrid": 1,
+    "gridSize": 20
+  },
+  "expected": {
+    "reactions": [
+      {
+        "x": 0,
+        "Fy": -1
+      },
+      {
+        "x": 3,
+        "Fy": 1
+      }
+    ],
+    "Mmax": 2,
+    "Mmin": -1,
+    "Vmax": 0,
+    "Vmin": -1
   }
 }

@@ -89,8 +89,7 @@ body.dark-mode td[contenteditable="true"] {
 body.dark-mode .diagram-container .toggle-button, 
 body.dark-mode .diagram-container .download-btn, 
 body.dark-mode .data-tables-header .toggle-button, 
-body.dark-mode .data-tables-header .download-btn,
-body.dark-mode .delete-btn {
+body.dark-mode .data-tables-header .download-btn {
     background-color: rgba(60, 60, 60, 0.7);
     color: var(--fluent-neutral-foreground-hint);
 }
@@ -139,11 +138,99 @@ body.dark-mode img[src*="logo.svg"] {
 }
 .fluent-theme .page-header2 {
     width: 100%;
+    box-sizing: border-box;
     max-width: 1470px;
     padding: 25px 30px;
     margin-bottom: 0px;
     text-align:center;
 }
+
+/* --- UYGULAMA DEĞİŞTİRİCİ (logonun sağı) ---
+   Logo kabı satır içi kalır (başlık yüksekliği değişmesin); düğme ve menü ona göre
+   konumlanır. Menü başlığın dışına, araç çubuğunun ve tuvalin üstüne taşar. */
+.logo-container {
+    position: relative;
+    display: inline-block;
+}
+.app-switcher-btn {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 8px);
+    margin-top: -16px;
+    width: 32px;
+    height: 32px;
+    padding: 6px;
+    border: none;
+    border-radius: 4px; /* ayarlar düğmesiyle (#app-menu-toggle) aynı */
+    background: transparent;
+    color: var(--fluent-neutral-foreground-hint);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease-out, color 0.15s ease-out;
+}
+.app-switcher-btn svg { width: 20px; height: 20px; fill: currentColor; }
+.app-switcher-btn:hover,
+.app-switcher-btn[aria-expanded="true"] {
+    background-color: var(--fluent-neutral-fill-hover);
+    color: var(--fluent-neutral-foreground-rest);
+}
+.app-switcher-btn:focus-visible { outline: 2px solid var(--fluent-accent-fill-rest); outline-offset: 1px; }
+
+.app-switcher-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 50%;
+    translate: -50% 0; /* transform açılış animasyonuna (appMenuFade) bırakılır */
+    width: 312px;
+    box-sizing: border-box;
+    display: none;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    padding: 12px;
+    background-color: var(--fluent-layer-fill-default);
+    border: 1px solid var(--fluent-stroke-color-default);
+    border-radius: 12px;
+    box-shadow: var(--fluent-shadow-depth-16);
+    z-index: 3000;
+    animation: appMenuFade 0.2s ease;
+}
+.app-switcher-menu.show { display: grid; }
+.page-header2.app-menu-open { position: relative; z-index: 3000; }
+.app-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 4px;
+    border-radius: 8px;
+    color: var(--fluent-accent-fill-rest);
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+.app-tile svg { width: 36px; height: 36px; }
+.app-tile span {
+    font-size: 12px;
+    line-height: 1.25;
+    text-align: center;
+    color: var(--fluent-neutral-foreground-rest);
+}
+.app-tile .app-tile-wordmark {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--fluent-neutral-foreground-hint);
+}
+.app-tile:hover, .app-tile:focus-visible { background-color: var(--fluent-neutral-fill-hover); outline: none; }
+.app-tile.current { background-color: var(--fluent-neutral-fill-rest); cursor: default; }
+@media (max-width: 640px) {
+    .app-switcher-menu { width: min(312px, calc(100vw - 32px)); }
+}
+
 .fluent-theme .app-wrapper {
     width: 100%;
     max-width: 1470px;
@@ -184,7 +271,9 @@ body.dark-mode img[src*="logo.svg"] {
     transition: background-color 0.15s ease-out, color 0.15s ease-out; opacity: 1;
     display: flex; align-items: center; justify-content: center;
 }
-.fluent-theme .language-switcher button:hover { opacity: 1; background-color: var(--fluent-neutral-fill-hover); }
+/* Yalnız doğrudan çocuklar (dil düğmeleri, "+" ve ayarlar düğmesi): dil listesi ile
+   ayarlar menüsü öğeleri iç içe bir kapta durur ve kendi hover kurallarını taşır. */
+.fluent-theme .language-switcher > button:hover { opacity: 1; background-color: var(--fluent-neutral-fill-hover); }
 .fluent-theme .language-switcher button.active { background-color: var(--fluent-accent-fill-rest); opacity: 1; color: white; }
 .fluent-theme .language-switcher button.active:hover { background-color: var(--fluent-accent-fill-hover); }
 
@@ -552,6 +641,50 @@ body.dark-mode .sun-icon { display: block !important; }
     color: var(--fluent-accent-fill-rest);
 }
 
+/* Yük ekleme/düzenleme penceresi (load-dialog.js) — onay modalının görünümünü kullanır */
+.load-dialog .confirm-modal-header .icon svg {
+    fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+.load-dialog-fields {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 140px);
+    align-items: center;
+    gap: 10px 16px;
+    margin-bottom: 16px;
+}
+.load-dialog-label {
+    font-size: 13px;
+    color: var(--fluent-neutral-foreground-rest);
+}
+.load-dialog-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 7px 10px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--fluent-neutral-foreground-rest);
+    background: var(--fluent-layer-fill-default);
+    border: 1px solid var(--fluent-stroke-color-default);
+    border-radius: 8px;
+    text-align: right;
+}
+.load-dialog-input:focus {
+    outline: none;
+    border-color: var(--fluent-accent-fill-rest);
+    box-shadow: 0 0 0 2px rgba(28, 62, 104, 0.15);
+}
+.load-dialog-input[aria-invalid="true"] { border-color: #D83B01; box-shadow: 0 0 0 2px rgba(216, 59, 1, 0.15); }
+.confirm-modal .load-dialog-hint,
+.confirm-modal .load-dialog-error {
+    margin: 0 0 16px 0;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.confirm-modal .load-dialog-error { color: #D83B01; }
+.load-dialog .confirm-modal-footer { flex-wrap: wrap; gap: 10px; }
+/* Sil düğmesi solda, İptal/Kaydet sağda */
+.load-dialog .confirm-modal-footer .load-dialog-delete { margin-right: auto; }
+
 @media (max-width: 700px) {
     .about-modal-grid { flex-direction: column; min-height: 0; }
     .about-modal-left { padding: 28px; }
@@ -593,6 +726,14 @@ body.dark-mode .sun-icon { display: block !important; }
 }
 .fluent-theme .canvas-overlay-btn:hover { background-color: rgba(245, 245, 245, 0.9); }
 .fluent-theme .canvas-overlay-btn svg { width: 24px; height: 24px; stroke: var(--fluent-neutral-foreground-rest); stroke-width: 1.5; fill: none; }
+
+/* Kesim Yöntemi butonu */
+.fluent-theme #cut-btn svg path { stroke: currentColor; }
+.fluent-theme #cut-btn.active,
+body.dark-mode #cut-btn.active { background-color: #8e24aa; border-color: #8e24aa; color: #fff; }
+.fluent-theme #cut-btn.active svg,
+body.dark-mode #cut-btn.active svg { stroke: #fff; fill: none; }
+body.cut-dragging, body.cut-dragging * { cursor: ew-resize !important; user-select: none; }
 
 /* Diyagram ve Tablo Ortak Stilleri */
 .fluent-theme #all-diagrams-container { 
@@ -642,18 +783,66 @@ body.dark-mode .sun-icon { display: block !important; }
 }
 .fluent-theme .diagram-wrapper { width: 100%; position: relative; height: 250px; }
 .fluent-theme #freeBodyDiagramCanvas {
-    width: 100%; height: 350px; background-color: var(--fluent-layer-fill-default);
-    border-bottom: 1px solid var(--fluent-stroke-color-default); margin-bottom: 10px;
+    width: 100%; height: 384px; background-color: var(--fluent-layer-fill-default);
+    display: block; margin-bottom: 0;
 }
 .fluent-theme #reactions-output b { color: #107C10; }
+/* Boş tepki paragrafı SCD'nin altında boşluk bırakmasın */
+#reactions-output:empty { display: none; }
+
+/* SCD çizim seçenekleri: çizimin sağ üst köşesinde aç/kapa butonları.
+   Görünüm .canvas-overlay-btn'den gelir (Yapısal Model araç butonlarıyla aynı);
+   basılı durum Kesim Yöntemi butonunun etkin haliyle aynı düz dolgudur. */
+.fluent-theme #free-body-diagram-wrapper > .content-wrapper { position: relative; }
+.fbd-options { position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; gap: 8px; }
+.fluent-theme .canvas-overlay-btn.fbd-option-btn { width: auto; gap: 6px; padding: 0 12px 0 8px; white-space: nowrap; }
+.fluent-theme .canvas-overlay-btn.fbd-option-btn svg { width: 20px; height: 20px; stroke-linecap: round; stroke-linejoin: round; }
+.fluent-theme .fbd-option-btn[aria-pressed="true"],
+body.dark-mode .fbd-option-btn[aria-pressed="true"] {
+    background-color: var(--fluent-accent-fill-rest); border-color: var(--fluent-accent-fill-rest); color: #fff;
+}
+.fluent-theme .fbd-option-btn[aria-pressed="true"]:hover,
+body.dark-mode .fbd-option-btn[aria-pressed="true"]:hover {
+    background-color: var(--fluent-accent-fill-hover); border-color: var(--fluent-accent-fill-hover);
+}
+.fluent-theme .fbd-option-btn[aria-pressed="true"] svg,
+body.dark-mode .fbd-option-btn[aria-pressed="true"] svg { stroke: #fff; fill: none; }
+body.dark-mode .fbd-option-btn svg { fill: none; }
+.fbd-option-btn:focus-visible { outline: 2px solid var(--fluent-accent-fill-rest); outline-offset: 1px; }
+@media (max-width: 800px) {
+    .fbd-options { top: 5px; right: 5px; gap: 5px; }
+}
 .fluent-theme .data-tables-header { margin-bottom: 15px; }
-.fluent-theme .table-wrapper { overflow-x: auto; }
+.fluent-theme .table-wrapper { overflow-x: auto; flex: 0 0 auto; max-width: 100%; }
 .fluent-theme .table-grid-wrapper { max-height: 600px; overflow-y: auto; padding: 5px 15px 5px 5px; }
 .fluent-theme .table-wrapper h3 { font-size: 16px; font-weight: 600; margin-top: 0; margin-bottom: 10px; }
 .fluent-theme table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .fluent-theme th, .fluent-theme td { border: 1px solid var(--fluent-stroke-color-default); padding: 8px; text-align: left; white-space: nowrap; }
 .fluent-theme th { background-color: var(--fluent-neutral-fill-rest); font-weight: 600; }
-.fluent-theme td[contenteditable="true"] { background-color: #f5faff; }
+.fluent-theme tr.editable-row { cursor: pointer; }
+.fluent-theme tr.editable-row:hover td, .fluent-theme tr.editable-row:focus td { background-color: rgba(28, 62, 104, 0.06); }
+.fluent-theme tr.editable-row:focus { outline: 2px solid var(--fluent-accent-fill-rest); outline-offset: -2px; }
+
+/* Sil sütunu içeriği kadar dar tutulur; butona göre ortalanır */
+.fluent-theme td.delete-cell { width: 1%; padding: 4px 8px; text-align: center; }
+.fluent-theme th[data-i18n="tableColDelete"] { width: 1%; text-align: center; }
+
+/* Sil butonu: sade ikon butonu, üzerine gelince kırmızı vurgu */
+.delete-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; padding: 0; vertical-align: middle;
+    background: transparent; border: 1px solid transparent; border-radius: var(--fluent-border-radius);
+    color: var(--fluent-neutral-foreground-hint); cursor: pointer;
+    transition: background-color 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out;
+}
+.delete-btn svg {
+    width: 18px; height: 18px; fill: none; stroke: currentColor;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.delete-btn:hover { background-color: rgba(209, 52, 56, 0.1); border-color: rgba(209, 52, 56, 0.35); color: #d13438; }
+.delete-btn:active { background-color: rgba(209, 52, 56, 0.18); }
+.delete-btn:focus-visible { outline: 2px solid var(--fluent-accent-fill-rest); outline-offset: 1px; }
+body.dark-mode .delete-btn:hover { background-color: rgba(248, 113, 113, 0.15); border-color: rgba(248, 113, 113, 0.4); color: #f87171; }
 .fluent-theme .hidden { display: none; }
 
 /* Butonlar (Toggle, Download vb.) */
@@ -708,7 +897,9 @@ body.dark-mode .sun-icon { display: block !important; }
     box-shadow: var(--fluent-shadow-depth-8);
     transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
     opacity: 1;
-    white-space: nowrap;
+    white-space: normal;
+    max-width: min(70%, 760px);
+    text-align: center;
 }
 
 .hint-box.hidden {
@@ -885,4 +1076,232 @@ body.dark-mode .calc-warning-box {
 .model-gallery-dontshow input[type="checkbox"] {
     width: 16px; height: 16px; cursor: pointer;
     accent-color: var(--fluent-accent-fill-rest);
+}
+
+
+/* ===================== ÖĞRENME KATMANI (learning-panel.js) ===================== */
+
+/* Statik belirlilik durumu: model başlığının altında küçük rozet; ayrıntı tıklayınca açılır */
+#system-status { position: absolute; top: 46px; left: 12px; z-index: 16; }
+#system-status.hidden { display: none; }
+.status-chip {
+    display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 8px 0 10px;
+    border-radius: 13px; border: 1px solid; font: 600 12.5px/1 "Segoe UI", Arial, sans-serif; cursor: pointer;
+    box-shadow: var(--fluent-shadow-depth-4, 0 1px 3px rgba(0,0,0,.12));
+}
+.status-chip:focus-visible { outline: 2px solid var(--fluent-accent-fill-rest); outline-offset: 2px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.status-info { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; opacity: .75; }
+.status-detail {
+    position: absolute; top: 32px; left: 0; width: max-content; max-width: min(480px, calc(100vw - 48px));
+    padding: 10px 12px; border-radius: 6px; border: 1px solid; font-size: 13px; line-height: 1.45;
+    box-shadow: var(--fluent-shadow-depth-16, 0 6px 16px rgba(0,0,0,.18));
+}
+.status-detail[hidden] { display: none; }
+.system-status.ok .status-chip, .system-status.ok .status-detail { background: #eef8f1; border-color: #b9e0c5; color: #1d5c34; }
+.system-status.note .status-chip, .system-status.note .status-detail { background: #fff7e6; border-color: #f1d08a; color: #6b4b00; }
+.system-status.error .status-chip, .system-status.error .status-detail { background: #fdeeee; border-color: #f0b4b4; color: #8a1f1f; }
+body.dark-mode .system-status.ok .status-chip, body.dark-mode .system-status.ok .status-detail { background: #10291b; border-color: #23573a; color: #9be2b4; }
+body.dark-mode .system-status.note .status-chip, body.dark-mode .system-status.note .status-detail { background: #2c2310; border-color: #6b5320; color: #f3d48c; }
+body.dark-mode .system-status.error .status-chip, body.dark-mode .system-status.error .status-detail { background: #301414; border-color: #6e2a2a; color: #f5b1b1; }
+
+/* İşaret kabulü düğmeleri */
+.fluent-theme .sign-overlay-btn { font-weight: 700; }
+.sign-convention-btn {
+    position: absolute; top: 14px; right: 56px; height: 28px; padding: 0 10px; display: inline-flex; gap: 6px; align-items: center;
+    border: 1px solid var(--fluent-stroke-color-default); border-radius: var(--fluent-border-radius);
+    background: var(--fluent-layer-fill-default); color: var(--fluent-neutral-foreground-rest); cursor: pointer; font-weight: 700; font-size: 14px;
+}
+.sign-convention-btn span { font-weight: 600; font-size: 12px; }
+.sign-convention-btn:hover { background: var(--fluent-neutral-fill-hover); }
+@media (max-width: 800px) { .sign-convention-btn span { display: none; } }
+
+/* Öğrenme paneli sekmeleri */
+.learning-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--fluent-stroke-color-default); margin: 6px 0 14px; }
+.learning-tab {
+    border: none; background: transparent; padding: 8px 14px; cursor: pointer; font-size: 14px; font-weight: 600;
+    color: var(--fluent-neutral-foreground-hint); border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap;
+}
+.learning-tab:hover { color: var(--fluent-neutral-foreground-rest); }
+.learning-tab.active { color: var(--fluent-accent-fill-rest); border-bottom-color: var(--fluent-accent-fill-rest); }
+.learning-tab:focus-visible { outline: 2px solid var(--fluent-accent-fill-rest); outline-offset: -2px; }
+.learning-section h3 { font-size: 15px; font-weight: 600; margin: 16px 0 8px; }
+.learning-section h3:first-child { margin-top: 0; }
+.learning-section .table-wrapper { margin-bottom: 6px; }
+.learning-section td sub, .learning-section th sub { font-size: 75%; }
+.learning-empty { color: var(--fluent-neutral-foreground-hint); font-style: italic; }
+.learning-section p { line-height: 1.55; }
+body.dark-mode .learning-section, body.dark-mode .learning-section h3 { color: var(--fluent-neutral-foreground-rest); }
+
+/* İşaret kabulü penceresi */
+.sign-modal { max-width: 640px; }
+.sign-modal .icon { font-size: 22px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.sign-figure { width: 100%; max-width: 600px; height: auto; display: block; margin: 8px auto; }
+.sign-list { padding-left: 20px; line-height: 1.55; margin: 6px 0; }
+.sign-note { font-size: 13px; color: var(--fluent-neutral-foreground-hint); margin: 6px 0; }
+
+
+/* Galeri: seviyelere göre gruplu, başlıklı örnek kartları */
+.model-gallery-panel { position: relative; }
+.gallery-close-btn {
+    position: absolute; top: 10px; right: 14px; width: 34px; height: 34px; border: none; background: transparent;
+    font-size: 28px; line-height: 1; cursor: pointer; color: var(--fluent-neutral-foreground-hint); border-radius: 6px; z-index: 2;
+}
+.gallery-close-btn:hover { background: var(--fluent-neutral-fill-hover); color: var(--fluent-neutral-foreground-rest); }
+.gallery-level-heading {
+    grid-column: 1 / -1; margin: 8px 0 -6px; font-size: 15px; font-weight: 700; letter-spacing: .02em;
+    color: var(--fluent-accent-fill-rest); border-bottom: 1px solid var(--fluent-stroke-color-default); padding-bottom: 4px;
+}
+.model-card.model-card--example {
+    aspect-ratio: auto; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 6px; padding: 10px 12px; text-align: left;
+}
+.model-card-thumb svg { width: 100%; height: auto; display: block; }
+.model-card-text { display: flex; flex-direction: column; gap: 3px; }
+.model-card-title { font-size: 15px; color: var(--fluent-neutral-foreground-rest); }
+.model-card-objective { font-size: 13px; line-height: 1.4; color: var(--fluent-neutral-foreground-hint); }
+.model-card--example:focus-visible { outline: 2px solid var(--fluent-accent-fill-rest); outline-offset: 2px; }
+body.dark-mode .model-card { background-color: #151b26; }
+body.dark-mode .model-card-thumb svg { background: #ffffff; border-radius: 4px; }
+
+/* Sağdan sola diller: tuvaller, diyagramlar ve tablolardaki sayılar soldan sağa kalır */
+html[dir="rtl"] #canvas-wrapper, html[dir="rtl"] .diagram-wrapper, html[dir="rtl"] #freeBodyDiagramCanvas,
+html[dir="rtl"] #elasticCurve3DCanvas, html[dir="rtl"] .learning-section table { direction: ltr; }
+/* Galeri ızgarası yüksekliği sınırlı olduğunda kart satırları içerikten küçük boyutlanmasın */
+.model-gallery-grid { grid-auto-rows: max-content; align-content: start; }
+
+/* Kesim yöntemi: parça seçimi, x girişi, denge denklemleri */
+.cut-controls { position: absolute; top: 10px; left: 10px; z-index: 11; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.cut-controls[hidden] { display: none; }
+.cut-part-group { display: flex; gap: 4px; }
+.fluent-theme .canvas-overlay-btn.cut-part-btn { width: auto; height: 30px; font-size: 12px; }
+.fluent-theme .cut-part-btn[aria-pressed="true"] { background-color: #6a1b9a; border-color: #6a1b9a; color: #fff; }
+.cut-x-label { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: #6a1b9a;
+    background: rgba(255,255,255,0.85); border: 1px solid var(--fluent-stroke-color-default); border-radius: 4px; padding: 2px 6px; }
+.cut-x-label input { width: 64px; font-size: 13px; padding: 2px 4px; border: 1px solid var(--fluent-stroke-color-default); border-radius: 3px; }
+body.dark-mode .cut-x-label { background: rgba(15,20,25,0.85); color: #d7a6f0; }
+.cut-equations {
+    margin: 6px 0 0; padding: 14px 18px; font-size: 14px;
+    background-color: var(--fluent-layer-fill-default); color: var(--fluent-neutral-foreground-rest);
+    border: 1px solid var(--fluent-stroke-color-default); border-radius: 8px; box-shadow: var(--fluent-shadow-depth-4);
+}
+.cut-equations[hidden] { display: none; }
+.cut-equations h5 { margin: 0 0 10px; font-size: 15px; font-weight: 600; color: var(--fluent-neutral-foreground-rest); }
+.cut-equations .eq-grid { display: grid; grid-template-columns: max-content 1fr; gap: 10px 18px; align-items: start; overflow-x: auto; }
+.cut-equations .eq-row { display: contents; }
+.cut-equations .eq-lhs, .cut-equations .math { font-family: "Cambria Math", "Times New Roman", serif; font-size: 16px; line-height: 1.55; white-space: nowrap; }
+.cut-equations .eq-lhs { font-weight: 600; }
+.cut-equations .eq-result {
+    display: inline-block; margin-top: 2px; padding: 1px 10px; border-radius: 4px; font-weight: 700;
+    background: rgba(106, 27, 154, 0.10); color: #6a1b9a;
+}
+body.dark-mode .cut-equations .eq-result { background: rgba(197, 138, 240, 0.16); color: #d7a6f0; }
+.cut-equations .eq-note { margin: 10px 0 0; font-size: 13px; }
+.eq-line { margin: 4px 0; line-height: 1.6; font-family: "Cambria Math", "Times New Roman", serif; font-size: 15px; }
+.eq-label { font-weight: 700; margin-right: 4px; }
+.eq-sym { color: var(--fluent-neutral-foreground-hint); font-size: 11px; margin-left: 1px; }
+.eq-note { color: var(--fluent-neutral-foreground-hint); font-size: 13px; }
+.eq-block { padding: 6px 10px; background: var(--fluent-neutral-fill-rest); border-radius: 4px; margin: 6px 0; overflow-x: auto; }
+.eq-solution { font-weight: 700; margin: 4px 0 8px; font-family: "Cambria Math", "Times New Roman", serif; font-size: 15px; }
+.eq-sep { margin: 0 6px; }
+.solution-step { margin-bottom: 14px; }
+.solution-step h3 { display: flex; align-items: center; gap: 8px; }
+.step-no { display: inline-flex; width: 24px; height: 24px; border-radius: 50%; background: var(--fluent-accent-fill-rest); color: #fff; align-items: center; justify-content: center; font-size: 13px; }
+.step-list { margin: 4px 0; padding-left: 22px; line-height: 1.6; }
+.link-btn { background: none; border: none; color: var(--fluent-accent-fill-rest); cursor: pointer; padding: 0; font-weight: 600; font-size: 14px; }
+.deg-badge { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 10px; font-size: 11px; background: var(--fluent-neutral-fill-rest); color: var(--fluent-neutral-foreground-hint); font-family: Arial, sans-serif; }
+.regions-table td { font-family: "Cambria Math", "Times New Roman", serif; font-size: 14px; }
+.regions-toggle { display: inline-flex; gap: 6px; align-items: center; margin: 4px 0 10px; font-size: 13px; }
+.report-actions { margin-top: 10px; }
+
+/* ===================== ALIŞTIRMA MODU (practice.js) ===================== */
+body.practice-mode #normal-force-diagram-wrapper,
+body.practice-mode #shear-force-diagram-wrapper,
+body.practice-mode #bending-moment-diagram-wrapper,
+body.practice-mode #torsion-moment-diagram-wrapper,
+body.practice-mode #elastic-curve-diagram-wrapper,
+body.practice-mode #elastic-curve-3d-wrapper,
+body.practice-mode #cut-btn,
+body.practice-mode .fbd-option-btn[data-fbd-option="reactions"],
+body.practice-mode .learning-tab:not([data-tab="practice"]) { display: none !important; }
+body.practice-mode #learning-panel { outline: 2px solid #f0a020; outline-offset: 2px; }
+.practice-generator { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 8px 0 12px; }
+.practice-generator label { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; }
+.practice-generator select, .practice-generator input { padding: 4px 6px; border: 1px solid var(--fluent-stroke-color-default); border-radius: 4px; font-size: 14px; background: var(--fluent-layer-fill-default); color: var(--fluent-neutral-foreground-rest); }
+.practice-generator input { width: 140px; }
+.practice-group { border: 1px solid var(--fluent-stroke-color-default); border-radius: 6px; margin: 0 0 12px; padding: 8px 12px 12px; }
+.practice-group legend { font-weight: 700; font-size: 14px; padding: 0 6px; }
+.practice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px 14px; }
+.practice-item { display: grid; grid-template-columns: 1fr 96px; gap: 2px 8px; align-items: center; font-size: 14px; padding: 4px 6px; border-radius: 4px; }
+.practice-item input, .practice-item select { width: 100%; box-sizing: border-box; padding: 4px 6px; border: 1px solid var(--fluent-stroke-color-default); border-radius: 4px; font-size: 14px; background: var(--fluent-layer-fill-default); color: var(--fluent-neutral-foreground-rest); }
+.practice-item.ok { background: rgba(46, 160, 67, 0.12); }
+.practice-item.bad { background: rgba(215, 58, 73, 0.10); }
+.practice-item.bad input, .practice-item.bad select { border-color: #d73a49; }
+.practice-fb { grid-column: 1 / -1; font-size: 12px; color: #b3261e; }
+.practice-fb.ok { color: #1a7f37; font-weight: 700; }
+body.dark-mode .practice-fb { color: #f5a3a3; }
+.practice-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.practice-score { font-weight: 700; font-size: 15px; }
+.practice-hint { margin-top: 10px; }
+.practice-hint p { margin: 4px 0; }
+.practice-tools { margin-top: 18px; border-top: 1px solid var(--fluent-stroke-color-default); padding-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.practice-tools h3, .practice-tools p { width: 100%; margin: 0; }
+.share-status { font-size: 13px; color: var(--fluent-neutral-foreground-hint); }
+.learning-section .btn-primary, .learning-section .btn-cancel, .learning-section .btn-warning { padding: 7px 14px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; }
+
+/* Öğrenme paneli düğmeleri (onay penceresi düğmeleriyle aynı görünüm) */
+.learning-section .btn-primary, .learning-section .btn-cancel, .learning-section .btn-warning {
+    border: 1px solid transparent; font-family: inherit; transition: background-color 0.15s ease;
+}
+.learning-section .btn-primary { background-color: var(--fluent-accent-fill-rest); color: #fff; }
+.learning-section .btn-primary:hover { background-color: var(--fluent-accent-fill-hover); }
+.learning-section .btn-cancel { background: transparent; color: var(--fluent-neutral-foreground-rest); border-color: var(--fluent-stroke-color-default); }
+.learning-section .btn-cancel:hover { background-color: var(--fluent-neutral-fill-hover); }
+.learning-section .btn-warning { background-color: #C19C00; color: #fff; }
+.learning-section .btn-warning:hover { background-color: #A78600; }
+
+/* Gerber: parça parça çözüm */
+.gerber-part { margin: 10px 0 14px; padding: 10px 14px; border: 1px solid var(--fluent-stroke-color-default); border-radius: 8px; background: var(--fluent-layer-fill-default); }
+.gerber-part h4 { margin: 0 0 6px; font-size: 14px; font-weight: 600; }
+.gerber-part .part-role { font-weight: 400; color: var(--fluent-neutral-foreground-hint); font-size: 13px; margin-left: 6px; }
+.gerber-part.suspended { border-color: rgba(106, 27, 154, 0.35); }
+
+/* Pasif araç düğmeleri (ör. geri alınacak değişiklik yokken) */
+.tool-button:disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+
+/* ===================== AÇILIR AYAR PANELLERİ (Izgara, Malzeme) ===================== */
+.settings-popover {
+    position: fixed; z-index: 3000; padding: 12px 14px; min-width: 180px;
+    background: var(--fluent-layer-fill-default); color: var(--fluent-neutral-foreground-rest);
+    border: 1px solid var(--fluent-stroke-color-default); border-radius: 8px; box-shadow: var(--fluent-shadow-depth-16);
+}
+.settings-popover[hidden] { display: none !important; }
+.fluent-theme .settings-popover .grid-settings { display: flex; flex-direction: column; flex-wrap: nowrap; height: auto; gap: 8px; padding: 0; align-items: stretch; }
+.fluent-theme .settings-popover .grid-settings div { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px; }
+.fluent-theme .settings-popover .grid-settings input { width: 80px; margin: 0; }
+.fluent-theme .settings-popover #gridSize { width: 80px; }
+.settings-toggle[aria-expanded="true"] { background-color: var(--fluent-accent-fill-rest) !important; color: #fff !important; }
+
+/* Gerber kirişi: ara mafsallardan ayrılmış parçaların SCD'si (SCD'nin üstünde; yükseklik çizimde ayarlanır) */
+.fluent-theme #gerberPartsCanvas { width: 100%; height: 300px; display: block; background-color: var(--fluent-layer-fill-default); }
+/* İki SCD bölümü: başlık + çizim. Bölümler ince bir çizgiyle ayrılır; Dış Kuvvetler / Mesnet
+   Tepkileri düğmeleri ikisini birlikte yönetir (ilk başlıkla aynı satırda, sağda). */
+.fbd-section { position: relative; }
+.fbd-section[hidden], .fbd-section-title[hidden] { display: none; }
+.fluent-theme .fbd-section-title {
+    margin: 0; padding: 18px 16px 6px; font-size: 14px; font-weight: 600; line-height: 1.3;
+    color: var(--fluent-neutral-foreground-rest);
+}
+/* Başlık, Dış Kuvvetler / Mesnet Tepkileri düğmelerinin altında */
+.fluent-theme #gerber-parts-section .fbd-section-title { padding-top: 54px; }
+.fluent-theme #fbd-whole-section .fbd-section-title { border-top: 1px solid var(--fluent-stroke-color-default); margin-top: 6px; }
+/* Üstteki şerit SCD düğmeleri ve kesim kontrolleri içindir; çizimdeki bölge bandıyla çakışmazlar.
+   Gerber kirişinde düğmeler üst bölümdedir; kesim kontrolleri "Bütün sistem" başlığının sağına yerleşir. */
+#fbd-whole-section { padding-top: 44px; }
+.has-gerber-parts #fbd-whole-section { padding-top: 0; }
+.has-gerber-parts #fbd-whole-section .cut-controls { top: 8px; left: auto; right: 10px; }
+.regions-table .region-roman { font-family: "Times New Roman", Georgia, serif; font-size: 1.1em; margin-right: 4px; }
+@media (max-width: 800px) {
+    .fluent-theme #gerber-parts-section .fbd-section-title { padding: 50px 10px 6px; }
+    .has-gerber-parts #fbd-whole-section .fbd-section-title { padding-bottom: 46px; }
+    .has-gerber-parts #fbd-whole-section .cut-controls { top: 44px; left: 10px; right: auto; }
 }

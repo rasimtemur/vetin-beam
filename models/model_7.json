@@ -1,54 +1,85 @@
 {
+  "format": "vetin-beam",
+  "version": 2,
+  "meta": {
+    "title": {
+      "tr": "Gerber kirişi – ankastre ve kayıcı",
+      "en": "Gerber beam – fixed and roller"
+    },
+    "objective": {
+      "tr": "Mafsalda M = 0 denklemini kullanın; asılı parçayı önce çözün.",
+      "en": "Use M = 0 at the hinge; solve the suspended part first."
+    },
+    "level": "advanced",
+    "order": 10
+  },
+  "units": {
+    "length": "m",
+    "force": "kN",
+    "moment": "kNm",
+    "distributedLoad": "kN/m",
+    "angle": "rad"
+  },
   "beam": {
-    "startX": 200,
-    "startY": 190,
-    "endX": 1200,
-    "gridSizeOnCreation": 20,
-    "metersPerGridOnCreation": 0.1,
-    "length": 1000
+    "length": 5
   },
   "supports": [
     {
       "type": "roller-support",
-      "x": 200
+      "x": 0
     },
     {
       "type": "fixed-support",
-      "x": 1200
+      "x": 5
     }
   ],
   "hinges": [
     {
-      "x": 800
+      "x": 3
     }
   ],
   "concentratedLoads": [
     {
-      "x": 600,
-      "y": 180,
-      "magnitude": -2,
-      "angle": -1.5707963267948966
+      "x": 2,
+      "magnitude": 2,
+      "angle": 1.5707963267948966
     }
   ],
   "distributedLoads": [
     {
-      "startX": 800,
-      "endX": 1200,
+      "startX": 3,
+      "endX": 5,
       "magnitude": -4
     }
   ],
   "trapezoidalLoads": [],
   "concentratedMoments": [
     {
-      "x": 600,
-      "y": 190,
+      "x": 2,
       "magnitude": -1
     }
   ],
   "torsionMoments": [],
   "gridSettings": {
-    "metersPerGrid": "0.1",
-    "kNPerGrid": "2",
-    "gridSize": "20"
+    "metersPerGrid": 0.1,
+    "kNPerGrid": 2,
+    "gridSize": 20
+  },
+  "expected": {
+    "reactions": [
+      {
+        "x": 0,
+        "Fy": 1
+      },
+      {
+        "x": 5,
+        "Fy": 9,
+        "Mz": -10
+      }
+    ],
+    "Mmax": 2,
+    "Mmin": -10,
+    "Vmax": 1,
+    "Vmin": -9
   }
 }

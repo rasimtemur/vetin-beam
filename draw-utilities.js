@@ -74,7 +74,15 @@ function drawResizeHandles(context) {
     });
 }
     
-function drawDimensions(context, y_pos) {
+// Kesimin böldüğü parçanın ölçü etiketi aralığa sığmadığında kesim çizgisinin dışına
+// oklu olarak yazılır. Bu etiket SCD'nin gri katmanından SONRA çizilmelidir; bu yüzden
+// burada yalnızca kaydedilir ve cut-method.js/drawCutOverlayOnFbd tarafından çizilir.
+let pendingCutDimLabels = [];
+
+// cutX (isteğe bağlı, piksel): SCD'de kesim etkinken verilir. Kesimin düştüğü parça iki
+// ölçüye bölünür ve "x − a" / "b − x" olarak yazılır; toplam boy çizgisi yerine kesim
+// fonksiyonu (drawCutDistanceArrow) x ölçüsünü çizer.
+function drawDimensions(context, y_pos, cutX = null) {
     if (!beam) return;
     const { toMeters } = getConversionFunctions();
     
@@ -106,32 +114,39 @@ function drawDimensions(context, y_pos) {
     context.textBaseline='top';
     
     // Parçalı Boyutları Çiz
+    const hasCut = cutX !== null && cutX > beam.startX + 0.5 && cutX < beam.endX - 0.5;
+    pendingCutDimLabels = [];
+    const activePart = (typeof cutPart !== 'undefined' && cutPart === 'right') ? 'right' : 'left';
+    const tick = (x) => { context.beginPath(); context.moveTo(x, y_pos - 10); context.lineTo(x, y_pos + 10); context.stroke(); };
+    // overflow: kesimin böldüğü parçada etiket sığmazsa ne yapılacağı —
+    //   null → yazılmaz; 'right' / 'left' → kesim çizgisinin o yanına oklu etiket (sonradan çizilir)
+    const span = (p1, p2, label, onlyIfFits = false, overflow = null) => {
+        tick(p1); tick(p2);
+        context.beginPath(); context.moveTo(p1, y_pos); context.lineTo(p2, y_pos); context.stroke();
+        if (!onlyIfFits || context.measureText(label).width + 6 <= Math.abs(p2 - p1)) context.fillText(label, (p1 + p2) / 2, y_pos + 5);
+        else if (overflow) pendingCutDimLabels.push({ label, mid: (p1 + p2) / 2, cutX, y: y_pos, side: overflow, font: context.font });
+    };
+    const fmtM = (m) => (Math.abs(m) < 0.005 ? 0 : m).toFixed(2);
     for (let i = 0; i < sortedPoints.length - 1; i++) {
-        const p1=sortedPoints[i];
-        const p2=sortedPoints[i+1];
-        if(p2-p1<EPSILON) continue;
-        context.beginPath();
-        context.moveTo(p1, y_pos-10);
-        context.lineTo(p1, y_pos+10);
-        context.stroke();
-        context.beginPath();
-        context.moveTo(p2, y_pos-10);
-        context.lineTo(p2, y_pos+10);
-        context.stroke();
-        context.beginPath();
-
-        context.moveTo(p1, y_pos);
-        context.lineTo(p2, y_pos);
-        context.stroke();
-        const lengthInMeters = toMeters(p2) - toMeters(p1);
-        context.fillText(lengthInMeters.toFixed(2) + " m", (p1+p2)/2, y_pos+5);
+        const p1 = sortedPoints[i];
+        const p2 = sortedPoints[i + 1];
+        if (p2 - p1 < EPSILON) continue;
+        if (hasCut && cutX > p1 + 0.5 && cutX < p2 - 0.5) {
+            // Kesimin düştüğü parça: soldaki kısım x − a, sağdaki kısım b − x
+            const a = toMeters(p1) - toMeters(beam.startX), b = toMeters(p2) - toMeters(beam.startX);
+            // Etkin parçanın ölçüsü sığmazsa kesimin öbür yanına oklu yazılır; diğeri yazılmaz
+            span(p1, cutX, Math.abs(a) < 0.005 ? 'x' : `x − ${fmtM(a)} m`, true, activePart === 'left' ? 'right' : null);
+            span(cutX, p2, `${fmtM(b)} m − x`, true, activePart === 'right' ? 'left' : null);
+            continue;
+        }
+        span(p1, p2, (toMeters(p2) - toMeters(p1)).toFixed(2) + " m");
     }
 
     // --- YENİ EKLENDİ: Toplam boyut çizgisini sadece gerekliyse çiz ---
     // Eğer parçalı boyut çizgisi birden fazla bölümden oluşuyorsa
     // (yani kiriş başlangıç ve bitişi dışında ara noktalar varsa),
     // o zaman toplam uzunluk çizgisini de çiz.
-    if (sortedPoints.length > 2) {
+    if (sortedPoints.length > 2 && !hasCut) {
         const gridSize = getGridSize();
         const totalLengthY = y_pos + (2 * gridSize);
         const beamStart = beam.startX;
@@ -232,5 +247,76 @@ function drawPreviewDimension(context, previewX_px, allPoints_px, y_pos) {
         }
     }
     
+    context.restore();
+}
+
+// --- Serbest cisim diyagramı tepki okları (kalın gövde + dolu üçgen uç) ---
+const FBD_ARROW = { shaftWidth: 5, headLength: 18, headHalfWidth: 8 };
+
+function drawFilledArrow(context, x1, y1, x2, y2, color, style = FBD_ARROW) {
+    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+    if (len < 1e-6) return;
+    const ux = dx / len, uy = dy / len;
+    const hl = Math.min(style.headLength, len);
+    const bx = x2 - ux * hl, by = y2 - uy * hl;
+    context.save();
+    context.strokeStyle = color;
+    context.fillStyle = color;
+    context.lineWidth = style.shaftWidth;
+    context.lineCap = 'butt';
+    context.setLineDash([]);
+    // Gövde uç tabanının biraz içine kadar uzar; birleşimde boşluk kalmaz
+    context.beginPath(); context.moveTo(x1, y1); context.lineTo(bx + ux, by + uy); context.stroke();
+    context.beginPath();
+    context.moveTo(x2, y2);
+    context.lineTo(bx - uy * style.headHalfWidth, by + ux * style.headHalfWidth);
+    context.lineTo(bx + uy * style.headHalfWidth, by - ux * style.headHalfWidth);
+    context.closePath();
+    context.fill();
+    context.restore();
+}
+
+// Yay biçimli tepki oku (moment). Açılar tuval açısıdır; anticlockwise, arc() ile aynı anlamdadır.
+function drawFilledArcArrow(context, cx, cy, r, startAngle, endAngle, anticlockwise, color, style = FBD_ARROW) {
+    const dir = anticlockwise ? -1 : 1;
+    const baseAngle = endAngle - dir * (style.headLength / r);
+    context.save();
+    context.strokeStyle = color;
+    context.fillStyle = color;
+    context.lineWidth = style.shaftWidth;
+    context.lineCap = 'butt';
+    context.setLineDash([]);
+    context.beginPath();
+    context.arc(cx, cy, r, startAngle, baseAngle + dir * (1 / r), anticlockwise);
+    context.stroke();
+    const tipX = cx + r * Math.cos(endAngle), tipY = cy + r * Math.sin(endAngle);
+    const bx = cx + r * Math.cos(baseAngle), by = cy + r * Math.sin(baseAngle);
+    const nx = Math.cos(baseAngle), ny = Math.sin(baseAngle); // Uç tabanında yarıçap doğrultusu
+    context.beginPath();
+    context.moveTo(tipX, tipY);
+    context.lineTo(bx + nx * style.headHalfWidth, by + ny * style.headHalfWidth);
+    context.lineTo(bx - nx * style.headHalfWidth, by - ny * style.headHalfWidth);
+    context.closePath();
+    context.fill();
+    context.restore();
+}
+
+// Mesnet moment tepkisi: drawConcentratedMoment ile aynı dönme yönü (pozitif = ekranda
+// saat yönü). Yay, düşey tepki okuyla çakışmaması için kiriş ucunun dış tarafına çizilir.
+function drawReactionMoment(context, x, y, magnitude, color = COLORS.FBD_REACTION, name = null) {
+    const radius = 26;
+    const outsideLeft = !beam || x <= (beam.startX + beam.endX) / 2;
+    const a = 0.35 * Math.PI; // Yayın yatay eksenden yukarı/aşağı açıklığı
+    const c = outsideLeft ? Math.PI : 0; // Yayın ortası: sol uçta solda, sağ uçta sağda
+    // Artan tuval açısı = ekranda saat yönü
+    if (magnitude > 0) drawFilledArcArrow(context, x, y, radius, c - a, c + a, false, color);
+    else drawFilledArcArrow(context, x, y, radius, c + a, c - a, true, color);
+    context.save();
+    context.fillStyle = color === COLORS.FBD_REACTION ? COLORS.FBD_REACTION_TEXT : color;
+    context.font = 'bold 12px Arial';
+    context.textBaseline = 'bottom';
+    const label = (name ? `${name} = ` : '') + Math.abs(magnitude).toFixed(2) + ' kNm';
+    if (typeof fillSubscriptText === 'function') fillSubscriptText(context, label, outsideLeft ? x - 10 : x + 10, y - radius - 4, outsideLeft ? 'right' : 'left');
+    else { context.textAlign = outsideLeft ? 'right' : 'left'; context.fillText(label, outsideLeft ? x - 10 : x + 10, y - radius - 4); }
     context.restore();
 }
