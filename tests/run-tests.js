@@ -335,6 +335,16 @@ console.log('\n12) Adım adım çözüm ve kesim yöntemi verisi');
     approx(left.sumM, -r.M(3), 1e-9, 'Sol parça ΣM_kesit (saat tersi +) = −M');
     approx(right.M, left.M, 1e-9, 'Sağ ve sol parça aynı M');
     approx(right.sumFy, -r.V(3), 1e-9, 'Sağ parça ΣFy = −V');
+
+    // Burulma: ankastre konsol, uçta 4 kNm burulma momenti
+    const rt = S.analyze({ beam: { length: 3 }, supports: [{ type: 'fixed-support', x: 0 }], torsionMoments: [{ x: 3, magnitude: 4 }],
+        distributedLoads: [], trapezoidalLoads: [], concentratedLoads: [], concentratedMoments: [], hinges: [] });
+    const tl = S.section(rt, 1.5, 'left'), trr = S.section(rt, 1.5, 'right');
+    check(tl.hasTorsion && tl.forces.some(f => f.kind === 'reactionMx'), 'Kesim: burulma tepkisi sol parçada');
+    approx(tl.T, rt.T(1.5), 1e-9, 'Kesim (sol parça) T = diyagram T');
+    approx(tl.sumMx + tl.T, 0, 1e-9, 'Sol parça ΣMx + T = 0');
+    approx(trr.sumMx - trr.T, 0, 1e-9, 'Sağ parça ΣMx − T = 0');
+    check(S.section(r, 3, 'left').hasTorsion === false, 'Burulmasız modelde kesimde T yok');
 }
 
 // =====================================================================
@@ -496,6 +506,22 @@ console.log('\n19) Çeviri kapsamı: tüm dillerde öğrenme metinleri çevrilmi
     check(untranslated.length === 0, `${langs.length} dilde öğrenme metinleri çevrilmiş${untranslated.length ? ' (çevrilmemiş: ' + untranslated.slice(0, 10).join(', ') + ')' : ''}`);
     check(brokenTokens.length === 0, `Tüm dillerde {yer tutucu} ve HTML etiketleri korunmuş${brokenTokens.length ? ' (sorunlu: ' + brokenTokens.slice(0, 10).join(', ') + ')' : ''}`);
     check(langs.every(l => Object.keys(en).every(k => flat(T[l])[k] !== undefined)), 'Hiçbir dilde eksik anahtar yok');
+
+    // Hazır model galerisi: başlık ve öğrenme hedefi her dilde; matematik simgeleri korunmuş
+    const { readModels } = require(path.join(__dirname, '..', 'tools', 'build-models-data.js'));
+    const SYM = /M_max|ΣM|L\/√3|\(\d\)|[VMN] = 0/g;
+    const missingMeta = [], lostSymbols = [];
+    Object.entries(readModels()).forEach(([name, data]) => {
+        ['title', 'objective'].forEach(field => {
+            const m = data.meta[field], need = m.en.match(SYM) || [];
+            langs.forEach(l => {
+                if (!m[l] || !m[l].trim()) { missingMeta.push(`${name}.${field}.${l}`); return; }
+                if (need.some(s => !m[l].includes(s))) lostSymbols.push(`${name}.${field}.${l}`);
+            });
+        });
+    });
+    check(missingMeta.length === 0, `Model başlık ve hedefleri ${langs.length} dilde mevcut${missingMeta.length ? ' (eksik: ' + missingMeta.slice(0, 10).join(', ') + ')' : ''}`);
+    check(lostSymbols.length === 0, `Model metinlerinde matematik simgeleri korunmuş${lostSymbols.length ? ' (sorunlu: ' + lostSymbols.slice(0, 10).join(', ') + ')' : ''}`);
 }
 
 // =====================================================================

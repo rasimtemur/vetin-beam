@@ -199,6 +199,39 @@ function drawCutReactions(context, cutX, y_beam, s) {
     }
     // M etiketi yayın üst ucunun dışında
     drawCutLabel(context, label('M', s.M, 'kNm'), cutX + dir * (rad * Math.cos(a) + 8), y_beam - rad * Math.sin(a) - 10, align, color);
+
+    // Burulma momenti (yalnızca modelde burulma varsa): çift uçlu vektör ok; pozitifte kesit
+    // yüzünden dışarı, negatifte yüze doğru. Eksenel kuvvet de çiziliyorsa çakışmasın diye
+    // V etiketinin altına kaydırılır.
+    if (s.hasTorsion && s.T !== null) {
+        const ty = hasAxial ? y_beam + half + 40 : y_beam;
+        // Uçlar moment yayının dışında kalsın diye ok yaydan uzun çizilir
+        const len = rad + 58, xFar = cutX + dir * len;
+        if (Math.abs(s.T) > tiny) {
+            if (s.T > 0) drawDoubleVectorArrow(context, cutX, ty, xFar, ty, color);
+            else drawDoubleVectorArrow(context, xFar, ty, cutX, ty, color);
+        }
+        drawCutLabel(context, label('T', s.T, 'kNm'), xFar + dir * 8, ty, align, color);
+    }
+}
+
+// Moment vektörü oku (sağ el kuralı): dolu gövde ve iki üçgen uç
+function drawDoubleVectorArrow(context, x1, y1, x2, y2, color) {
+    drawFilledArrow(context, x1, y1, x2, y2, color);
+    const len = Math.hypot(x2 - x1, y2 - y1);
+    if (len < 30) return;
+    const ux = (x2 - x1) / len, uy = (y2 - y1) / len, back = FBD_ARROW.headLength * 0.75;
+    const tx = x2 - ux * back, ty = y2 - uy * back;
+    const bx = tx - ux * FBD_ARROW.headLength, by = ty - uy * FBD_ARROW.headLength, hw = FBD_ARROW.headHalfWidth;
+    context.save();
+    context.fillStyle = color;
+    context.beginPath();
+    context.moveTo(tx, ty);
+    context.lineTo(bx - uy * hw, by + ux * hw);
+    context.lineTo(bx + uy * hw, by - ux * hw);
+    context.closePath();
+    context.fill();
+    context.restore();
 }
 
 // SCD'de kiriş başından kesime kadar x mesafesini gösteren ok:
@@ -352,7 +385,8 @@ const mathVar = (name) => {
 const num2 = (v) => Math.abs(v).toFixed(2);
 
 function cutSymbol(f, res) {
-    if (f.kind === 'reactionFy' || f.kind === 'reactionFx' || f.kind === 'reactionMz') return f.name;
+    if (f.kind === 'reactionFy' || f.kind === 'reactionFx' || f.kind === 'reactionMz' || f.kind === 'reactionMx') return f.name;
+    if (f.kind === 'torsion') return `T_${f.index + 1}`;
     if (typeof loadSymbol === 'function') return loadSymbol({ kind: f.kind, index: f.index, x: f.x, s: f.s }, res.normalized);
     return f.kind === 'point' ? `P_${f.index + 1}` : (f.kind === 'couple' ? `C_${f.index + 1}` : 'W');
 }
@@ -396,7 +430,7 @@ function updateCutEquations() {
     const x = sec.x;
     const res = lastAnalysis.result;
 
-    const fy = [], fx = [], mm = [];
+    const fy = [], fx = [], mm = [], tx = [];
     sec.forces.forEach(f => {
         const sym = cutSymbol(f, res);
         if (f.fy !== undefined && Math.abs(f.fy) > 1e-9) {
@@ -408,12 +442,15 @@ function updateCutEquations() {
         }
         if (f.fx !== undefined && Math.abs(f.fx) > 1e-9) fx.push({ sign: Math.sign(f.fx), sym, v: f.fx });
         if (f.mz !== undefined && Math.abs(f.mz) > 1e-9) mm.push({ sign: Math.sign(f.mz), sym, v: f.mz, factors: [f.mz] });
+        if (f.mx !== undefined && Math.abs(f.mx) > 1e-9) tx.push({ sign: Math.sign(f.mx), sym, v: f.mx, factors: [f.mx] });
     });
 
     // Bilinmeyen iç kuvvet terimleri (pozitif kabul yönünde): sol parça −V, +N, +M; sağ parça +V, −N, −M
     const vTerm = isLeft ? ` − ${mathVar('V')}` : ` + ${mathVar('V')}`;
     const nTerm = isLeft ? ` + ${mathVar('N')}` : ` − ${mathVar('N')}`;
     const mTerm = isLeft ? ` + ${mathVar('M')}` : ` − ${mathVar('M')}`;
+    // Burulma: sol parçanın sağ yüzünde +T vektörü +x, sağ parçanın sol yüzünde −x yönündedir
+    const tTerm = isLeft ? ` + ${mathVar('T')}` : ` − ${mathVar('T')}`;
 
     const partName = tFormat(isLeft ? 'cutLeftPart' : 'cutRightPart');
     // Kesimin bulunduğu bölge (I, II, … ve uç noktaları), SCD bandıyla aynı ad
@@ -424,7 +461,10 @@ function updateCutEquations() {
     html += equationRows(`Σ${mathVar('F_y')} = 0`, symbolicSum(fy), substitutedSum(fy), vTerm, mathVar('V'), sec.V, 'kN');
     html += equationRows(`Σ${mathVar('M')}<sub>${escapeHTMLText(tFormat('cutPointShort'))}</sub> = 0 <span class="eq-note">(↺ +)</span>`,
         symbolicSum(mm), substitutedSum(mm), mTerm, mathVar('M'), sec.M, 'kNm');
+    if (sec.hasTorsion && sec.T !== null) html += equationRows(`Σ${mathVar('M_x')} = 0 <span class="eq-note">(⇉ +)</span>`,
+        symbolicSum(tx), substitutedSum(tx), tTerm, mathVar('T'), sec.T, 'kNm');
     html += `</div><p class="eq-note">${escapeHTMLText(tFormat(isLeft ? 'cutConventionLeft' : 'cutConventionRight'))}</p>`;
+    if (sec.hasTorsion && sec.T !== null) html += `<p class="eq-note">${escapeHTMLText(tFormat('cutTorsionNote'))}</p>`;
     if (res.points.some(p => Math.abs(p.x - x) < 1e-6)) html += `<p class="eq-note">${escapeHTMLText(tFormat(isLeft ? 'cutAtEventLeft' : 'cutAtEventRight'))}</p>`;
     box.innerHTML = html;
 }

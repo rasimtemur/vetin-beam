@@ -479,7 +479,8 @@ const BeamSolver = (function () {
 
     /**
      * Kesim yöntemi: x kesitinde sol (side='left') ya da sağ parçanın dengesi.
-     * Döndürür: parçadaki dış kuvvet/tepki terimleri ve iç kuvvetler (N, V, M).
+     * Döndürür: parçadaki dış kuvvet/tepki terimleri ve iç kuvvetler (N, V, M; burulma
+     * çözülmüşse T). Burulma terimleri mx alanındadır (+ vektör +x yönünde).
      */
     function section(res, x, part = 'left') {
         const n = res.normalized;
@@ -494,6 +495,12 @@ const BeamSolver = (function () {
         });
         n.points.forEach(p => { if (inPart(p.x)) forces.push({ kind: 'point', index: p.index, x: p.x, fy: p.fy, fx: p.fx }); });
         n.couples.forEach(c => { if (inPart(c.x)) forces.push({ kind: 'couple', index: c.index, x: c.x, mz: -c.m }); });
+        const hasTorsion = !!res.T && n.torsions.length > 0;
+        if (hasTorsion) {
+            n.torsions.forEach(t => { if (inPart(t.x) && Math.abs(t.t) > 1e-12) forces.push({ kind: 'torsion', index: t.index, x: t.x, mx: t.t }); });
+            const tr = res.torsionReaction;
+            if (tr && inPart(tr.x) && Math.abs(tr.Mx) > 1e-12) forces.push({ kind: 'reactionMx', name: `T_${tr.name}`, x: tr.x, mx: tr.Mx });
+        }
         n.dists.forEach(d => {
             const a = isLeft ? d.s : Math.max(d.s, x), b = isLeft ? Math.min(d.e, x) : d.e;
             if (b <= a + TOL) return;
@@ -509,13 +516,16 @@ const BeamSolver = (function () {
         // Denklem terimleri (sayısal)
         const sumFy = forces.reduce((s, f) => s + (f.fy || 0), 0);
         const sumFx = forces.reduce((s, f) => s + (f.fx || 0), 0);
+        const sumMx = forces.reduce((s, f) => s + (f.mx || 0), 0);
+        // Burulma: T > 0, vektörü kesit yüzünden dışarı (sol parçada +x, sağ parçada −x)
+        const Tx = hasTorsion ? res.T(x, side) : null;
         let sumM = 0; // kesit noktasına göre, saat yönünün tersi +
         forces.forEach(f => {
             if (f.fy !== undefined && f.xc !== undefined && f.kind !== 'point' && f.kind !== 'reactionFy') sumM += f.firstMoment - f.fy * x;
             else if (f.fy !== undefined) sumM += f.fy * (f.x - x);
             if (f.mz !== undefined) sumM += f.mz;
         });
-        return { x, part, forces, N: Nx, V: Vx, M: Mx, sumFx: clean(sumFx), sumFy: clean(sumFy), sumM: clean(sumM) };
+        return { x, part, forces, N: Nx, V: Vx, M: Mx, T: Tx, hasTorsion, sumFx: clean(sumFx), sumFy: clean(sumFy), sumM: clean(sumM), sumMx: clean(sumMx) };
     }
 
     /**
