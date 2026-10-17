@@ -1084,26 +1084,39 @@ body.dark-mode .calc-warning-box {
 /* Statik belirlilik durumu: model başlığının altında küçük rozet; ayrıntı tıklayınca açılır */
 #system-status { position: absolute; top: 46px; left: 12px; z-index: 16; }
 #system-status.hidden { display: none; }
+/* Rozet, üst menü düğmeleriyle aynı görünümdedir (nötr dolgu, düz kenar, aynı köşe yuvarlaklığı);
+   durum yalnızca yazı rengiyle belirtilir */
 .status-chip {
-    display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 8px 0 10px;
-    border-radius: 13px; border: 1px solid; font: 600 12.5px/1 "Segoe UI", Arial, sans-serif; cursor: pointer;
-    box-shadow: var(--fluent-shadow-depth-4, 0 1px 3px rgba(0,0,0,.12));
+    -webkit-appearance: none; appearance: none;
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
+    border: 1px solid transparent; border-radius: var(--fluent-border-radius);
+    background-color: var(--fluent-neutral-fill-rest); color: var(--fluent-neutral-foreground-rest);
+    font-size: 13px; font-weight: 400; line-height: 1.3; cursor: pointer; white-space: nowrap;
+    transition: background-color 0.15s ease-out;
 }
+.status-chip:hover { background-color: var(--fluent-neutral-fill-hover); }
+.status-chip:active { background-color: var(--fluent-neutral-fill-pressed); }
 .status-chip:focus-visible { outline: 2px solid var(--fluent-accent-fill-rest); outline-offset: 2px; }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.status-info { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; opacity: .75; }
+.status-info { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
 .status-detail {
     position: absolute; top: 32px; left: 0; width: max-content; max-width: min(480px, calc(100vw - 48px));
-    padding: 10px 12px; border-radius: 6px; border: 1px solid; font-size: 13px; line-height: 1.45;
+    padding: 10px 12px; border-radius: var(--fluent-border-radius); border: 1px solid; font-size: 13px; line-height: 1.45;
     box-shadow: var(--fluent-shadow-depth-16, 0 6px 16px rgba(0,0,0,.18));
 }
 .status-detail[hidden] { display: none; }
-.system-status.ok .status-chip, .system-status.ok .status-detail { background: #eef8f1; border-color: #b9e0c5; color: #1d5c34; }
-.system-status.note .status-chip, .system-status.note .status-detail { background: #fff7e6; border-color: #f1d08a; color: #6b4b00; }
-.system-status.error .status-chip, .system-status.error .status-detail { background: #fdeeee; border-color: #f0b4b4; color: #8a1f1f; }
-body.dark-mode .system-status.ok .status-chip, body.dark-mode .system-status.ok .status-detail { background: #10291b; border-color: #23573a; color: #9be2b4; }
-body.dark-mode .system-status.note .status-chip, body.dark-mode .system-status.note .status-detail { background: #2c2310; border-color: #6b5320; color: #f3d48c; }
-body.dark-mode .system-status.error .status-chip, body.dark-mode .system-status.error .status-detail { background: #301414; border-color: #6e2a2a; color: #f5b1b1; }
+.system-status.ok .status-detail { background: #eef8f1; border-color: #b9e0c5; color: #1d5c34; }
+.system-status.note .status-detail { background: #fff7e6; border-color: #f1d08a; color: #6b4b00; }
+.system-status.error .status-detail { background: #fdeeee; border-color: #f0b4b4; color: #8a1f1f; }
+body.dark-mode .system-status.ok .status-detail { background: #10291b; border-color: #23573a; color: #9be2b4; }
+body.dark-mode .system-status.note .status-detail { background: #2c2310; border-color: #6b5320; color: #f3d48c; }
+body.dark-mode .system-status.error .status-detail { background: #301414; border-color: #6e2a2a; color: #f5b1b1; }
+.system-status.ok .status-chip { color: #1d6b3a; }
+.system-status.note .status-chip { color: #7a5600; }
+.system-status.error .status-chip { color: #a4262c; }
+body.dark-mode .status-chip { color: var(--fluent-neutral-foreground-hint); }
+body.dark-mode .system-status.ok .status-chip { color: #9be2b4; }
+body.dark-mode .system-status.note .status-chip { color: #f3d48c; }
+body.dark-mode .system-status.error .status-chip { color: #f5b1b1; }
 
 /* İşaret kabulü düğmeleri */
 .fluent-theme .sign-overlay-btn { font-weight: 700; }

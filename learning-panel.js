@@ -356,7 +356,7 @@ function updateSystemStatus(analysis) {
     el.dataset.key = key;
     el.dataset.text = `${title}: ${msg}`;
     el.innerHTML = `<button type="button" class="status-chip" aria-expanded="${open}" aria-controls="system-status-detail" title="${escapeHTMLText(msg)}">` +
-        `<span class="status-dot" aria-hidden="true"></span><strong>${escapeHTMLText(title)}</strong>` +
+        `<span class="status-title">${escapeHTMLText(title)}</span>` +
         `<svg class="status-info" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></button>` +
         `<div class="status-detail" id="system-status-detail" role="status" aria-live="polite"${open ? '' : ' hidden'}>${escapeHTMLText(msg)}</div>`;
 }
